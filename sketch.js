@@ -289,7 +289,7 @@ function preload(){ // set image pointers & prep audio
   bzztsfx = loadSound("asset/BZZT.mp3");
   scratchsfx = loadSound("asset/scratch.mp3")
   musicDefault = loadSound("asset/toby.mp3")
-  musicBritney = loadSound("asset/BRITNEY.mp3");
+  musicBritney = loadSound("asset/Britney.mp3");
   musicCurrent = musicDefault;
   append(ringtargets,ringobj1);
   append(ringtargets,ringobj2);
