@@ -71,20 +71,20 @@ section.header-section {
 }
 
 /* Make sure everything is on one line */
-.header-container {
+/* .header-container {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 15px;
     flex-wrap: nowrap;
-}
+} */
 
 /* Ensure text isn't breaking */
-.header-container h1 {
+/* .header-container h1 {
     font-size: 3rem;
     white-space: nowrap;
 }
-
+ */
 /* Ensure the eye is displayed */
 #eye-svg {
     height: 100px;
