@@ -33,7 +33,7 @@
         console.log(`Moving iris: X=${moveX.toFixed(2)}, Y=${moveY.toFixed(2)}`);
 
         requestAnimationFrame(() => {
-            iris.style.transform = `translate(${moveX}px, ${moveY}px) !important`;
+            iris.setAttribute("transform", `translate(${moveX}, ${moveY})`);
         });
     });
 });
