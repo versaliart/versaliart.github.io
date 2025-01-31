@@ -50,11 +50,11 @@ document.addEventListener("DOMContentLoaded", function () {
    document.addEventListener("scroll", function () {
     const scrollY = window.scrollY;
     const header = document.querySelector(".header-section");
-    const pageContent = document.querySelector(".page-content");
+    const mainContent = document.querySelector(".main-content");
     const headerHeight = header.offsetHeight;
 
     if (scrollY >= headerHeight) {
-        header.style.position = "absolute"; /* Release from fixed */
+        header.style.position = "absolute"; /* Allow covering */
         header.style.top = `${scrollY}px`;
     } else {
         header.style.position = "fixed";
