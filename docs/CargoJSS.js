@@ -8,6 +8,13 @@
     const maxMoveX = 30;
     const maxMoveY = 20;
 
+    if (!iris) {
+        console.error("Iris element not found in DOM.");
+        return;
+    }
+
+    console.log("Eye movement script initialized.");
+
     headerSection.addEventListener("mousemove", (event) => {
         const rect = eyeContainer.getBoundingClientRect();
         const eyeCenterX = rect.left + rect.width / 2;
@@ -22,6 +29,8 @@
         
         const moveX = deltaX * intensity * 0.3;
         const moveY = deltaY * intensity * 0.3;
+
+        console.log(`Moving iris: X=${moveX.toFixed(2)}, Y=${moveY.toFixed(2)}`);
 
         requestAnimationFrame(() => {
             iris.setAttribute("transform", `translate(${moveX}, ${moveY})`);
