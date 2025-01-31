@@ -6,37 +6,25 @@
     const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
     const maxMoveY = 20;
-    const maxSquishFactor = 0.8; // Define squish factor
 
     document.addEventListener("mousemove", (event) => {
         const rect = eyeContainer.getBoundingClientRect();
         const eyeCenterX = rect.left + rect.width / 2;
         const eyeCenterY = rect.top + rect.height / 2;
+        const distance = Math.hypot(event.clientX - eyeCenterX, event.clientY - eyeCenterY);
+        
+        // Normalize movement: closer = less movement, farther = more movement
+        const intensity = Math.min(1, distance / 200);
 
-        const deltaX = event.clientX - eyeCenterX;
-        const deltaY = event.clientY - eyeCenterY;
+        const deltaX = (event.clientX - eyeCenterX) * intensity;
+        const deltaY = (event.clientY - eyeCenterY) * intensity;
 
-        const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, deltaX * 0.1));
-        const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, deltaY * 0.1));
-
-        const scaleX = 1 - Math.abs(moveX / maxMoveX) * (1 - maxSquishFactor);
-        const scaleY = 1 - Math.abs(moveY / maxMoveY) * (1 - maxSquishFactor);
+        const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, deltaX * 0.2));
+        const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, deltaY * 0.2));
 
         requestAnimationFrame(() => {
-            iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
+            iris.setAttribute("transform", `translate(${moveX}, ${moveY})`);
         });
-    });
-
-    // Scale the eye when clicking anywhere (with reset)
-    function scaleEye(scaleFactor) {
-        iris.setAttribute("transform", `scale(${scaleFactor})`);
-        setTimeout(() => {
-            iris.setAttribute("transform", "scale(1)");
-        }, 200);
-    }
-
-    document.addEventListener("click", () => {
-        scaleEye(1.2);
     });
 });
 

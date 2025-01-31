@@ -72,7 +72,7 @@ section {
     background: white;
     clip-path: inset(0 0 0 0);
     transition: clip-path 0.8s ease-in-out;
-    pointer-events: none; /* Ensure interactions work */
+    pointer-events: auto; /* Allow interactions */
 }
 
 .main-content {
@@ -86,33 +86,15 @@ section {
    2. Eye Animation Fixes
    ========================== */
 #eye-container {
-    transition: transform 0.2s ease-out !important; /* Allow transformations */
-    pointer-events: auto; /* Ensure mouse tracking works */
+    transition: none !important;
+    pointer-events: auto;
 }
 
 #iris {
-    transition: transform 0.2s ease-out;
+    transition: transform 0.1s ease-out;
     transform-origin: center;
     will-change: transform;
 }
-
-/* ==========================
-   2. Eye Animation Fixes
-   ========================== */
-#eye-container {
-    transition: transform 0.2s ease-out !important; /* Allow transformations */
-    pointer-events: auto; /* Ensure mouse tracking works */
-}
-
-#iris {
-    transition: transform 0.2s ease-out;
-    transform-origin: center;
-    will-change: transform;
-}
-
-
-/*====================
-
 
 /* Keep everything in-line */
 .header-container {
