@@ -1,0 +1,350 @@
+/* ==========================
+   1. Font Face Declarations
+   ========================== */
+   @font-face {
+    font-family: "Milanesa Serif";
+    font-weight: 400;
+    font-style: normal;
+    src: url("https://freight.cargo.site/m/U2156192883270825434826513159907/milanesa-serif-regular.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Milanesa Serif";
+    font-weight: 300;
+    font-style: normal;
+    src: url("https://freight.cargo.site/m/G2156192883307718922973932263139/milanesa-serif-thin.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Milanesa Serif";
+    font-weight: 600;
+    font-style: normal;
+    src: url("https://freight.cargo.site/m/U2156192883215485202605384505059/milanesa-serif-demibold.woff") format("woff");
+}
+
+@font-face {
+    font-family: "Milanesa Serif";
+    font-weight: 900;
+    font-style: normal;
+    src: url("https://freight.cargo.site/m/S2156192883160144970384255850211/milanesa-serif-black.woff") format("woff");
+}
+
+/* ==========================
+   2. Base Page Layout
+   ========================== */
+.page-layout {
+    min-width: 30%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem; /* Add padding for spacing */
+    --page-layout-mix: multiply;
+}
+
+.page-content {
+    align-items: flex-start;
+    width: 100%;
+    background-color: #ffffff;
+    padding: 1rem;
+}
+
+/* ==========================
+   3. Section Styles
+   ========================== */
+section {
+    max-width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* ==========================
+   1. Full-Screen Landing Effect
+   ========================== */
+   .header-section {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    z-index: 2;
+    background: white;
+    clip-path: inset(0 0 0 0);
+    transition: clip-path 0.8s ease-in-out;
+    pointer-events: none; /* Ensure interactions work */
+}
+
+.main-content {
+    position: relative;
+    z-index: 1;
+    background-color: #ffffff;
+    padding: 2rem;
+}
+
+/* ==========================
+   2. Eye Animation Fixes
+   ========================== */
+#eye-container {
+    transition: transform 0.2s ease-out !important; /* Allow transformations */
+    pointer-events: auto; /* Ensure mouse tracking works */
+}
+
+#iris {
+    transition: transform 0.2s ease-out;
+    transform-origin: center;
+    will-change: transform;
+}
+
+/* ==========================
+   2. Eye Animation Fixes
+   ========================== */
+#eye-container {
+    transition: transform 0.2s ease-out !important; /* Allow transformations */
+    pointer-events: auto; /* Ensure mouse tracking works */
+}
+
+#iris {
+    transition: transform 0.2s ease-out;
+    transform-origin: center;
+    will-change: transform;
+}
+
+
+/*====================
+
+
+/* Keep everything in-line */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* Adjust spacing between elements */
+    flex-wrap: nowrap;
+}
+
+/* Ensure both h1 elements have the same font size */
+.header-container h1 {
+    font-size: 3rem;
+    white-space: nowrap;
+    margin: 0;
+}
+
+#eye-svg {
+    height: 100px;
+    width: 200px;
+    max-width: 200px;
+    display: block;
+    transition: none !important;
+}
+
+/* DO NOT block transform for the iris */
+#iris {
+    transition: transform 0.2s ease-out;
+}
+
+/* Block unwanted Cargo transformations, but allow movement */
+#eye-container {
+    transform: none !important;
+    transition: none !important;
+}
+
+
+
+
+/* Fix the eye size and prevent unwanted resizing */
+#eye-svg {
+    height: 100px; /* Fixed height */
+    width: 200px; /* Fixed width */
+    max-width: 200px;
+    display: block;
+    transition: none !important; /* Prevent any transitions */
+    transform: none !important; /* Ensure no scale or transformations */
+}
+
+/* Prevent focus effects */
+#eye-svg:focus,
+#eye-svg:active {
+    outline: none;
+    transform: none !important;
+}
+
+#eye-svg image {
+    display: block !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform-origin: center !important;
+    will-change: auto !important;
+}
+
+section.link-section {
+    margin-bottom: 2rem;
+}
+
+section.text-section {
+    margin-bottom: 3%;
+    max-width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+section.index {
+    max-width: 864px;
+}
+
+section.gallery,
+section.eye,
+section.content-section {
+    max-width: 100%;
+}
+
+
+section.gallery .thumbnail,
+section.gallery .zoomable {
+    position: relative; /* Enable stacking context */
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition for transform and opacity */
+    z-index: 1; /* Default stacking order */
+}
+
+/* Hover effect for gallery images */
+section.gallery .thumbnail:not(#eye-svg image),
+section.gallery .zoomable:not(#eye-svg image) {
+    transform: scale(1.1);
+    z-index: 10;
+}
+
+
+/* ==========================
+   4. Typography
+   ========================== */
+body {
+    font-family: mendl-sans-dusk, "Milanesa Serif", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+}
+
+h1 {
+    font-family: "Milanesa Serif";
+    font-weight: 900;
+    font-size: 4rem;
+    line-height: 1;
+    color: #9a0034;
+}
+
+h2 {
+    font-family: Milanesa Serif;
+    font-weight: 400;
+    font-size: 3rem;
+    color: #373737;
+    line-height: 1;}
+
+/* Reduce space between h1 and h2 in the header-section */
+.header-section h1, 
+.header-section h2 {
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Ensure no padding interferes */
+}
+
+.header-section h1 {
+    margin-bottom: 1rem; /* Add spacing below headers */
+}
+
+
+h3 {
+    font-family: "Milanesa Serif";
+    font-weight: 600;
+    font-size: 3.5rem;
+    color: #333;
+}
+
+bodycopy {
+    font-size: 1.45rem;
+    font-family: mendl-sans-dusk, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+bodycopy a {
+    color: #333;
+    text-decoration: underline;
+}
+
+/* Caption Styles */
+.caption {
+    font-size: 1.25rem;
+    font-family: mendl-sans-dusk, sans-serif;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================
+   Horizontal Rule Styling
+   ========================== */
+hr {
+    border: none; /* Remove default border */
+    height: 1px; /* Define a clear height */
+    background-color: rgba(0, 0, 0, 0.6); /* Set a semi-transparent color */
+    margin: 1rem 0; /* Add spacing above and below */
+}
+
+/* Optional: Stronger styling for emphasis */
+hr.strong {
+    background-color: #333; /* Solid, dark line */
+    height: 2px; /* Thicker line */
+    margin: 2rem 0; /* Increased spacing */
+    border-radius: 2px; /* Rounded ends */
+}
+
+
+/* ==========================
+   5. Mobile Responsive Design
+   ========================== */
+@media (max-width: 768px) {
+    .page-layout {
+        min-width: 100%;
+        padding: 0 1rem;
+    }
+
+    section {
+        max-width: 90%;
+    }
+
+    section.header-section {
+        padding-top: 0rem;
+        padding-bottom: 1rem;
+    }
+
+    section.text-section {
+        max-width: 95%;
+        padding-bottom: 1rem;
+    }
+
+    section.gallery {
+        max-width: 100%;
+    }
+
+    body {
+        font-size: 90%; /* Slightly smaller font for mobile */
+    }
+
+    h1, h2, h3 {
+        font-size: 0.50rem; /* Adjust heading sizes */
+	line-height: 1;
+	font-style: normal;
+}
+}
+
+/* ==========================
+   6. Larger Screens
+   ========================== */
+@media (min-width: 1024px) {
+    .page-layout {
+        max-width: 90%;
+    }
+
+    section {
+        max-width: 75%;
+    }
+}
