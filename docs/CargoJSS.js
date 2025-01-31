@@ -38,8 +38,4 @@ document.addEventListener("DOMContentLoaded", function () {
         }, 200);
     }
   
-    // Scale the eye when clicking anywhere (with reset)
-    document.addEventListener("click", () => {
-        scaleEye(1.2);
-    });
   });
