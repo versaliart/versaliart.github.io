@@ -43,3 +43,18 @@ document.addEventListener("DOMContentLoaded", function () {
       scaleEye(1.2);
   });
 });
+
+/* ==========================
+   2. JavaScript Scroll Effect
+   ========================== */
+   document.addEventListener("scroll", function () {
+    const scrollY = window.scrollY;
+    const headerHeight = document.querySelector(".header-section").offsetHeight;
+    const pageContent = document.querySelector(".page-content");
+
+    if (scrollY > headerHeight * 0.3) {
+        pageContent.style.transform = `translateY(-${headerHeight}px)`;
+    } else {
+        pageContent.style.transform = "translateY(0)";
+    }
+});
