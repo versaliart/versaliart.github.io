@@ -43,4 +43,3 @@ document.addEventListener("DOMContentLoaded", function () {
       scaleEye(1.2);
   });
 });
-
