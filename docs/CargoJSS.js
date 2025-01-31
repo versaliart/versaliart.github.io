@@ -1,26 +1,27 @@
 /* ==========================
-   3. JavaScript Scroll & Eye Effect Fixes
+   3. JavaScript Eye Movement Fixes
    ========================== */
    document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
     const eyeContainer = document.getElementById("eye-container");
+    const headerSection = document.querySelector(".header-section");
     const maxMoveX = 30;
     const maxMoveY = 20;
 
-    document.addEventListener("mousemove", (event) => {
+    headerSection.addEventListener("mousemove", (event) => {
         const rect = eyeContainer.getBoundingClientRect();
         const eyeCenterX = rect.left + rect.width / 2;
         const eyeCenterY = rect.top + rect.height / 2;
-        const distance = Math.hypot(event.clientX - eyeCenterX, event.clientY - eyeCenterY);
         
-        // Normalize movement: closer = less movement, farther = more movement
-        const intensity = Math.min(1, distance / 200);
-
-        const deltaX = (event.clientX - eyeCenterX) * intensity;
-        const deltaY = (event.clientY - eyeCenterY) * intensity;
-
-        const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, deltaX * 0.2));
-        const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, deltaY * 0.2));
+        const deltaX = event.clientX - eyeCenterX;
+        const deltaY = event.clientY - eyeCenterY;
+        
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const maxDistance = Math.min(window.innerWidth, window.innerHeight) / 2;
+        const intensity = Math.min(1, distance / maxDistance);
+        
+        const moveX = deltaX * intensity * 0.3;
+        const moveY = deltaY * intensity * 0.3;
 
         requestAnimationFrame(() => {
             iris.setAttribute("transform", `translate(${moveX}, ${moveY})`);
