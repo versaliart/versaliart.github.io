@@ -37,21 +37,3 @@
         });
     });
 });
-
-/* ==========================
-   4. JavaScript Scroll Effect
-   ========================== */
-document.addEventListener("scroll", function () {
-    const scrollY = window.scrollY;
-    const header = document.querySelector(".header-section");
-    const mainContent = document.querySelector(".main-content");
-    const headerHeight = header.offsetHeight;
-
-    if (scrollY >= headerHeight) {
-        header.style.position = "absolute"; /* Allow covering */
-        header.style.top = `${scrollY}px`;
-    } else {
-        header.style.position = "fixed";
-        header.style.top = "0";
-    }
-});

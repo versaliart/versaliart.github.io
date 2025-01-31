@@ -38,7 +38,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 1rem; /* Add padding for spacing */
+    --page-layout-mix: multiply;
 }
 
 .page-content {
@@ -57,56 +58,19 @@ section {
     margin-right: auto;
 }
 
-/* ==========================
-   1. Full-Screen Landing Effect
-   ========================== */
-   .header-section {
-    height: 100vh;
+section.header-section {
+    margin-bottom: 3%;
+    margin-top: 6%;
+}
+/* Ensure the section is visible */
+.header-section {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: relative;
-    width: 100%;
-    z-index: 2;
-    background: white;
-    clip-path: inset(0 0 0 0);
-    transition: clip-path 0.8s ease-in-out;
-    pointer-events: auto; /* Allow interactions */
+    padding: 20px;
 }
 
-.main-content {
-    position: relative;
-    z-index: 1;
-    background-color: #ffffff;
-    padding: 2rem;
-}
-
-/* ==========================
-   2. Eye Animation Fixes
-   ========================== */
-#eye-container {
-    pointer-events: auto;
-}
-
-#iris {
-    transition: transform 0.1s ease-out;
-    transform-origin: center;
-    will-change: transform;
-    display: block !important;
-    transform: translate(0, 0) !important; /* Force transform to be applied */
-}
-
-#eye-svg {
-    height: 100px;
-    width: 200px;
-    max-width: 200px;
-    display: block;
-}
-
-
-/* ==========================
-   3. Typography & Layout Fixes
-   ========================== */
+/* Make sure everything is on one line */
 .header-container {
     display: flex;
     align-items: center;
@@ -115,10 +79,63 @@ section {
     flex-wrap: nowrap;
 }
 
+/* Ensure text isn't breaking */
 .header-container h1 {
     font-size: 3rem;
     white-space: nowrap;
-    margin: 0;
+}
+
+/* Ensure the eye is displayed */
+#eye-svg {
+    height: 100px;
+    width: auto;
+    max-width: 200px;
+    display: block;
+}
+
+section.link-section {
+    margin-bottom: 2rem;
+}
+
+section.text-section {
+    margin-bottom: 3%;
+    max-width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+section.gallery,
+section.eye,
+section.content-section {
+    max-width: 100%;
+}
+
+section.index {
+    max-width: 80%;
+}
+
+section.gallery .thumbnail,
+section.gallery .zoomable {
+    position: relative; /* Enable stacking context */
+    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition for transform and opacity */
+    z-index: 1; /* Default stacking order */
+}
+
+/* Hover effect for gallery images */
+section.gallery .thumbnail:hover,
+section.gallery .zoomable:hover {
+    transform: scale(1.1); /* Enlarge image on hover */
+    z-index: 10; /* Higher stacking order to bring the hovered image on top */
+}
+
+/* ==========================
+   4. Typography
+   ========================== */
+body {
+    font-family: mendl-sans-dusk, "Milanesa Serif", sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
 }
 
 h1 {
@@ -130,25 +147,73 @@ h1 {
 }
 
 h2 {
-    font-family: "Milanesa Serif";
+    font-family: Milanesa Serif;
     font-weight: 400;
     font-size: 3rem;
     color: #373737;
-    line-height: 1;
-}
+    line-height: 1;}
 
-.header-section h1,
+/* Reduce space between h1 and h2 in the header-section */
+.header-section h1, 
 .header-section h2 {
-    margin: 0;
-    padding: 0;
+    margin: 0; /* Remove default margins */
+    padding: 0; /* Ensure no padding interferes */
 }
 
 .header-section h1 {
-    margin-bottom: 1rem;
+    margin-bottom: 1rem; /* Add spacing below headers */
+}
+
+
+h3 {
+    font-family: "Milanesa Serif";
+    font-weight: 600;
+    font-size: 3.5rem;
+    color: #333;
+}
+
+bodycopy {
+    font-size: 1.45rem;
+    font-family: mendl-sans-dusk, sans-serif;
+    font-weight: 400;
+    line-height: 1.5;
+    color: rgba(0, 0, 0, 0.85);
+}
+
+bodycopy a {
+    color: #333;
+    text-decoration: underline;
+}
+
+/* Caption Styles */
+.caption {
+    font-size: 1.25rem;
+    font-family: mendl-sans-dusk, sans-serif;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================
-   4. Mobile Responsive Design
+   Horizontal Rule Styling
+   ========================== */
+hr {
+    border: none; /* Remove default border */
+    height: 1px; /* Define a clear height */
+    background-color: rgba(0, 0, 0, 0.6); /* Set a semi-transparent color */
+    margin: 1rem 0; /* Add spacing above and below */
+}
+
+/* Optional: Stronger styling for emphasis */
+hr.strong {
+    background-color: #333; /* Solid, dark line */
+    height: 2px; /* Thicker line */
+    margin: 2rem 0; /* Increased spacing */
+    border-radius: 2px; /* Rounded ends */
+}
+
+
+/* ==========================
+   5. Mobile Responsive Design
    ========================== */
 @media (max-width: 768px) {
     .page-layout {
@@ -170,15 +235,23 @@ h2 {
         padding-bottom: 1rem;
     }
 
-    h1, h2, h3 {
-        font-size: 0.5rem;
-        line-height: 1;
-        font-style: normal;
+    section.gallery {
+        max-width: 100%;
     }
+
+    body {
+        font-size: 90%; /* Slightly smaller font for mobile */
+    }
+
+    h1, h2, h3 {
+        font-size: 0.50rem; /* Adjust heading sizes */
+	line-height: 1;
+	font-style: normal;
+}
 }
 
 /* ==========================
-   5. Larger Screens
+   6. Larger Screens
    ========================== */
 @media (min-width: 1024px) {
     .page-layout {
