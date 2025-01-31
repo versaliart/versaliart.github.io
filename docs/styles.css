@@ -92,6 +92,8 @@ section {
     transition: transform 0.1s ease-out;
     transform-origin: center;
     will-change: transform;
+    display: block !important;
+    transform: translate(0, 0) !important; /* Force transform to be applied */
 }
 
 #eye-svg {
