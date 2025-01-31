@@ -49,12 +49,15 @@ document.addEventListener("DOMContentLoaded", function () {
    ========================== */
    document.addEventListener("scroll", function () {
     const scrollY = window.scrollY;
-    const headerHeight = document.querySelector(".header-section").offsetHeight;
+    const header = document.querySelector(".header-section");
     const pageContent = document.querySelector(".page-content");
+    const headerHeight = header.offsetHeight;
 
-    if (scrollY > headerHeight * 0.3) {
-        pageContent.style.transform = `translateY(-${headerHeight}px)`;
+    if (scrollY >= headerHeight) {
+        header.style.position = "absolute"; /* Release from fixed */
+        header.style.top = `${scrollY}px`;
     } else {
-        pageContent.style.transform = "translateY(0)";
+        header.style.position = "fixed";
+        header.style.top = "0";
     }
 });
