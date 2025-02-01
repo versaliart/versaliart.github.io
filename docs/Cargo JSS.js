@@ -44,17 +44,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+window.addEventListener("scroll", function () {
+    let scrollPosition = window.scrollY; // Current scroll position
+    let masthead = document.querySelector(".header-section");
+    let mainContent = document.querySelector(".main-content");
 
-window.addEventListener('scroll', function () {
-    let scrollPosition = window.scrollY; // Get the scroll position
-    let masthead = document.querySelector('.header-content');
-    let siteWrap = document.querySelector('.site-wrap'); // The main content
+    let slowFactor = 0.5; // Adjust to control how much slower the masthead appears to move
 
-    let slowFactor = 0.4; // Adjust this to control how much slower the masthead moves
+    // Moves the main content **up** at normal speed
+    mainContent.style.transform = `translateY(-${scrollPosition}px)`;
 
-    // Moves the masthead up slowly
+    // Moves the masthead **up more slowly**, creating the cover-up effect
     masthead.style.transform = `translateY(-${scrollPosition * slowFactor}px)`;
-
-    // Ensures the content moves normally
-    siteWrap.style.transform = `translateY(0)`;
 });
