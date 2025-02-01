@@ -54,10 +54,10 @@ window.addEventListener("scroll", function () {
     let fastFactor = 1.3;  
 
     // Get masthead height (assumed full viewport height)
-    let mastheadHeight = masthead.offsetHeight;
+    let sliderHeight = slider.offsetHeight;
 
     // Calculate how much extra movement has occurred
-    let excessMovement = mastheadHeight * (fastFactor - 1);
+    let excessMovement = sliderHeight * (fastFactor - 1);
 
     // Adjust body height dynamically
     let newBodyHeight = Math.max(document.documentElement.scrollHeight - excessMovement, window.innerHeight);
