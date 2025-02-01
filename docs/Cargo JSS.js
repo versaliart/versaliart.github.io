@@ -41,13 +41,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     document.addEventListener("scroll", function () {
-        let scrollY = window.scrollY;
+        let scrollPosition = window.scrollY;
         let header = document.querySelector(".header-section");
         let headerHeight = header.offsetHeight;
-        
-        let progress = Math.min(scrollY / headerHeight, 1);
-    
-        header.style.opacity = 1 - progress; // Fades out
+
+        let clipValue = Math.min(scrollPosition / headerHeight, 1) * 100;
+
+        // Reverse the clipping direction
+        header.style.clipPath = `inset(0px 0px ${clipValue}% 0px)`;
     });
-    
 });
