@@ -47,35 +47,36 @@ document.addEventListener("DOMContentLoaded", function () {
 /* ###### PARALLAX EFFECT ###### */
 
 window.addEventListener("scroll", function () {
-    let scrollPosition = window.scrollY; // Current scroll position
     let masthead = document.querySelector(".header-section");
     let slider = document.querySelector(".main-content");
 
-    let slowFactor = 0.3;  // Masthead moves slowly
-    let fastFactor = 1.3;  // Slider moves faster initially
+    let slowFactor = 0.3;  
+    let fastFactor = 1.3;  
 
-    // Get the height of masthead (assumed full viewport height)
+    // Get masthead height (assumed full viewport height)
     let mastheadHeight = masthead.offsetHeight;
 
-    // Get slider's top position relative to the document
-    let sliderStart = mastheadHeight; // Slider initially starts right after masthead
+    // Calculate how much extra movement has occurred
+    let excessMovement = mastheadHeight * (fastFactor - 1);
 
-    // Detect if masthead is still visible
-    let isMastheadVisible = scrollPosition < sliderStart;
+    // Adjust body height dynamically
+    let newBodyHeight = Math.max(document.documentElement.scrollHeight - excessMovement, window.innerHeight);
+    document.body.style.height = `${newBodyHeight}px`;
 
+    // Apply transformations
+    let scrollPosition = window.scrollY;
     let mastheadTranslate = scrollPosition * slowFactor;
-    let sliderTranslate;
 
-    if (isMastheadVisible) {
-        // Apply fast movement while masthead is visible
+    let sliderTranslate;
+    if (scrollPosition < mastheadHeight) {
+        // Slider moves faster while masthead is visible
         sliderTranslate = -scrollPosition * fastFactor;
     } else {
-        // Smooth transition: stop applying fastFactor but continue smoothly
-        let fastScrollOffset = sliderStart * (fastFactor - 1); 
+        // Stop applying fast speed after masthead is covered
+        let fastScrollOffset = mastheadHeight * (fastFactor - 1);
         sliderTranslate = -scrollPosition - fastScrollOffset;
     }
 
-    // Apply transformations
     masthead.style.transform = `translateY(${mastheadTranslate}px)`;
     slider.style.transform = `translateY(${sliderTranslate}px)`;
 });
