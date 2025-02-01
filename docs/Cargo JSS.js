@@ -3,30 +3,36 @@ document.addEventListener("DOMContentLoaded", function () {
     const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 50;
     const maxMoveY = 20;
-    const minScale = 0.8; // Minimum scale factor when fully squished
+    const minScale = 0.8; // Minimum squish scale factor
+
+    let animationFrameId;
 
     document.addEventListener("mousemove", (event) => {
-        const rect = eyeContainer.getBoundingClientRect();
-        const eyeCenterX = rect.left + rect.width / 2;
-        const eyeCenterY = rect.top + rect.height / 2;
-        const screenWidth = window.innerWidth;
-        const screenHeight = window.innerHeight;
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
-        const deltaX = event.clientX - eyeCenterX;
-        const deltaY = event.clientY - eyeCenterY;
+        animationFrameId = requestAnimationFrame(() => {
+            const rect = eyeContainer.getBoundingClientRect();
+            const eyeCenterX = rect.left + rect.width / 2;
+            const eyeCenterY = rect.top + rect.height / 2;
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
 
-        const percentX = deltaX / (screenWidth / 2);
-        const percentY = deltaY / (screenHeight / 2);
+            const deltaX = event.clientX - eyeCenterX;
+            const deltaY = event.clientY - eyeCenterY;
 
-        const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, percentX * maxMoveX));
-        const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, percentY * maxMoveY));
+            const percentX = deltaX / (screenWidth / 2);
+            const percentY = deltaY / (screenHeight / 2);
 
-        // Calculate squish factor based on movement percentage
-        const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
-        const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
+            const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, percentX * maxMoveX));
+            const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, percentY * maxMoveY));
 
-        // Apply transformations
-        iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
+            // Squish effect
+            const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
+            const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
+
+            // Apply transformations
+            iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
+        });
     });
 
     // Function to scale the entire eye
@@ -34,12 +40,13 @@ document.addEventListener("DOMContentLoaded", function () {
         eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
     }
 
+    // Scroll effect for header clipping
     document.addEventListener("scroll", function () {
         let scrollY = window.scrollY;
         let header = document.querySelector(".header-section");
 
         if (!header) {
-            console.error("Header section not found!"); // Debugging
+            console.error("Header section not found!");
             return;
         }
 
@@ -47,6 +54,5 @@ document.addEventListener("DOMContentLoaded", function () {
         let clipValue = Math.min(scrollY / headerHeight, 1) * 100;
 
         header.style.clipPath = `inset(${clipValue}% 0px 0px 0px)`;
-        console.log(`clip-path updated: inset(${clipValue}% 0px 0px 0px)`);
     });
 });
