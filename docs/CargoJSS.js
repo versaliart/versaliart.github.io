@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
-    const eyeContainer = document.getElementById("eye-container");
+    const eyeContainer = document.querySelector("#eye-container");
     const maxMoveX = 30; // Max horizontal movement
     const maxMoveY = 20; // Max vertical movement
     const maxSquishFactor = 0.8; // How much the iris squishes at max movement
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const scaleY = 1 - Math.abs(moveY / maxMoveY) * (1 - maxSquishFactor);
   
         requestAnimationFrame(() => {
-            iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
+          iris.setAttributeNS(null, "transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
         });
     });
   
