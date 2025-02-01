@@ -44,22 +44,33 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
+/* ###### PARALLAX EFFECT ###### */
+
 window.addEventListener("scroll", function () {
     let scrollPosition = window.scrollY; // Current scroll position
     let masthead = document.querySelector(".header-section");
     let slider = document.querySelector(".main-content");
 
     let slowFactor = 0.3;  // Masthead moves slowly
-    let fastFactor = 1.3;  // Slider moves faster
+    let fastFactor = 1.2;  // Slider moves faster initially
 
     // Get the top position of the slider relative to the document
     let sliderTop = slider.offsetTop;
 
-    // Clamp masthead movement to stop when slider reaches top
+    // Determine if the masthead is still visible
+    let isMastheadVisible = scrollPosition < sliderTop;
+
+    // Apply movement logic
     let mastheadTranslate = Math.min(scrollPosition * slowFactor, sliderTop * slowFactor);
 
-    // Apply fastFactor properly (note: removing the negative sign ensures it moves correctly)
-    let sliderTranslate = Math.max(-scrollPosition * fastFactor, -sliderTop * fastFactor);
+    let sliderTranslate;
+    if (isMastheadVisible) {
+        // Slider moves faster only while masthead is visible
+        sliderTranslate = Math.max(-scrollPosition * fastFactor, -sliderTop * fastFactor);
+    } else {
+        // Once masthead is covered, slider moves at normal speed (directly mapped to scroll)
+        sliderTranslate = -sliderTop * fastFactor; // Stop applying extra speed
+    }
 
     // Apply transformations
     masthead.style.transform = `translateY(${mastheadTranslate}px)`;
