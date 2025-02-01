@@ -47,11 +47,21 @@ document.addEventListener("DOMContentLoaded", function () {
 window.addEventListener("scroll", function () {
     let scrollPosition = window.scrollY; // Get scroll position
     let masthead = document.querySelector(".header-section");
-    let slider = document.querySelector(".main-content")
-    let slowFactor = 0.3; // Adjust to control how much slower the masthead moves
-    let fastFactor = 1.3; // Adjust to control how much slower the slider moves
+    let slider = document.querySelector(".main-content");
 
-    // Moves the masthead **down more slowly**, making it look like it's being covered
-    masthead.style.transform = `translateY(${scrollPosition * slowFactor}px)`;
-    slider.style.transform = `translateY(${-scrollPosition * slowFactor}px)`;
+    let slowFactor = 0.3; // Controls masthead movement speed
+    let fastFactor = 1.3; // Controls slider movement speed
+
+    // Get the top position of the slider relative to the document
+    let sliderTop = slider.offsetTop;
+
+    // Ensure the masthead only moves while it is still visible
+    let mastheadTranslate = Math.min(scrollPosition * slowFactor, sliderTop * slowFactor);
+
+    // Ensure the slider only moves while it's not fully aligned with the top
+    let sliderTranslate = Math.max(-scrollPosition * slowFactor, -sliderTop * slowFactor);
+
+    // Apply transformations with limits
+    masthead.style.transform = `translateY(${mastheadTranslate}px)`;
+    slider.style.transform = `translateY(${sliderTranslate}px)`;
 });
