@@ -48,10 +48,10 @@ document.addEventListener("DOMContentLoaded", function () {
 window.addEventListener('scroll', function () {
     let scrollPosition = window.scrollY; // Get scroll position
     let masthead = document.querySelector('.header-content');
-    let slowFactor = 0.4; // Adjust to make the masthead move slower
+    let slowFactor = 0.2; // Adjust to make the masthead move slower
 
     if (scrollPosition > 100) { // Adjust threshold as needed
-        masthead.style.opacity = Math.max(1 - scrollPosition / 300, 0); // Fades out
+        masthead.style.opacity = Math.max(1 - scrollPosition / 300, 10); // Fades out
         masthead.style.transform = `translateY(-${scrollPosition * slowFactor}px)`; // Moves up more slowly
     } else {
         masthead.style.opacity = 1;
