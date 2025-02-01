@@ -61,7 +61,7 @@ window.addEventListener("scroll", function () {
     let mastheadBottom = mastheadHeight - scrollPosition * slowFactor;
 
     // Detect if masthead is visible
-    let isMastheadVisible = mastheadBottom > 0;
+    let isMastheadVisible = slider.getBoundingClientRect().top > 0;
 
     // Apply movement logic
     let mastheadTranslate = Math.min(scrollPosition * slowFactor, mastheadHeight * slowFactor);
