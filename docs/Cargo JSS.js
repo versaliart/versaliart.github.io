@@ -34,5 +34,19 @@ document.addEventListener("DOMContentLoaded", function () {
         eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
     }
 
+    document.addEventListener("scroll", function () {
+        let scrollY = window.scrollY;
+        let header = document.querySelector(".header-section");
 
+        if (!header) {
+            console.error("Header section not found!"); // Debugging
+            return;
+        }
+
+        let headerHeight = header.offsetHeight;
+        let clipValue = Math.min(scrollY / headerHeight, 1) * 100;
+
+        header.style.clipPath = `inset(${clipValue}% 0px 0px 0px)`;
+        console.log(`clip-path updated: inset(${clipValue}% 0px 0px 0px)`);
+    });
 });
