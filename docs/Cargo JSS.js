@@ -49,7 +49,7 @@ window.addEventListener("scroll", function () {
     let masthead = document.querySelector(".header-section");
     let mainContent = document.querySelector(".main-content");
 
-    let slowFactor = 0.5; // Adjust to control how much slower the masthead appears to move
+    let slowFactor = 0.9; // Adjust to control how much slower the masthead appears to move
 
     // Moves the main content **up** at normal speed
     mainContent.style.transform = `translateY(-${scrollPosition}px)`;
