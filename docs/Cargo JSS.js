@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function () {
         
             // Detect if masthead is still visible
             let isMastheadVisible = scrollPosition < sliderStart;
-            if isMastHeadVisible = true; {
+            if (isMastHeadVisible) {
             isAnimating = true;
             requestAnimationFrame(() => {
                 const rect = eyeContainer.getBoundingClientRect();
