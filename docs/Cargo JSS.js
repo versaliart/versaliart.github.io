@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
     const eyeContainer = document.getElementById("eye-container");
-    const maxMoveX = 40;
+    const maxMoveX = 30;
     const maxMoveY = 20;
     const minScale = 0.8; // Minimum squish scale factor
 
