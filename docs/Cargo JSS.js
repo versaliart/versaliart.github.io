@@ -50,8 +50,8 @@ window.addEventListener("scroll", function () {
     let masthead = document.querySelector(".header-section");
     let slider = document.querySelector(".main-content");
 
-    let slowFactor = 0.3;  
-    let fastFactor = 1.3;  
+    let slowFactor = 0.1;  // lower is slower
+    let fastFactor = 2.3;  // higher is faster
 
     let mastheadHeight = masthead.offsetHeight;
     let excessMovement = mastheadHeight * (fastFactor - 1);
