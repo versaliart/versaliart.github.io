@@ -50,30 +50,29 @@ window.addEventListener("scroll", function () {
     let masthead = document.querySelector(".header-section");
     let slider = document.querySelector(".main-content");
 
-    let slowFactor = 0.1;  // lower is slower
-    let fastFactor = 2.3;  // higher is faster
+    let slowFactor = 0.3;  
+    let fastFactor = 1.3;  
 
+    // Get masthead height (assumed full viewport height)
     let mastheadHeight = masthead.offsetHeight;
+
+    // Calculate how much extra movement has occurred
     let excessMovement = mastheadHeight * (fastFactor - 1);
 
-    // Adjust body height to account for extra movement
+    // Adjust body height dynamically
     let newBodyHeight = Math.max(document.documentElement.scrollHeight - excessMovement, window.innerHeight);
     document.body.style.height = `${newBodyHeight}px`;
 
+    // Apply transformations
     let scrollPosition = window.scrollY;
-    let mastheadTranslate, sliderTranslate;
+    let mastheadTranslate = scrollPosition * slowFactor;
 
+    let sliderTranslate;
     if (scrollPosition < mastheadHeight) {
-        // While the masthead is fully in view, use parallax transforms:
-        // • The header moves upward slowly (negative value gives upward movement)
-        // • The slider moves upward faster
-        mastheadTranslate = -scrollPosition * slowFactor;
+        // Slider moves faster while masthead is visible
         sliderTranslate = -scrollPosition * fastFactor;
     } else {
-        // Once the masthead is scrolled past:
-        // • Pin the header so it remains at the top (translateY = 0)
-        // • Continue the main-content’s scroll, but offset by the extra fast movement that occurred
-        mastheadTranslate = 0;
+        // Stop applying fast speed after masthead is covered
         let fastScrollOffset = mastheadHeight * (fastFactor - 1);
         sliderTranslate = -scrollPosition - fastScrollOffset;
     }
