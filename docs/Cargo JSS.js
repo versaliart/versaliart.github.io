@@ -52,24 +52,27 @@ window.addEventListener("scroll", function () {
     let slider = document.querySelector(".main-content");
 
     let slowFactor = 0.3;  // Masthead moves slowly
-    let fastFactor = 1.2;  // Slider moves faster initially
+    let fastFactor = 1.3;  // Slider moves faster initially
 
-    // Get the top position of the slider relative to the document
-    let sliderTop = slider.offsetTop;
+    // Height of the masthead (assumed full viewport height)
+    let mastheadHeight = masthead.offsetHeight;
 
-    // Determine if the masthead is still visible
-    let isMastheadVisible = scrollPosition < sliderTop;
+    // Calculate the bottom position of the masthead (how much is still visible)
+    let mastheadBottom = mastheadHeight - scrollPosition * slowFactor;
+
+    // Detect if masthead is visible
+    let isMastheadVisible = mastheadBottom > 0;
 
     // Apply movement logic
-    let mastheadTranslate = Math.min(scrollPosition * slowFactor, sliderTop * slowFactor);
+    let mastheadTranslate = Math.min(scrollPosition * slowFactor, mastheadHeight * slowFactor);
 
     let sliderTranslate;
     if (isMastheadVisible) {
-        // Slider moves faster only while masthead is visible
-        sliderTranslate = Math.max(-scrollPosition * fastFactor, -sliderTop * fastFactor);
+        // Slider moves faster while masthead is still visible
+        sliderTranslate = Math.max(-scrollPosition * fastFactor, -mastheadHeight * fastFactor);
     } else {
-        // Once masthead is covered, slider moves at normal speed (directly mapped to scroll)
-        sliderTranslate = -sliderTop * fastFactor; // Stop applying extra speed
+        // Once masthead is covered, slider moves at normal scroll speed
+        sliderTranslate = -mastheadHeight * fastFactor;
     }
 
     // Apply transformations
