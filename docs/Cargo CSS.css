@@ -58,24 +58,94 @@ section {
     margin-right: auto;
 }
 
-section.header-section {
-    margin-bottom: 3%;
-    margin-top: 6%;
-}
-/* Ensure the section is visible */
-.header-section {
+/* ==========================
+   1. Full-Screen Landing Effect
+   ========================== */
+   .header-section {
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    position: relative;
+    width: 100%;
+    z-index: 2;
+    background: white;
+    clip-path: inset(0 0 0 0); /* Ensures it's fully visible initially */
+    transition: clip-path 0.8s ease-in-out;
 }
 
-/* Ensure the eye is displayed */
+.main-content {
+    position: relative;
+    z-index: 1;
+    background-color: #ffffff;
+    padding: 2rem;
+}
+
+
+/*====================
+
+
+/* Keep everything in-line */
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* Adjust spacing between elements */
+    flex-wrap: nowrap;
+}
+
+/* Ensure both h1 elements have the same font size */
+.header-container h1 {
+    font-size: 3rem;
+    white-space: nowrap;
+    margin: 0;
+}
+
 #eye-svg {
     height: 100px;
-    width: auto;
+    width: 200px;
     max-width: 200px;
     display: block;
+    transition: none !important;
+}
+
+/* DO NOT block transform for the iris */
+#iris {
+    transition: transform 0.2s ease-out;
+}
+
+/* Block unwanted Cargo transformations, but allow movement */
+#eye-container {
+    transform: none !important;
+    transition: none !important;
+}
+
+
+
+
+/* Fix the eye size and prevent unwanted resizing */
+#eye-svg {
+    height: 100px; /* Fixed height */
+    width: 200px; /* Fixed width */
+    max-width: 200px;
+    display: block;
+    transition: none !important; /* Prevent any transitions */
+    transform: none !important; /* Ensure no scale or transformations */
+}
+
+/* Prevent focus effects */
+#eye-svg:focus,
+#eye-svg:active {
+    outline: none;
+    transform: none !important;
+}
+
+#eye-svg image {
+    display: block !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform-origin: center !important;
+    will-change: auto !important;
 }
 
 section.link-section {
@@ -89,15 +159,16 @@ section.text-section {
     margin-right: auto;
 }
 
+section.index {
+    max-width: 864px;
+}
+
 section.gallery,
 section.eye,
 section.content-section {
     max-width: 100%;
 }
 
-section.index {
-    max-width: 80%;
-}
 
 section.gallery .thumbnail,
 section.gallery .zoomable {
@@ -107,11 +178,12 @@ section.gallery .zoomable {
 }
 
 /* Hover effect for gallery images */
-section.gallery .thumbnail:hover,
-section.gallery .zoomable:hover {
-    transform: scale(1.1); /* Enlarge image on hover */
-    z-index: 10; /* Higher stacking order to bring the hovered image on top */
+section.gallery .thumbnail:not(#eye-svg image),
+section.gallery .zoomable:not(#eye-svg image) {
+    transform: scale(1.1);
+    z-index: 10;
 }
+
 
 /* ==========================
    4. Typography
@@ -246,4 +318,5 @@ hr.strong {
     section {
         max-width: 75%;
     }
+}
 }
