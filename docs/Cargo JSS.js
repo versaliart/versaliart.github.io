@@ -46,15 +46,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 window.addEventListener('scroll', function () {
-    let scrollPosition = window.scrollY; // Get scroll position
+    let scrollPosition = window.scrollY; // Get the scroll position
     let masthead = document.querySelector('.header-content');
-    let slowFactor = 0.2; // Adjust to make the masthead move slower
+    let siteWrap = document.querySelector('.site-wrap'); // The main content
 
-    if (scrollPosition > 100) { // Adjust threshold as needed
-        masthead.style.opacity = Math.max(1 - scrollPosition / 300, 10); // Fades out
-        masthead.style.transform = `translateY(-${scrollPosition * slowFactor}px)`; // Moves up more slowly
-    } else {
-        masthead.style.opacity = 1;
-        masthead.style.transform = 'translateY(0)';
-    }
+    let slowFactor = 0.4; // Adjust this to control how much slower the masthead moves
+
+    // Moves the masthead up slowly
+    masthead.style.transform = `translateY(-${scrollPosition * slowFactor}px)`;
+
+    // Ensures the content moves normally
+    siteWrap.style.transform = `translateY(0)`;
 });
