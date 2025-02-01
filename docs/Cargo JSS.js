@@ -57,7 +57,7 @@ window.addEventListener("scroll", function () {
     // Get slider's top position relative to viewport
     let sliderTop = slider.getBoundingClientRect().top;
 
-    // Check if masthead is still visible
+    // Detect if masthead is still visible
     let isMastheadVisible = sliderTop > 0;
 
     // Apply movement logic
@@ -68,8 +68,9 @@ window.addEventListener("scroll", function () {
         // Slider moves faster while masthead is still visible
         sliderTranslate = -scrollPosition * fastFactor;
     } else {
-        // Once masthead is covered, slider moves at normal scroll speed
-        sliderTranslate = -slider.offsetTop; // Uses normal scrolling speed
+        // Once masthead is covered, stop applying extra speed but continue at normal scroll rate
+        let excessScroll = scrollPosition - (slider.offsetTop / fastFactor);
+        sliderTranslate = -scrollPosition + excessScroll;
     }
 
     // Apply transformations
