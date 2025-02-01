@@ -1,9 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
     const eyeContainer = document.getElementById("eye-container");
-    const maxMoveX = 40;
+    const maxMoveX = 50;
     const maxMoveY = 20;
-    const minScale = 0.7; // Minimum scale factor when fully squished
+    const minScale = 0.8; // Minimum scale factor when fully squished
 
     document.addEventListener("mousemove", (event) => {
         const rect = eyeContainer.getBoundingClientRect();
@@ -34,8 +34,5 @@ document.addEventListener("DOMContentLoaded", function () {
         eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
     }
 
-    // Example: Scale the eye when clicking anywhere
-    document.addEventListener("click", () => {
-        scaleEye(1.2);
-    });
+
 });
