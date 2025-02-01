@@ -42,3 +42,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 });
+
+window.addEventListener('scroll', function () {
+    let scrollPosition = window.scrollY; // Get scroll position
+    let masthead = document.querySelector('.masthead');
+    
+    if (scrollPosition > 100) { // Adjust threshold as needed
+        masthead.style.opacity = Math.max(1 - scrollPosition / 300, 0); // Fades out
+        masthead.style.transform = `translateY(-${scrollPosition / 2}px)`; // Moves up
+    } else {
+        masthead.style.opacity = 1;
+        masthead.style.transform = 'translateY(0)';
+    }
+});
