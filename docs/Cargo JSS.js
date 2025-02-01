@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 window.addEventListener('scroll', function () {
     let scrollPosition = window.scrollY; // Get scroll position
-    let masthead = document.querySelector('.masthead');
+    let masthead = document.querySelector('.header-content');
     
     if (scrollPosition > 100) { // Adjust threshold as needed
         masthead.style.opacity = Math.max(1 - scrollPosition / 300, 0); // Fades out
