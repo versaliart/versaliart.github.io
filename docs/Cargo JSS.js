@@ -40,14 +40,5 @@ document.addEventListener("DOMContentLoaded", function () {
         eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
     }
 
-    document.addEventListener("scroll", function () {
-        let scrollPosition = window.scrollY;
-        let header = document.querySelector(".header-section");
-        let headerHeight = header.offsetHeight;
 
-        let clipValue = Math.min(scrollPosition / headerHeight, 1) * 100;
-
-        // Reverse the clipping direction
-        header.style.clipPath = `inset(0px 0px ${clipValue}% 0px)`;
-    });
 });
