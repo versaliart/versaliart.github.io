@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
 window.addEventListener('scroll', function () {
     let scrollPosition = window.scrollY; // Get the scroll position
-    let masthead = document.querySelector(".header-section");
-    let siteWrap = document.querySelector(".main-content"); // The main content
+    let masthead = document.querySelector('.header-content');
+    let siteWrap = document.querySelector('.site-wrap'); // The main content
 
     let slowFactor = 0.4; // Adjust this to control how much slower the masthead moves
 
