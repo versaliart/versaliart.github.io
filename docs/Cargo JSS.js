@@ -8,16 +8,17 @@ document.addEventListener("DOMContentLoaded", function () {
     let isAnimating = false;
 
     document.addEventListener("mousemove", (event) => {
+        let mastheadHeight = masthead.offsetHeight;
+        let sliderStart = mastheadHeight; // Slider initially starts right after masthead
+    
+        // Detect if masthead is still visible
+        let isMastheadVisible = scrollPosition < sliderStart;
+        if (isMastHeadVisible) {
         if (!isAnimating) {
             let scrollPosition = window.scrollY; // Current scroll position
             let slider = document.querySelector(".main-content");
         
-            let mastheadHeight = masthead.offsetHeight;
-            let sliderStart = mastheadHeight; // Slider initially starts right after masthead
-        
-            // Detect if masthead is still visible
-            let isMastheadVisible = scrollPosition < sliderStart;
-            if (isMastHeadVisible) {
+
             isAnimating = true;
             requestAnimationFrame(() => {
                 const rect = eyeContainer.getBoundingClientRect();
