@@ -40,19 +40,14 @@ document.addEventListener("DOMContentLoaded", function () {
         eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
     }
 
-    // Scroll effect for header clipping
     document.addEventListener("scroll", function () {
         let scrollY = window.scrollY;
         let header = document.querySelector(".header-section");
-
-        if (!header) {
-            console.error("Header section not found!");
-            return;
-        }
-
         let headerHeight = header.offsetHeight;
-        let clipValue = Math.min(scrollY / headerHeight, 1) * 100;
-
-        header.style.clipPath = `inset(${clipValue}% 0px 0px 0px)`;
+        
+        let progress = Math.min(scrollY / headerHeight, 1);
+    
+        header.style.opacity = 1 - progress; // Fades out
     });
+    
 });
