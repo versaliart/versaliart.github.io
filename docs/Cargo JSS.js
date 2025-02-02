@@ -8,17 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let isAnimating = false;
 
     document.addEventListener("mousemove", (event) => {
-        let mastheadHeight = masthead.offsetHeight;
-        let sliderStart = mastheadHeight; // Slider initially starts right after masthead
-    
-        // Detect if masthead is still visible
-        let isMastheadVisible = scrollPosition < sliderStart;
-        if (isMastHeadVisible) {
         if (!isAnimating) {
-            let scrollPosition = window.scrollY; // Current scroll position
-            let slider = document.querySelector(".main-content");
-        
-
             isAnimating = true;
             requestAnimationFrame(() => {
                 const rect = eyeContainer.getBoundingClientRect();
@@ -46,7 +36,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 isAnimating = false;
             });
         }
-    }
     });
 
     // Function to scale the entire eye
