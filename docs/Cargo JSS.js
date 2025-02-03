@@ -21,28 +21,10 @@ document.addEventListener("pageshow", function () {
     }
 
     // 🖱️ Mouse Tracking for Desktop
-    document.addEventListener("mousemove", (event) => {
+    document.addEventListener("mousemove", () => {
         stopIdleAnimation();
         isAnimating = true;
-        requestAnimationFrame(() => {
-            const rect = eyeContainer.getBoundingClientRect();
-            const eyeCenterX = rect.left + rect.width / 2;
-            const eyeCenterY = rect.top + rect.height / 2;
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-
-            const deltaX = event.clientX - eyeCenterX;
-            const deltaY = event.clientY - eyeCenterY;
-
-            const percentX = deltaX / (screenWidth / 2);
-            const percentY = deltaY / (screenHeight / 2);
-
-            const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, percentX * maxMoveX));
-            const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, percentY * maxMoveY));
-
-            updateEyePosition(moveX, moveY);
-            resetIdleTimer();
-        });
+        resetIdleTimer();
     });
 
     // 📱 Gyroscope / Accelerometer-Based Movement for Mobile
@@ -65,22 +47,14 @@ document.addEventListener("pageshow", function () {
 
     function attachGyroscope() {
         if (window.DeviceOrientationEvent) {
-            window.addEventListener("deviceorientation", (event) => {
-                if (event.beta !== null && event.gamma !== null) {
-                    stopIdleAnimation();
-                    const tiltX = event.beta;
-                    const tiltY = event.gamma;
-
-                    const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, (tiltY / 45) * maxMoveX));
-                    const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, (tiltX / 45) * maxMoveY));
-
-                    updateEyePosition(moveX, moveY);
-                    resetIdleTimer();
-                } else {
-                    console.log("Gyroscope data not available, switching to Accelerometer...");
-                    useAccelerometer();
-                }
+            window.addEventListener("deviceorientation", () => {
+                stopIdleAnimation();
+                isAnimating = true;
+                resetIdleTimer();
             });
+        } else {
+            console.log("Gyroscope not supported, switching to Accelerometer...");
+            useAccelerometer();
         }
     }
 
@@ -89,29 +63,23 @@ document.addEventListener("pageshow", function () {
             console.log("Neither Gyroscope nor Accelerometer is available.");
             return;
         }
-
-        window.addEventListener("devicemotion", (event) => {
-            if (event.accelerationIncludingGravity) {
-                stopIdleAnimation();
-                const accelX = event.accelerationIncludingGravity.x;
-                const accelY = event.accelerationIncludingGravity.y;
-
-                const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, accelX * 2));
-                const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, accelY * 2));
-
-                updateEyePosition(moveX, moveY);
-                resetIdleTimer();
-            }
+        window.addEventListener("devicemotion", () => {
+            stopIdleAnimation();
+            isAnimating = true;
+            resetIdleTimer();
         });
     }
 
-    // ⏳ Idle Animation: Moves Eye Slightly When No Interaction
+    // ⏳ Idle Animation
     function startIdleAnimation() {
         if (idleInterval) return;
+
+        console.log("Idle animation started"); // Debugging log
 
         let angle = 0;
         idleInterval = setInterval(() => {
             if (!isAnimating) {
+                console.log("Idle animation frame", angle); // Debugging log
                 angle += 0.05;
                 const idleX = Math.sin(angle) * 5;
                 const idleY = Math.cos(angle) * 3;
@@ -132,6 +100,7 @@ document.addEventListener("pageshow", function () {
         clearTimeout(idleTimeout);
         idleTimeout = setTimeout(() => {
             isAnimating = false;
+            console.log("isAnimating reset to false, idle can run"); // Debugging log
             startIdleAnimation();
         }, 3000);
     }
