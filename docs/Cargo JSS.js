@@ -1,13 +1,21 @@
 console.log("Script version 2.3 loaded!")
-document.addEventListener("DOMContentLoaded", function () {
-    const iris = document.getElementById("iris");
-    const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
-    const eyeContainer = document.getElementById("eye-container");
-};
+
 document.addEventListener("pageshow", function () {
-    const iris = document.getElementById("iris");
-    const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
-    const eyeContainer = document.getElementById("eye-container");
+    document.addEventListener("DOMContentLoaded", function () {
+        console.log("DOM fully loaded!");
+    
+        const iris = document.getElementById("iris");
+        const eyeSvg = document.getElementById("eye-svg");
+        const eyeContainer = document.getElementById("eye-container");
+    
+        if (!iris || !eyeSvg || !eyeContainer) {
+            console.error("🚨 Eye elements not found! Check IDs in HTML.");
+            return;
+        }
+    
+        console.log("✅ Eye elements found!", { iris, eyeSvg, eyeContainer });
+    });
+    
     const maxMoveX = 30;
     const maxMoveY = 20;
     const minScale = 0.8; // Minimum squish scale factor
