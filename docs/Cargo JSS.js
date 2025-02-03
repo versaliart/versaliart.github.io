@@ -1,4 +1,5 @@
-document.addEventListener("DOMContentLoaded", function () {
+console.log("script loaded!")
+document.addEventListener("pageshow", function () {
     const iris = document.getElementById("iris");
     const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
     const eyeContainer = document.getElementById("eye-container");
@@ -10,6 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.addEventListener("mousemove", (event) => {
         if (!isAnimating) {
+            console.log("mousemove event!")
             isAnimating = true;
             requestAnimationFrame(() => {
                 const rect = eyeSvg.getBoundingClientRect();
