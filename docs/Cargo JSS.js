@@ -1,3 +1,6 @@
+
+/*  VERSION 2.01   */
+
 let isAnimating = false;
 let idleInterval = null;
 let idleTimeout = null;
