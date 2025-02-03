@@ -1,22 +1,7 @@
-console.log("Script version 2.3 loaded!")
-
-document.addEventListener("pageshow", function () {
-    document.addEventListener("DOMContentLoaded", function () {
-        console.log("DOM fully loaded!");
-    
-        const iris = document.getElementById("iris");
-        const eyeSvg = document.getElementById("eye-svg");
-        const eyeContainer = document.getElementById("eye-container");
-    
-        if (!iris || !eyeSvg || !eyeContainer) {
-            console.error("🚨 Eye elements not found! Check IDs in HTML.");
-            return;
-        }
-    
-        console.log("✅ Eye elements found!", { iris, eyeSvg, eyeContainer });
-    });
-    
-    
+document.addEventListener("DOMContentLoaded", function () {
+    const iris = document.getElementById("iris");
+    const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
+    const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
     const maxMoveY = 20;
     const minScale = 0.8; // Minimum squish scale factor
@@ -24,7 +9,6 @@ document.addEventListener("pageshow", function () {
     let isAnimating = false;
 
     document.addEventListener("mousemove", (event) => {
-        console.log("mousemove detected at:", event.clientX, event.clientY);
         if (!isAnimating) {
             isAnimating = true;
             requestAnimationFrame(() => {
@@ -49,7 +33,7 @@ document.addEventListener("pageshow", function () {
 
                 // Apply transformations (Fix: Use `style.transform` instead of `setAttribute`)
                 iris.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`;
-                console.log("squish!")
+                
                 isAnimating = false;
             });
         }
