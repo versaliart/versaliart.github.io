@@ -1,14 +1,13 @@
 
 /*  VERSION 2.01   */
 
+document.addEventListener("pageshow", function () {
 let isAnimating = false;
 let idleInterval = null;
 let idleTimeout = null;
 let lastMoveX = 0;
 let lastMoveY = 0;
 let lastAlpha = 0, lastBeta = 0, lastGamma = 0;
-
-document.addEventListener("pageshow", function () {
     const iris = document.getElementById("iris");
     const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
