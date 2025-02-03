@@ -1,5 +1,6 @@
-document.addEventListener("pageshow", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
+    const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
     const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
     const maxMoveY = 20;
@@ -11,7 +12,7 @@ document.addEventListener("pageshow", function () {
         if (!isAnimating) {
             isAnimating = true;
             requestAnimationFrame(() => {
-                const rect = eyeContainer.getBoundingClientRect();
+                const rect = eyeSvg.getBoundingClientRect();
                 const eyeCenterX = rect.left + rect.width / 2;
                 const eyeCenterY = rect.top + rect.height / 2;
                 const screenWidth = window.innerWidth;
@@ -30,16 +31,16 @@ document.addEventListener("pageshow", function () {
                 const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
                 const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
 
-                // Apply transformations
-                iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
+                // Apply transformations (Fix: Use `style.transform` instead of `setAttribute`)
+                iris.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`;
                 
                 isAnimating = false;
             });
         }
     });
 
-    // Function to scale the entire eye
+    // Function to scale the entire eye (Fix: Use `style.transform`)
     function scaleEye(scaleFactor) {
-        eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
+        eyeContainer.style.transform = `scale(${scaleFactor})`;
     }
 });
