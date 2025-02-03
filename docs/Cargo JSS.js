@@ -1,5 +1,6 @@
 
-/*  VERSION 2.01   */
+/*  VERSION 2.02   */
+console.log("Eye animation script loaded and running!");
 
 document.addEventListener("pageshow", function () {
 let isAnimating = false;
