@@ -9,6 +9,12 @@ document.addEventListener("pageshow", function () {
     const maxMoveY = 20;
     const minScale = 0.8; // Minimum squish scale factor
 
+        // 🌍 Detect Mobile Device and Enable Motion Sensors
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+            enableGyroscope();
+        }
+    
+
     if (!iris || !eyeContainer) {
         console.error("Eye elements not found!");
         return;
@@ -105,10 +111,6 @@ document.addEventListener("pageshow", function () {
         }, 3000);
     }
 
-    // 🌍 Detect Mobile Device and Enable Motion Sensors
-    if (/Mobi|Android/i.test(navigator.userAgent)) {
-        enableGyroscope();
-    }
 
     startIdleAnimation();
 });
