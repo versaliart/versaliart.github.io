@@ -16,6 +16,7 @@ document.addEventListener("pageshow", function () {
         console.log("✅ Eye elements found!", { iris, eyeSvg, eyeContainer });
     });
     
+    
     const maxMoveX = 30;
     const maxMoveY = 20;
     const minScale = 0.8; // Minimum squish scale factor
