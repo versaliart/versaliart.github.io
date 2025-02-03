@@ -68,7 +68,7 @@ document.addEventListener("pageshow", function () {
           // Get the stored link from the meta tag
         const svgLink = document.getElementById("down-arrow-url").getAttribute("data-url");
 
-        
+
 });
 
 
