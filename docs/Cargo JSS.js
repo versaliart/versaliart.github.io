@@ -1,4 +1,9 @@
-console.log("script loaded!")
+console.log("Script version 2.3 loaded!")
+document.addEventListener("DOMContentLoaded", function () {
+    const iris = document.getElementById("iris");
+    const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
+    const eyeContainer = document.getElementById("eye-container");
+};
 document.addEventListener("pageshow", function () {
     const iris = document.getElementById("iris");
     const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
