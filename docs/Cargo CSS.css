@@ -93,7 +93,6 @@ section {
     position: relative;
     z-index: 20;
     background-color: #ffffff;
-    padding-top: 5rem;
     margin: 0 !important;
 }
 
@@ -132,12 +131,34 @@ section {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    max-width: 864px;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5rem;
-    margin-bottom: 5rem;
-    height: min(100vh, 100svh);
+    max-width: min(864,100svw);
+    margin-left: min(5rem,5svw);
+    margin-right: min(5rem,5svw);
+    padding: 2rem;
+}
+
+.intro-section {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        max-width: min(864,100svw);
+        margin-left: min(5rem,5svw);
+        margin-right: min(5rem,5svw);
+        padding: 2rem;
+        height: min(100vh, 100svh);
+}
+
+.section-white {
+    background-color: white;
+    color: black;
+    width: 100%;
+}
+
+.section-black {
+    background-color: black;
+    color: white;
+    width: 100%;
 }
 
 .index {
@@ -151,21 +172,27 @@ section {
     padding: 5rem;
 }
 
-section.front-gallery {
-padding-top: 5rem;
-padding-bottom: 5rem;
-background-color: black;
+section.black-gallery {
+    background-color: black;
+    align-items: center;
+    justify-content: center;
 }
 
+section.black-gallery,
 section.gallery,
 section.eye,
 section.content-section {
-    max-width: 100%;
-    min-height: 50vh;
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
+    min-height: min(50vh,50svh);
 }
 
 .content-section {
-    width: 100%;
+    width: auto;
     padding: 0;
     margin: 5rem;
     align-items: center;
@@ -311,8 +338,6 @@ html, body {
     overflow-y: hidden; /* Prevent body from scrolling */
 }
 
-dynamic-svg {}
-
 .down-arrow-container {
     position: absolute;
     bottom: 20px; /* Adjust spacing from the bottom */
@@ -327,7 +352,7 @@ dynamic-svg {}
 
 #down-arrow {
     position: absolute;
-    align
+    align-items: center;
     z-index: 101; /* If needed, give the arrow a higher z-index than its parent */
     bottom: 0;
   }
