@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("pageshow", function () {
     const iris = document.getElementById("iris");
     const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
@@ -42,5 +42,17 @@ document.addEventListener("DOMContentLoaded", function () {
     function scaleEye(scaleFactor) {
         eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
     }
+
+    // Function to link up SVG Arrows
+          // Get the stored link from the meta tag
+          const svgLink = document.getElementById("down-arrow-meta").getAttribute("data-url");
+
+          // Apply the link to the down-arrow SVG
+          document.querySelectorAll(".dynamic-svg").forEach(svg => {
+              svg.setAttribute("xlink:href", svgLink);
+              svg.setAttribute("href", svgLink); // Some browsers require this for compatibility
+          });
 });
 
+// Get the stored link from the meta tag
+const svgLink = document.getElementById("down-arrow-url").getAttribute("data-url");

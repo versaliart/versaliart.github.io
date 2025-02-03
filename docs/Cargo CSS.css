@@ -34,154 +34,193 @@
    ========================== */
 .page-layout {
     min-width: 30%;
-    margin: 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem; /* Add padding for spacing */
     --page-layout-mix: multiply;
 }
 
 .page-content {
     align-items: flex-start;
-    width: 100%;
-    background-color: #ffffff;
-    padding: 1rem;
 }
 
 /* ==========================
    3. Section Styles
    ========================== */
 section {
-    max-width: 70%;
     margin-left: auto;
     margin-right: auto;
 }
 
-/* ==========================
-   1. Full-Screen Landing Effect
-   ========================== */
-   .header-section {
-    height: 100vh;
+.header-section {
+    position: fixed;
+    margin: 0 !important;
+    padding: 0 !important;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: min(100vh, 100svh);
+    width: 100%;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    position: relative;
-    width: 100%;
-    z-index: 2;
-    background: white;
-    clip-path: inset(0 0 0 0); /* Ensures it's fully visible initially */
-    transition: clip-path 0.8s ease-in-out;
+    z-index: 10;
+    background-color: black;
+    transform: none;
+}
+
+
+.inline-content {
+    display: flex;           /* Make its children (h2, svg, h2) align horizontally */
+    flex-direction: row;     /* This is the default, but makes it explicit */
+    align-items: center;     /* Centers the items vertically */
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+
+.header-placeholder {
+    height: 100vh; /* Same height as the masthead */
+}
+
+.footer-placeholder {
+    position: absolute;
+    height: 5vh;
 }
 
 .main-content {
     position: relative;
-    z-index: 1;
+    z-index: 20;
     background-color: #ffffff;
-    padding: 2rem;
+    padding-top: 5rem;
+    margin: 0 !important;
 }
 
-
-/*====================
-
-
-/* Keep everything in-line */
-.header-container {
+.sticky-nav {
+    position: sticky;  /* Stick to the top as you scroll */
+    top: 0;            /* Adjusts how far from the top the nav stays */
     display: flex;
-    align-items: center;
+    flex-direction: row;          /* Align items in a row */
+    justify-content: space-around; /* Evenly distribute space between items */
+    align-items: center;          /* Vertically center the items */
+    background-color: black;       /* Set a background to prevent content bleed-through */
+    padding: 1rem;                /* Add some spacing */
+    z-index: 100;                 /* Ensure it stays on top of other elements */
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1); /* Optional: add a subtle shadow */
+    width: 100%;
+    min-height: 54px;
+  }
+  
+  .sticky-nav a {
+ text-decoration: none;
+ font-family: "Milanesa Serif";
+ font-weight: 600;
+ font-size: 2rem;
+ font-variant: small-caps;
+ color: white;
+  }
+  .sticky-nav a:active {
+    color: #9a0034;
+     }
+  .sticky-nav a:hover {
+    color: #9a0034;
+     }
+
+.text-section {
+    display: flex;
+    flex-direction: column;
     justify-content: center;
-    gap: 15px; /* Adjust spacing between elements */
-    flex-wrap: nowrap;
-}
-
-/* Ensure both h1 elements have the same font size */
-.header-container h1 {
-    font-size: 3rem;
-    white-space: nowrap;
-    margin: 0;
-}
-
-#eye-svg {
-    height: 100px;
-    width: 200px;
-    max-width: 200px;
-    display: block;
-    transition: none !important;
-}
-
-/* DO NOT block transform for the iris */
-#iris {
-    transition: transform 0.2s ease-out;
-}
-
-/* Block unwanted Cargo transformations, but allow movement */
-#eye-container {
-    transform: none !important;
-    transition: none !important;
-}
-
-
-
-
-/* Fix the eye size and prevent unwanted resizing */
-#eye-svg {
-    height: 100px; /* Fixed height */
-    width: 200px; /* Fixed width */
-    max-width: 200px;
-    display: block;
-    transition: none !important; /* Prevent any transitions */
-    transform: none !important; /* Ensure no scale or transformations */
-}
-
-/* Prevent focus effects */
-#eye-svg:focus,
-#eye-svg:active {
-    outline: none;
-    transform: none !important;
-}
-
-#eye-svg image {
-    display: block !important;
-    max-width: none !important;
-    max-height: none !important;
-    transform-origin: center !important;
-    will-change: auto !important;
-}
-
-section.link-section {
-    margin-bottom: 2rem;
-}
-
-section.text-section {
-    margin-bottom: 3%;
-    max-width: 70%;
+    align-items: center;
+    max-width: 864px;
     margin-left: auto;
     margin-right: auto;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
+    height: min(100vh, 100svh);
 }
 
-section.index {
-    max-width: 864px;
+.index {
+    width: auto;
+    max-width: min(80vw,100svw);
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
+    background-color: white;
+    padding: 5rem;
+}
+
+section.front-gallery {
+padding-top: 5rem;
+padding-bottom: 5rem;
+background-color: black;
 }
 
 section.gallery,
 section.eye,
 section.content-section {
     max-width: 100%;
+    min-height: 50vh;
 }
 
+.content-section {
+    width: 100%;
+    padding: 0;
+    margin: 5rem;
+    align-items: center;
+}
 
+/* Ensure default state */
+.index .thumbnail,
+.index .zoomable,
 section.gallery .thumbnail,
 section.gallery .zoomable {
-    position: relative; /* Enable stacking context */
-    transition: transform 0.3s ease, opacity 0.3s ease; /* Smooth transition for transform and opacity */
-    z-index: 1; /* Default stacking order */
+    position: relative;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 1;
+    transform: scale(1); /* Ensure default size */
 }
 
-/* Hover effect for gallery images */
-section.gallery .thumbnail:not(#eye-svg image),
-section.gallery .zoomable:not(#eye-svg image) {
-    transform: scale(1.1);
-    z-index: 10;
+/* Apply zoom effect only when hovered */
+.index .thumbnail:hover,
+.index .zoomable:hover,
+section.gallery .thumbnail:hover,
+section.gallery .zoomable:hover {
+    transform: scale(1.1); /* Zoom effect */
+    z-index: 10; /* Bring to front */
+}
+
+.centered-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;      /* Full width container */
+    max-width: 1200px; /* Optional: constrain maximum width */
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.text-container {
+    min-width: min(10vw,10svw);
+}
+
+/* Align text appropriately */
+.left-text {
+    text-align: right;  /* Ensures text is flush right */
+    justify-content: flex-end;  /* Pushes text to the right */
+    display: flex;
+}
+
+.right-text {
+    text-align: left; /* Ensures text is flush left */
+    justify-content: flex-start; /* Pushes text to the left */
+    display: flex;
+}
+
+/* The SVG container doesn't need extra width; it will be sized naturally */
+.center-svg {
+    flex: 0 0 auto;
 }
 
 
@@ -201,32 +240,27 @@ h1 {
     font-size: 4rem;
     line-height: 1;
     color: #9a0034;
+    text-align: center;
+    letter-spacing: .022em;
 }
 
 h2 {
     font-family: Milanesa Serif;
     font-weight: 400;
     font-size: 3rem;
-    color: #373737;
-    line-height: 1;}
-
-/* Reduce space between h1 and h2 in the header-section */
-.header-section h1, 
-.header-section h2 {
-    margin: 0; /* Remove default margins */
-    padding: 0; /* Ensure no padding interferes */
+    color: #ffffff;
+    line-height: 1;
+    text-align: center;
+    letter-spacing: .030em;
 }
-
-.header-section h1 {
-    margin-bottom: 1rem; /* Add spacing below headers */
-}
-
 
 h3 {
     font-family: "Milanesa Serif";
     font-weight: 600;
-    font-size: 3.5rem;
-    color: #333;
+    font-size: 2rem;
+    color: #9a0034;
+    text-align: center;
+    letter-spacing: 0em;
 }
 
 bodycopy {
@@ -268,55 +302,107 @@ hr.strong {
     border-radius: 2px; /* Rounded ends */
 }
 
-
-/* ==========================
-   5. Mobile Responsive Design
-   ========================== */
-@media (max-width: 768px) {
-    .page-layout {
-        min-width: 100%;
-        padding: 0 1rem;
-    }
-
-    section {
-        max-width: 90%;
-    }
-
-    section.header-section {
-        padding-top: 0rem;
-        padding-bottom: 1rem;
-    }
-
-    section.text-section {
-        max-width: 95%;
-        padding-bottom: 1rem;
-    }
-
-    section.gallery {
-        max-width: 100%;
-    }
-
-    body {
-        font-size: 90%; /* Slightly smaller font for mobile */
-    }
-
-    h1, h2, h3 {
-        font-size: 0.50rem; /* Adjust heading sizes */
-	line-height: 1;
-	font-style: normal;
-}
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    overflow-y: hidden; /* Prevent body from scrolling */
 }
 
-/* ==========================
-   6. Larger Screens
-   ========================== */
-@media (min-width: 1024px) {
-    .page-layout {
-        max-width: 90%;
-    }
+dynamic-svg {}
 
-    section {
-        max-width: 75%;
-    }
+.down-arrow-container {
+    position: absolute;
+    bottom: 20px; /* Adjust spacing from the bottom */
+/*     left: 50%;
+    transform: translateX(-50%); */
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 101; /* Ensure it's above other elements */
 }
+
+#down-arrow {
+    position: absolute;
+    align
+    z-index: 101; /* If needed, give the arrow a higher z-index than its parent */
+    bottom: 0;
+  }
+
+/* ############## EYEBALL ############### */
+
+/* Block unwanted Cargo transformations, but allow movement */
+#eye-container {
+    transform: none !important;
+    transition: none !important;
 }
+
+/* Fix the eye size and prevent unwanted resizing */
+#eye-svg {
+    height: 100px; /* Fixed height */
+    width: 200px; /* Fixed width */
+    max-width: 200px;
+    display: block;
+    transition: none !important; /* Prevent any transitions */
+    transform: none !important; /* Ensure no scale or transformations */
+}
+
+/* Prevent focus effects */
+#eye-svg:focus,
+#eye-svg:active {
+    outline: none;
+    transform: none !important;
+}
+
+#eye-svg image {
+    display: block !important;
+    max-width: none !important;
+    max-height: none !important;
+    transform-origin: center !important;
+    will-change: auto !important;
+}
+
+/* DO NOT block transform for the iris */
+#iris {
+    transition: transform 0.2s ease-out;
+}
+
+/* ############################# */
+
+.parallax {
+    perspective: 1px;
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background-color: black;
+  }
+  
+  .parallax__layer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+  .parallax__layer--base {
+    transform: translateZ(0); /* Negative Z values scroll slower than positive ones */
+  }
+  .parallax__layer--back {
+    transform: translateZ(-1px) scale(2);
+  }
+  .parallax__layer--deep {
+    transform: translateZ(-2px) scale(3);
+  }
+
+  .parallax__group {
+    position: relative;
+    height: 100vh;
+    transform-style: preserve-3d;
+  }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
