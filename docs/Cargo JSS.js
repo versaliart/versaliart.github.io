@@ -26,10 +26,12 @@ let lastAlpha = 0, lastBeta = 0, lastGamma = 0;
     }
 
     function updateEyePosition(moveX, moveY) {
+        console.log(`Updating position: X=${moveX}, Y=${moveY}`); // Debug log
         const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
         const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
         iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
     }
+    
 
     // 🖱️ Mouse Tracking for Desktop
     document.addEventListener("mousemove", (event) => {
