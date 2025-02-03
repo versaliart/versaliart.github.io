@@ -1,4 +1,4 @@
-document.addEventListener("pageshow", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
     const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
