@@ -35,7 +35,7 @@ document.addEventListener("pageshow", function () {
 
                 // Apply transformations (Fix: Use `style.transform` instead of `setAttribute`)
                 iris.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`;
-                
+                console.log("squish!")
                 isAnimating = false;
             });
         }
