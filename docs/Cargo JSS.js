@@ -38,8 +38,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Function to scale the entire eye. DO NOT REMOVE THIS!!
-/*     function scaleEye(scaleFactor) {
-        eyeContainer.setAttribute("transform", `scale(${scaleFactor})`);
-    } */
+
 });
