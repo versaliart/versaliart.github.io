@@ -42,9 +42,11 @@ document.addEventListener("pageshow", function () {
         }
     });
 
-    // Mobile: Gyroscope-Based Eye Movement
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener("deviceorientation", (event) => {
+
+// Mobile: Gyroscope or Accelerometer-Based Eye Movement
+if (window.DeviceOrientationEvent) {
+    window.addEventListener("deviceorientation", (event) => {
+        if (event.beta !== null && event.gamma !== null) { // Ensure valid data
             const tiltX = event.beta; // -180 to 180 (front to back tilt)
             const tiltY = event.gamma; // -90 to 90 (side-to-side tilt)
 
@@ -52,6 +54,31 @@ document.addEventListener("pageshow", function () {
             const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, (tiltX / 45) * maxMoveY));
 
             updateEyePosition(moveX, moveY);
+        } else {
+            console.log("Gyroscope data not available, switching to Accelerometer...");
+            useAccelerometer();
+        }
+    });
+} else {
+    console.log("Gyroscope not supported, switching to Accelerometer...");
+    useAccelerometer();
+}
+
+// Alternative: Use Accelerometer if No Gyro
+function useAccelerometer() {
+    if (window.DeviceMotionEvent) {
+        window.addEventListener("devicemotion", (event) => {
+            const accelX = event.accelerationIncludingGravity.x;
+            const accelY = event.accelerationIncludingGravity.y;
+
+            const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, accelX * 2));
+            const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, accelY * 2));
+
+            updateEyePosition(moveX, moveY);
         });
+    } else {
+        console.log("Neither Gyroscope nor Accelerometer is available.");
     }
+}
+
 });
