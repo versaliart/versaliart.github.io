@@ -45,7 +45,7 @@ document.addEventListener("pageshow", function () {
 
     // Function to link up SVG Arrows
           // Get the stored link from the meta tag
-          const svgLink = document.getElementById("down-arrow-meta").getAttribute("data-url");
+          const svgLink = document.getElementById("down-arrow-url").getAttribute("data-url");
 
           // Apply the link to the down-arrow SVG
           document.querySelectorAll(".dynamic-svg").forEach(svg => {
