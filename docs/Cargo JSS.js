@@ -10,8 +10,8 @@ document.addEventListener("pageshow", function () {
     let isAnimating = false;
 
     document.addEventListener("mousemove", (event) => {
+        console.log("mousemove detected at:", event.clientX, event.clientY);
         if (!isAnimating) {
-            console.log("mousemove event!")
             isAnimating = true;
             requestAnimationFrame(() => {
                 const rect = eyeSvg.getBoundingClientRect();
