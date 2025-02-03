@@ -7,16 +7,6 @@ document.addEventListener("pageshow", function () {
 
     let isAnimating = false;
 
-    function updateEyePosition(moveX, moveY) {
-        // Squish effect
-        const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
-        const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
-
-        // Apply transformations
-        iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
-    }
-
-    // Desktop: Mouse Tracking
     document.addEventListener("mousemove", (event) => {
         if (!isAnimating) {
             isAnimating = true;
@@ -36,39 +26,16 @@ document.addEventListener("pageshow", function () {
                 const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, percentX * maxMoveX));
                 const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, percentY * maxMoveY));
 
-                updateEyePosition(moveX, moveY);
+                // Squish effect
+                const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
+                const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
+
+                // Apply transformations
+                iris.setAttribute("transform", `translate(${moveX}, ${moveY}) scale(${scaleX}, ${scaleY})`);
+                
                 isAnimating = false;
             });
         }
     });
 
-    // Mobile: Gyroscope-Based Eye Movement
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener("deviceorientation", (event) => {
-            const tiltX = event.beta; // -180 to 180 (front to back tilt)
-            const tiltY = event.gamma; // -90 to 90 (side-to-side tilt)
-
-            const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, (tiltY / 45) * maxMoveX));
-            const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, (tiltX / 45) * maxMoveY));
-
-            updateEyePosition(moveX, moveY);
-        });
-    }
-
-
-        // Function to link up SVG Arrows
-          // Get the stored link from the meta tag
-          const svgLink = document.getElementById("down-arrow-url").getAttribute("data-url");
-
-          // Apply the link to the down-arrow SVG
-          document.querySelectorAll(".dynamic-svg").forEach(svg => {
-              svg.setAttribute("xlink:href", svgLink);
-              svg.setAttribute("href", svgLink); // Some browsers require this for compatibility
-          });
-          // Get the stored link from the meta tag
-        const svgLink = document.getElementById("down-arrow-url").getAttribute("data-url");
-
-
 });
-
-
