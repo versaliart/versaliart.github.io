@@ -59,10 +59,6 @@ if (window.DeviceOrientationEvent) {
             useAccelerometer();
         }
     });
-} else {
-    console.log("Gyroscope not supported, switching to Accelerometer...");
-    useAccelerometer();
-}
 
 // Alternative: Use Accelerometer if No Gyro
 function useAccelerometer() {
