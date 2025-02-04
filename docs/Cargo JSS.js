@@ -1,9 +1,9 @@
-console.log("Loaded ver.2.9.1!")
+console.log("Loaded ver.3.0!");
+
 
 function initEyeAnimation() {
     const iris = document.getElementById("iris");
     const eyeSvg = document.getElementById("eye-svg");
-    const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
     const maxMoveY = 20;
     const minScale = 0.8;
@@ -47,33 +47,9 @@ function initEyeAnimation() {
 
 document.addEventListener("DOMContentLoaded", initEyeAnimation);
 
-
-// Run on 'pageshow' (Back button or forward navigation)
-window.addEventListener("pageshow", (event) => {
-    if (event.persisted) {
-        console.log("Page restored from bfcache - resetting script...");
-        resetScript(); // 🔥 FULLY DESTROY & RECREATE SCRIPT
-    } else {
-        initEyeAnimation(); // Normal initialization
-    }
-});
-
 window.addEventListener('pageshow', function (event) {
-    if (sessionStorage.getItem('needsReload')) {
-        sessionStorage.removeItem('needsReload');
-        if (event.persisted) {
-            window.location.reload();
-        }
-    }
-});
-
-
-document.addEventListener('visibilitychange', function () {
-    if (document.visibilityState === 'visible') {
+    if (event.persisted) {
+        console.log("Page restored from bfcache - reinitializing animation.");
         initEyeAnimation();
     }
-});
-
-window.addEventListener('beforeunload', function () {
-    sessionStorage.setItem('needsReload', 'true');
 });
