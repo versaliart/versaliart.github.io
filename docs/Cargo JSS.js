@@ -55,3 +55,9 @@ document.addEventListener("DOMContentLoaded", initEyeAnimation, { once: true });
 // Run on 'pageshow' (Back button or forward navigation)
 window.addEventListener("pageshow", (event) => {
     if (event.persisted) {
+        console.log("Page was restored from bfcache, forcing reload");
+        location.reload();  // Force a reload when using Back button
+    } else {
+        initEyeAnimation(); // Reinitialize animation logic
+    }
+});
