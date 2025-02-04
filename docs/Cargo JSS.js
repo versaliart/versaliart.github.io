@@ -1,7 +1,6 @@
 console.log("Loaded ver.3.0!");
 
-
-fdocument.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
     const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
     const eyeContainer = document.getElementById("eye-container");
