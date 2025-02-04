@@ -1,4 +1,4 @@
-console.log("Loaded ver.2.8!")
+console.log("Loaded ver.2.9.1!")
 
 function initEyeAnimation() {
     const iris = document.getElementById("iris");
@@ -58,8 +58,22 @@ window.addEventListener("pageshow", (event) => {
     }
 });
 
+window.addEventListener('pageshow', function (event) {
+    if (sessionStorage.getItem('needsReload')) {
+        sessionStorage.removeItem('needsReload');
+        if (event.persisted) {
+            window.location.reload();
+        }
+    }
+});
+
+
 document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'visible') {
         initEyeAnimation();
     }
+});
+
+window.addEventListener('beforeunload', function () {
+    sessionStorage.setItem('needsReload', 'true');
 });
