@@ -1,4 +1,4 @@
-console.log("Loaded ver.2.9!")
+console.log("Loaded ver.2.8!")
 
 function initEyeAnimation() {
     const iris = document.getElementById("iris");
@@ -46,3 +46,20 @@ function initEyeAnimation() {
 }
 
 document.addEventListener("DOMContentLoaded", initEyeAnimation);
+
+
+// Run on 'pageshow' (Back button or forward navigation)
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        console.log("Page restored from bfcache - resetting script...");
+        resetScript(); // 🔥 FULLY DESTROY & RECREATE SCRIPT
+    } else {
+        initEyeAnimation(); // Normal initialization
+    }
+});
+
+document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') {
+        initEyeAnimation();
+    }
+});
