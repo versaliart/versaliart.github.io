@@ -1,3 +1,5 @@
+console.log("Loaded ver.2.4!")
+
 function initEyeAnimation() {
     const iris = document.getElementById("iris");
     const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
@@ -39,17 +41,18 @@ function initEyeAnimation() {
         }
     }
 
-    // Ensure previous event listeners are removed before adding new ones
+    // Remove old event listener if any and attach a new one
     document.removeEventListener("mousemove", handleMouseMove);
     document.addEventListener("mousemove", handleMouseMove);
+
+    // Reset the position of the iris (IMPORTANT!)
+    iris.style.transform = "translate(0px, 0px) scale(1, 1)";
 }
 
-// Run on 'DOMContentLoaded' (initial load)
+// Run on 'DOMContentLoaded' (Initial load)
 document.addEventListener("DOMContentLoaded", initEyeAnimation, { once: true });
 
-// Run on 'pageshow' (when returning via Back button)
+// Run on 'pageshow' (Back button or forward navigation)
 window.addEventListener("pageshow", (event) => {
-    if (event.persisted) {
-        initEyeAnimation(); // Reinitialize animation logic
-    }
+    initEyeAnimation(); // Fully reset the animation
 });
