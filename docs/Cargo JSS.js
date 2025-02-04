@@ -1,4 +1,4 @@
-console.log("Loaded ver.2.7!")
+console.log("Loaded ver.2.8!")
 
 function initEyeAnimation() {
     const iris = document.getElementById("iris");
@@ -49,15 +49,23 @@ function initEyeAnimation() {
     iris.style.transform = "translate(0px, 0px) scale(1, 1)";
 }
 
-// **Force SVG Refresh (Fix for bfcache restoring non-functional state)**
-function refreshSVG() {
-    const eyeContainer = document.getElementById("eye-container");
-    const eyeSvg = document.getElementById("eye-svg");
+// **🔥 DESTROY & RECREATE THE SCRIPT (Solves bfcache Issue)**
+function resetScript() {
+    console.log("Recreating script to fix Back button issue...");
 
-    if (eyeSvg) {
-        const newEyeSvg = eyeSvg.cloneNode(true); // Clone the SVG element
-        eyeContainer.replaceChild(newEyeSvg, eyeSvg); // Replace the old SVG
+    const oldScript = document.getElementById("eye-script");
+    if (oldScript) {
+        oldScript.remove(); // Remove the existing script
     }
+
+    // Create a new script element dynamically
+    const newScript = document.createElement("script");
+    newScript.id = "eye-script";
+    newScript.textContent = `
+        (${initEyeAnimation.toString()})();
+    `;
+
+    document.body.appendChild(newScript); // Append the new script
 }
 
 // Run on 'DOMContentLoaded' (Initial page load)
@@ -66,8 +74,9 @@ document.addEventListener("DOMContentLoaded", initEyeAnimation, { once: true });
 // Run on 'pageshow' (Back button or forward navigation)
 window.addEventListener("pageshow", (event) => {
     if (event.persisted) {
-        console.log("Page restored from bfcache - refreshing SVG and reinitializing animation");
-        refreshSVG(); // Force the eye SVG to refresh
+        console.log("Page restored from bfcache - resetting script...");
+        resetScript(); // 🔥 FULLY DESTROY & RECREATE SCRIPT
+    } else {
+        initEyeAnimation(); // Normal initialization
     }
-    initEyeAnimation(); // Reinitialize animation logic
 });
