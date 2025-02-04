@@ -1,4 +1,4 @@
-console.log("Loaded ver.2.5!")
+console.log("Loaded ver.2.6!")
 
 function initEyeAnimation() {
     const iris = document.getElementById("iris");
@@ -41,28 +41,17 @@ function initEyeAnimation() {
         }
     }
 
-    // Remove old event listener if any and attach a new one
+    // Remove old event listener and attach a new one
     document.removeEventListener("mousemove", handleMouseMove);
     document.addEventListener("mousemove", handleMouseMove);
 
-    // Reset animation state
+    // Reset the position of the iris
     iris.style.transform = "translate(0px, 0px) scale(1, 1)";
 }
 
-// Function to force a reflow (resets styles)
-function forceReflow(element) {
-    element.style.display = "none";  // Temporarily hide the element
-    element.offsetHeight;  // Trigger reflow
-    element.style.display = "";  // Restore display
-}
-
-// Run on 'DOMContentLoaded' (Initial load)
+// Run on 'DOMContentLoaded' (Initial page load)
 document.addEventListener("DOMContentLoaded", initEyeAnimation, { once: true });
 
 // Run on 'pageshow' (Back button or forward navigation)
 window.addEventListener("pageshow", (event) => {
     if (event.persisted) {
-        forceReflow(document.body); // Force a reflow to ensure styles reset
-    }
-    initEyeAnimation(); // Reinitialize animation logic
-});
