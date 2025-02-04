@@ -1,16 +1,17 @@
 console.log("Loaded ver.3.0!");
 
 
-function initEyeAnimation() {
+fdocument.addEventListener("DOMContentLoaded", function () {
     const iris = document.getElementById("iris");
-    const eyeSvg = document.getElementById("eye-svg");
+    const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
+    const eyeContainer = document.getElementById("eye-container");
     const maxMoveX = 30;
     const maxMoveY = 20;
-    const minScale = 0.8;
+    const minScale = 0.8; // Minimum squish scale factor
 
     let isAnimating = false;
 
-    function handleMouseMove(event) {
+    document.addEventListener("mousemove", (event) => {
         if (!isAnimating) {
             isAnimating = true;
             requestAnimationFrame(() => {
@@ -29,27 +30,20 @@ function initEyeAnimation() {
                 const moveX = Math.max(-maxMoveX, Math.min(maxMoveX, percentX * maxMoveX));
                 const moveY = Math.max(-maxMoveY, Math.min(maxMoveY, percentY * maxMoveY));
 
+                // Squish effect
                 const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
                 const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
 
+                // Apply transformations (Fix: Use `style.transform` instead of `setAttribute`)
                 iris.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`;
-
+                
                 isAnimating = false;
             });
         }
-    }
+    });
 
-    document.removeEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mousemove", handleMouseMove);
-
-    iris.style.transform = "translate(0px, 0px) scale(1, 1)";
-}
-
-document.addEventListener("DOMContentLoaded", initEyeAnimation);
-
-window.addEventListener('pageshow', function (event) {
-    if (event.persisted) {
-        console.log("Page restored from bfcache - reinitializing animation.");
-        initEyeAnimation();
+    // Function to scale the entire eye (Fix: Use `style.transform`)
+    function scaleEye(scaleFactor) {
+        eyeContainer.style.transform = `scale(${scaleFactor})`;
     }
 });
