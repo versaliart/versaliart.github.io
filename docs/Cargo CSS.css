@@ -93,7 +93,7 @@ section {
     position: relative;
     z-index: 20;
     background-color: #ffffff;
-    margin: 0 !important;
+    margin: 0;
 }
 
 .sticky-nav {
@@ -153,17 +153,21 @@ section {
     background-color: white;
     color: black;
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .section-black {
     background-color: black;
     color: white;
     width: 100%;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .index {
     width: auto;
-    max-width: min(80vw,100svw);
+    max-width: min(80vw,90svw);
     margin-left: auto;
     margin-right: auto;
     margin-top: 5rem;
@@ -176,6 +180,8 @@ section.black-gallery {
     background-color: black;
     align-items: center;
     justify-content: center;
+    margin-top: 5rem;
+    margin-bottom: 5rem;
 }
 
 section.black-gallery,
@@ -186,14 +192,12 @@ section.content-section {
     padding-bottom: 5rem;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 5rem;
-    margin-bottom: 5rem;
     min-height: min(50vh,50svh);
 }
 
 .content-section {
     width: auto;
-    padding: 0;
+    padding: 5rem;
     margin: 5rem;
     align-items: center;
 }
