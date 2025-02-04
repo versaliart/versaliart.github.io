@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
+function initEyeAnimation() {
     const iris = document.getElementById("iris");
     const eyeSvg = document.getElementById("eye-svg"); // Outer SVG container
     const eyeContainer = document.getElementById("eye-container");
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const scaleX = 1 - (Math.abs(moveX) / maxMoveX) * (1 - minScale);
                 const scaleY = 1 - (Math.abs(moveY) / maxMoveY) * (1 - minScale);
 
-                // Apply transformations (Fix: Use `style.transform` instead of `setAttribute`)
+                // Apply transformations
                 iris.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`;
                 
                 isAnimating = false;
@@ -39,8 +39,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Function to scale the entire eye (Fix: Use `style.transform`)
+    // Function to scale the entire eye
     function scaleEye(scaleFactor) {
         eyeContainer.style.transform = `scale(${scaleFactor})`;
     }
-});
+}
+
+// Run on both 'DOMContentLoaded' and 'pageshow'
+document.addEventListener("DOMContentLoaded", initEyeAnimation, { once: true });
+window.addEventListener("pageshow", initEyeAnimation);
