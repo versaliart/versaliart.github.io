@@ -8,7 +8,7 @@ function initEyeAnimation() {
 
     let isAnimating = false;
 
-    document.addEventListener("mousemove", (event) => {
+    function handleMouseMove(event) {
         if (!isAnimating) {
             isAnimating = true;
             requestAnimationFrame(() => {
@@ -33,18 +33,23 @@ function initEyeAnimation() {
 
                 // Apply transformations
                 iris.style.transform = `translate(${moveX}px, ${moveY}px) scale(${scaleX}, ${scaleY})`;
-                
+
                 isAnimating = false;
             });
         }
-    });
-
-    // Function to scale the entire eye
-    function scaleEye(scaleFactor) {
-        eyeContainer.style.transform = `scale(${scaleFactor})`;
     }
+
+    // Ensure previous event listeners are removed before adding new ones
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mousemove", handleMouseMove);
 }
 
-// Run on both 'DOMContentLoaded' and 'pageshow'
+// Run on 'DOMContentLoaded' (initial load)
 document.addEventListener("DOMContentLoaded", initEyeAnimation, { once: true });
-window.addEventListener("pageshow", initEyeAnimation);
+
+// Run on 'pageshow' (when returning via Back button)
+window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+        initEyeAnimation(); // Reinitialize animation logic
+    }
+});
