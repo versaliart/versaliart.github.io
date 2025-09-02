@@ -1,0 +1,146 @@
+
+/*----------------------------------------------------------------------*/
+/* HEADER  */
+/*----------------------------------------------------------------------*/
+
+/* ------------------------------------------------------------
+   Mystic Munson — Glass Header (fluid via clamp())
+   - Two buttons only (first + last nav items)
+   - Buttons hug left/right edges of the glass bar
+   - Fixed center gap reserved for decorative image
+   - Blur / rounded / sticky-on-scroll
+   - Positive --mm-center-fudge nudges pills *downward*
+------------------------------------------------------------- */
+
+/* Fluid tokens */
+:root{
+  --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
+  --mm-header-top: clamp(.5rem, .2rem + 0.6vw, 1rem);
+
+  --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);    /* center gap */
+  --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem);  /* pill width floor */
+
+  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);  /* buffer from edges */
+  --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
+  --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
+
+  --mm-center-fudge: 0.9px;   /* positive = nudge pills DOWN slightly */
+
+  --mm-radius: .75rem;
+  --mm-bg: rgba(15,15,25,.52);
+  --mm-blur: clamp(9px, 6px + .6vw, 12px);
+
+  --mm-start-shift: 24px;  /* try 16–32px; use -8px to go a bit higher */
+}
+
+/* Glass header container — FIXED overlay, JS animates top */
+header#header,
+[data-test="header"]{
+  position: fixed;
+  left: 50%;
+  /* start centered; no shift in 'top' */
+  top: calc(50vh - (var(--mm-header-h) / 2) + var(--mm-center-fudge));
+  /* apply the start shift via translateY so it’s visible before sticking */
+  transform: translate(-50%, var(--mm-start-shift, 0px));
+  z-index: 1000;
+
+  height: var(--mm-header-h);
+  width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
+  padding: 0;
+  border-radius: var(--mm-radius);
+  background: var(--mm-bg);
+  -webkit-backdrop-filter: blur(var(--mm-blur));
+  backdrop-filter: blur(var(--mm-blur));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* Hide header bits we don’t want in the skinny bar */
+[data-test="header"] .header-title,
+[data-test="header"] [data-test*="SiteTitle"],
+[data-test="header"] .header-actions,
+[data-test="header"] [data-test*="social"],
+[data-test="header"] [data-test*="Cart"],
+[data-test="header"] [data-test*="Account"]{
+  display: none !important;
+}
+
+/* Neutralize wrappers so anchors position against the header box */
+[data-test="header"] .header,
+[data-test="header"] .header-inner,
+[data-test="header"] .header-display,
+[data-test="header"] .header-display-desktop,
+[data-test="header"] nav,
+[data-test="header"] .header-nav,
+[data-test="header"] .header-nav-list{
+  position: static !important;      /* no new containing block */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;          /* match the bar’s height */
+  line-height: normal !important;
+  box-sizing: border-box !important;
+}
+
+/* Keep only first and last nav items (works for li or .header-nav-item) */
+[data-test="header"] :is(.header-nav-list > li, .header-nav-item)
+  :not(:first-child):not(:last-child){
+  display: none !important;
+}
+
+/* Fixed center spacer for your decorative image (invisible) */
+header#header::before,
+[data-test="header"]::before{
+  content: "";
+  position: absolute; inset-block: 0;
+  left: 50%; width: var(--mm-gap-fixed);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* --------- Place the two pills (absolute, edge-hugging, vertically centered) --------- */
+[data-test="header"] :is(.header-nav-item:first-of-type, nav li:first-child) > a{
+  position: absolute !important;
+  left: var(--mm-edge-pad) !important;
+  top: calc(50% + var(--mm-center-fudge)) !important;     /* ↓ down a bit */
+  transform: translateY(-50%) !important;
+  z-index: 2;
+}
+[data-test="header"] :is(.header-nav-item:last-of-type,  nav li:last-child)  > a{
+  position: absolute !important;
+  right: var(--mm-edge-pad) !important;
+  top: calc(50% + var(--mm-center-fudge)) !important;     /* ↓ down a bit */
+  transform: translateY(-50%) !important;
+  z-index: 2;
+}
+
+/* Visual pill styling (uses fluid padding + min width) */
+[data-test="header"] a{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: var(--mm-btn-min);
+  padding-block: var(--mm-btn-pad-y);
+  padding-inline: var(--mm-btn-pad-x);
+  border-radius: .5rem;
+  font-weight: 700;
+  line-height: 1;                           /* no baseline drift */
+  text-decoration: none;
+  color: #ffffff;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.35);
+  transition: background-color .16s ease, border-color .16s ease;
+  margin: 0 !important;
+}
+
+/* Hover: keep baseline stable */
+[data-test="header"] a:hover{
+  background: rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.5);
+}
+
+

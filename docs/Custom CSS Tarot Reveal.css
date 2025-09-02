@@ -1,0 +1,97 @@
+.hero-tarot {
+  --cols: 6;
+  --rows: 2;
+  --gap: 0rem;
+  --card-radius: 0;                    /* ← no rounded inner corners */
+  --card-border: 0;
+  --card-aspect: 1.6;
+  --flip-duration: 700ms;
+  --stagger: 60ms;
+  --reveal-hold: 1600ms;
+  --cover-hold: 900ms;
+  --card-back: #0e0b16;
+  --card-edge: #bda27e;
+  --table: #0b0b0d;
+  --shadow: 0 0.3rem 1.1rem rgba(0,0,0,0.45);
+
+  --back-img: url("https://YOUR-SQUARESPACE-ASSET-URL.svg");
+  --back-size: cover;
+  --back-pos: center;
+  --back-repeat: no-repeat;
+  --back-color: #0e0b16;
+
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  border-radius: 1rem;                 /* outer container can stay rounded */
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  background: #000;
+  isolation: isolate;
+}
+
+.hero-tarot .hero-img {
+  position: absolute; inset: 0; z-index: 0;
+  background-position: center; background-size: cover; background-repeat: no-repeat;
+  transition: opacity 150ms linear;
+}
+.hero-tarot .hero-img.fade-out { opacity: 0.999; }
+
+.hero-tarot .grid {
+  position: absolute; inset: 0; z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 1fr);
+  grid-template-rows: repeat(var(--rows), 1fr);
+  gap: 0;                              /* ← explicit zero (don’t rely on var) */
+  padding: 0;                          /* ← explicit zero */
+}
+
+.hero-tarot .card { position: relative; perspective: 100rem; }
+
+.hero-tarot .card-inner {
+  position: absolute; inset: 0;
+  border-radius: var(--card-radius);
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) ease;
+  will-change: transform;
+  box-shadow: none;                    /* no glow from container */
+  background: transparent;
+  outline: 1px solid transparent;      /* subpixel seam optimizer */
+}
+.hero-tarot .card.is-flipped .card-inner { transform: rotateY(180deg); }
+
+.hero-tarot .face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: inherit;
+  overflow: hidden;
+  transform: translateZ(0);            /* helps kill AA seams */
+}
+
+.hero-tarot .back {
+  border: 0; box-shadow: none;
+  background-image: var(--back-img), none;
+  background-size: var(--back-size), auto;
+  background-position: var(--back-pos), 0 0;
+  background-repeat: var(--back-repeat), no-repeat;
+  background-color: var(--back-color); /* ensures full opacity coverage */
+}
+
+.hero-tarot .front {
+  border: 0; box-shadow: none;
+  background: none;
+  -webkit-mask: none; mask: none;
+  pointer-events: none;                /* nothing interactive + truly “not there” */
+}
+
+.hero-tarot .sizer { position: absolute; inset: 0; border-radius: var(--card-radius); }  /* ← fill cell fully */
+.hero-tarot .sizer::before { content: ""; display: block; width: 100%; padding-top: calc(var(--card-aspect) * 100%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-tarot .card-inner { transition: none; }
+}
+
+.hero-tarot .overlay-label {
+  position: absolute; left: 1rem; bottom: 1rem; z-index: 3;
+  font-size: 0.9rem; opacity: 0.75;
+}

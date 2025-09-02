@@ -1,0 +1,141 @@
+<style>
+/* ===== Card-Flip Top Blocks (scoped to the section containing this Code Block) ===== */
+:root{
+  --flip-duration: 420ms;
+  --flip-ease: cubic-bezier(.2,.7,.2,1);
+  --flip-perspective: 1000px;
+}
+
+.flip-section{ position: relative; }
+
+/* Each Top Block becomes its own flip card */
+.flip-section .flip-top{
+  position: relative;
+  z-index: 999 !important;      /* keep on top of underlying content */
+  perspective: var(--flip-perspective);
+  touch-action: manipulation;
+  display: block;
+}
+
+/* 3D stack */
+.flip-section .flip-top .flip-inner{
+  display: grid;                /* stack faces without breaking layout */
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) var(--flip-ease);
+  will-change: transform;
+}
+
+.flip-section .flip-top .flip-front,
+.flip-section .flip-top .flip-back{
+  grid-area: 1/1;               /* overlap perfectly */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Transparent back face (lets clicks pass through when visible) */
+.flip-section .flip-top .flip-back{
+  transform: rotateY(180deg);   /* “back” side of the card */
+  pointer-events: none;         /* never block clicks itself */
+}
+
+/* Desktop: flip on hover; let clicks pass through while flipped */
+@media (hover:hover) and (pointer:fine){
+  .flip-section .flip-top:hover .flip-inner{ transform: rotateY(180deg); }
+  .flip-section .flip-top:hover{ pointer-events: none; } /* pass clicks to content below */
+}
+
+/* Mobile: JS toggles .is-flipped per block */
+.flip-section .flip-top.is-flipped .flip-inner{ transform: rotateY(180deg); }
+.flip-section .flip-top.is-flipped{ pointer-events: none; } /* pass taps to content below */
+
+/* Motion safety */
+@media (prefers-reduced-motion: reduce){
+  .flip-section .flip-top .flip-inner{ transition: none; }
+}
+</style>
+
+<script>
+/* ===== Multi-Flip setup for only this section ===== */
+(function(){
+  function closestSection(el){
+    while(el && el!==document.body){
+      if(el.matches('.page-section, [data-section-id], section')) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function ready(fn){
+    if(document.readyState!=='loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn, {once:true});
+  }
+
+  ready(function(){
+    var scriptEl = document.currentScript;
+    var section = closestSection(scriptEl);
+    if(!section) return;
+    section.classList.add('flip-section');
+
+    // Find every Image Block in this section marked as a Top Block
+    var blocks = Array.from(section.querySelectorAll('.sqs-block.image-block'))
+      .filter(function(blk){ return !!blk.querySelector('a[href="#flip-top"]'); });
+
+    if(!blocks.length){
+      console.warn('FlipTop: No Image Blocks with href="#flip-top" in this section.');
+      return;
+    }
+
+    blocks.forEach(function(block){
+      if(block.__flipReady) return; // idempotent
+      block.__flipReady = true;
+      block.classList.add('flip-top');
+
+      // Build flip DOM: .flip-inner > (.flip-front [original content], .flip-back [empty])
+      var inner = document.createElement('div'); inner.className = 'flip-inner';
+      var front = document.createElement('div'); front.className = 'flip-front';
+      var back  = document.createElement('div'); back.className  = 'flip-back';
+
+      while(block.firstChild){ front.appendChild(block.firstChild); }
+      inner.appendChild(front); inner.appendChild(back);
+      block.appendChild(inner);
+
+      // Use the marker link as a trigger; never navigate
+      var marker = front.querySelector('a[href="#flip-top"]');
+      if(marker){
+        marker.addEventListener('click', function(e){
+          e.preventDefault(); e.stopPropagation();
+          if (matchMedia('(hover: none), (pointer: coarse)').matches) {
+            block.classList.add('is-flipped'); // mobile tap → flip this block only
+          }
+        }, true);
+      }
+
+      // Also allow tapping anywhere on the Top Block (mobile) to flip
+      block.addEventListener('click', function(){
+        if (matchMedia('(hover: none), (pointer: coarse)').matches) {
+          block.classList.add('is-flipped');
+        }
+      }, true);
+
+      // Auto-reset when the block scrolls off-screen
+      if('IntersectionObserver' in window){
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            if(!entry.isIntersecting){ block.classList.remove('is-flipped'); }
+          });
+        }, {threshold: 0.05});
+        io.observe(block);
+      }
+    });
+
+    // Mobile convenience: tap blank space in the section to reset all flipped blocks
+    section.addEventListener('click', function(e){
+      if (!(matchMedia('(hover: none), (pointer: coarse)').matches)) return;
+      if (!e.target.closest('a, button, [role="button"]')) {
+        section.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
+          b.classList.remove('is-flipped');
+        });
+      }
+    });
+  });
+})();
+</script>

@@ -1,1 +1,1 @@
-<script src="https://cdn.jsdelivr.net/gh/versaliart/versaliart.github.io/docs/Cargo%20JSS.js"></script>
+<link rel="stylesheet" href="https://use.typekit.net/xfs3mcf.css">

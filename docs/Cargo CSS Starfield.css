@@ -1,0 +1,104 @@
+/* ---------- Starfield v1.0 + Bottom Overlay ---------- */
+/* Page-level toggle: only pages with the marker run the starfield */
+body.has-starfield{
+--star-count: 45;          /* TOTAL stars across the whole page */
+--radial-bias-k: 4;       /* 1 = uniform disk, 2–4 = stronger ring toward edges */
+--star-min-gap: 24px;    /* extra space BETWEEN star edges; 0 disables */
+
+--twinkle-min: 1.0;      /* shortest twinkle cycle (seconds) → faster flicker */
+--twinkle-max: 3.0;      /* longest  twinkle cycle (seconds) → slower flicker */
+
+--opacity-min: 0.15;     /* dimmest baseline opacity (0–1) */
+--opacity-max: 1.0;     /* brightest baseline opacity (0–1) */
+
+--phi: 1.618;                                          /* golden ratio */
+--size-large: 1.5rem;                                  /* L: base size you can tweak */
+--size-medium: calc(var(--size-large) / var(--phi));   /* M = L / φ  ≈ 0.927rem */
+--size-small:  calc(var(--size-medium) / var(--phi));  /* S = M / φ  ≈ 0.573rem */
+
+  --max-blur: 0.12rem;
+  --star-color: #9989EC;
+  --star-url: url("https://mayflower-crane-b4y9.squarespace.com/s/MMsparkle.svg");
+
+  /* ↓ Optional: page-wide bottom overlay image for ALL starfield sections */
+  /* (You can override per-section with a data attribute; see JS notes below.) */
+  --star-overlay-url: url("https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/263c8665-4264-4d5e-b43d-2f2ce9464b50/MMbg.png");
+  --star-overlay-width: min(90vw, 1920px); /* rendered width of the overlay image */
+  --star-overlay-offset-y: 0px;            /* nudge up/down from the bottom edge */
+}
+
+/* Make each section a stacking context so we can layer stars under its content */
+body.has-starfield .page-section,
+body.has-starfield .sqs-section { position: relative; }
+
+/* Per-section star layer (injected by JS) – above bg, below content */
+body.has-starfield .star-container{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: none !important;
+  background-color: transparent !important;
+}
+
+/* NEW: bottom overlay image (above the stars, below content) */
+body.has-starfield .star-bottom-image{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background-image: var(--star-overlay-url, none);
+  background-repeat: no-repeat;
+  background-position: center calc(100% + var(--star-overlay-offset-y, 0px));
+  background-size: var(--star-overlay-width, min(90vw, 1200px)) auto;
+}
+
+/* Lift section content above both star layer and overlay image */
+body.has-starfield .page-section > .content-wrapper,
+body.has-starfield .sqs-section  > .content-wrapper,
+body.has-starfield .sqs-section .content,
+body.has-starfield .sqs-layout,
+body.has-starfield .section-border{
+  position: relative;
+  z-index: 2; /* bumped to sit above overlay (z:1) */
+}
+
+/* Individual stars */
+body.has-starfield .star-container .star{
+  position: absolute;
+  left: var(--x, 50%);
+  top:  var(--y, 50%);
+  width:  var(--size, 1rem);
+  height: var(--size, 1rem);
+  transform: translate(-50%, -50%) scale(var(--scale,1));
+  opacity: var(--o, 0.85);
+  color: var(--star-color);
+  background: currentColor;
+  animation-fill-mode: both;
+
+  -webkit-mask: var(--star-url) center/contain no-repeat;
+          mask: var(--star-url) center/contain no-repeat;
+
+  filter: drop-shadow(0 0 var(--blur, 0) currentColor);
+  will-change: opacity, transform;
+
+    animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s) infinite alternate !important;
+}
+
+/* Twinkle: opacity only (no transform conflicts) */
+@keyframes twinkle{
+  0%   { opacity: 0.15; }
+  50%  { opacity: 1;    }
+  100% { opacity: 0.25; }
+}
+
+/* Floaty: the only animation that changes transform */
+@keyframes floaty{
+  0%   { transform: translate(calc(-50% + var(--dx,0px)), calc(-50% + var(--dy,0px))) scale(var(--scale,1)); }
+  50%  { transform: translate(calc(-50% - var(--dx,0px)), calc(-50% - var(--dy,0px))) scale(var(--scale,1)); }
+  100% { transform: translate(calc(-50% + var(--dx,0px)), calc(-50% + var(--dy,0px))) scale(var(--scale,1)); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  body.has-starfield .star-container .star{ animation: none; opacity: 0.6; }
+}
