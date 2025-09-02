@@ -1,3 +1,5 @@
+console.log("Starfield external JS executing");
+
 <script>
 /* Starfield v1.0 — Per-section build + Bottom overlay + Edge-biased placement
    - Stars ONLY in the section with:
