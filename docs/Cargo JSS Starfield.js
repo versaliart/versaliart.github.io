@@ -49,19 +49,7 @@ function getCssLenPx(name, fallbackPx){
     return raw.endsWith('px') ? (n / remPx) : n; // convert px→rem if needed
   }
 
-  // Bottom overlay helpers (URL from section attribute or page-level CSS var)
-  function getOverlayUrlFor(section) {
-    const attr = section.getAttribute('data-stars-overlay'); // e.g. https://.../overlay.png
-    if (attr && attr.trim()) return `url("${attr.trim()}")`;
-    const cssVal = getComputedStyle(document.body).getPropertyValue('--star-overlay-url').trim();
-    return (cssVal && cssVal !== 'none') ? cssVal : 'none';
-  }
-  function applyOverlayCustomProps(section, overlay) {
-    const w = section.getAttribute('data-stars-overlay-width');
-    const y = section.getAttribute('data-stars-overlay-offset-y');
-    if (w) overlay.style.setProperty('--star-overlay-width', w);
-    if (y) overlay.style.setProperty('--star-overlay-offset-y', y);
-  }
+
 
   // U-shaped sampler in [0,1]: values more likely near 0 or 1 (edges), less near 0.5 (center).
   // power = 1 → ~uniform; power < 1 → stronger pull to edges.
@@ -147,18 +135,6 @@ function readVars() {
       else section.appendChild(container);
     }
 
-    // Bottom image overlay (above stars, below content)
-    let overlay = section.querySelector(':scope > .star-bottom-image');
-    if (!overlay) {
-      overlay = document.createElement('div');
-      overlay.className = 'star-bottom-image';
-      const content = section.querySelector(':scope > .content-wrapper');
-      if (content) section.insertBefore(overlay, content);
-      else section.appendChild(overlay);
-    }
-    // Refresh overlay image and custom sizing/offset each build
-    overlay.style.backgroundImage = getOverlayUrlFor(section);
-    applyOverlayCustomProps(section, overlay);
 
     return container;
   }

@@ -20,11 +20,6 @@ body.has-starfield{
   --star-color: #9989EC;
   --star-url: url("https://mayflower-crane-b4y9.squarespace.com/s/MMsparkle.svg");
 
-  /* ↓ Optional: page-wide bottom overlay image for ALL starfield sections */
-  /* (You can override per-section with a data attribute; see JS notes below.) */
-  --star-overlay-url: url("https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/263c8665-4264-4d5e-b43d-2f2ce9464b50/MMbg.png");
-  --star-overlay-width: min(90vw, 1920px); /* rendered width of the overlay image */
-  --star-overlay-offset-y: 0px;            /* nudge up/down from the bottom edge */
 }
 
 /* Make each section a stacking context so we can layer stars under its content */
@@ -41,17 +36,6 @@ body.has-starfield .star-container{
   background-color: transparent !important;
 }
 
-/* NEW: bottom overlay image (above the stars, below content) */
-body.has-starfield .star-bottom-image{
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  background-image: var(--star-overlay-url, none);
-  background-repeat: no-repeat;
-  background-position: center calc(100% + var(--star-overlay-offset-y, 0px));
-  background-size: var(--star-overlay-width, min(90vw, 1200px)) auto;
-}
 
 /* Lift section content above both star layer and overlay image */
 body.has-starfield .page-section > .content-wrapper,

@@ -2,37 +2,56 @@
 (() => {
   const ATTRS = ['data-tags','data-sort','data-case','data-prefix','data-target','data-limit','data-more-pill','data-hash'];
 
-  function titleCase(s){
-    return s.replace(/\w\S*/g, w => /[A-Z]{2,}/.test(w) ? w : w[0].toUpperCase() + w.slice(1).toLowerCase());
+  function titleCaseSmart(s){
+    return s.replace(/\b[\w'-]+\b/g, w => {
+      if (/^[A-Z]{2,}$/.test(w)) return w;          // ACRONYM (ABC)
+      if (/\d/.test(w) && /[A-Za-z]/.test(w)) {
+        // Mixed alnum like 3D, H2O → keep caps on letters
+        return w.replace(/[A-Za-z]+/g, m => m.toUpperCase());
+      }
+      return w[0].toUpperCase() + w.slice(1).toLowerCase();
+    });
   }
 
   function parseTagsFrom(el){
-    const src = (el.getAttribute('data-tags')?.trim()) ? el.getAttribute('data-tags') : el.textContent;
-    let tags = (src || '')
-      .split(/[,\\n]/).map(t => t.trim()).filter(Boolean);
+    const hasAttr = el.hasAttribute('data-tags');
+    let tags;
 
-    // dedupe case-insensitively, keep first appearance
-    const map = new Map();
-    for (const t of tags){ const k = t.toLowerCase(); if (!map.has(k)) map.set(k,t); }
-    tags = Array.from(map.values());
+    if (hasAttr) {
+      // Comma-separated ONLY (ignore spaces)
+      const raw = (el.getAttribute('data-tags') || '').trim();
+      tags = raw ? raw.split(/\s*,\s*/).filter(Boolean) : [];
+    } else {
+      // If you type lines inside the Code Block instead of data-tags
+      const raw = (el.textContent || '');
+      tags = raw.split(/\r?\n+/).map(t => t.trim()).filter(Boolean);
+    }
 
-    // casing
+    // De-dupe case-insensitively (keep first appearance)
+    const seen = new Map();
+    for (const t of tags) {
+      const k = t.toLowerCase();
+      if (!seen.has(k)) seen.set(k, t);
+    }
+    tags = Array.from(seen.values());
+
+    // Casing
     const how = (el.dataset.case || 'as-is').toLowerCase();
     if (how === 'upper') tags = tags.map(t => t.toUpperCase());
     else if (how === 'lower') tags = tags.map(t => t.toLowerCase());
-    else if (how === 'title') tags = tags.map(titleCase);
+    else if (how === 'title') tags = tags.map(titleCaseSmart);
 
-    // sort
-    if ((el.dataset.sort || '').toLowerCase().startsWith('alpha')){
+    // Sort
+    if ((el.dataset.sort || '').toLowerCase().startsWith('alpha')) {
       tags.sort((a,b) => a.localeCompare(b, undefined, {sensitivity:'base'}));
     }
     return tags;
   }
 
   function buildList(el){
-    const prefix = el.dataset.prefix || '';
-    const target = el.dataset.target || '';
-    const limit  = parseInt(el.dataset.limit || '0', 10);
+    const prefix   = el.dataset.prefix || '';
+    const target   = el.dataset.target || '';
+    const limit    = parseInt(el.dataset.limit || '0', 10);
     const showMore = (el.dataset.morePill || 'show').toLowerCase() !== 'hide';
     const showHash = (el.dataset.hash || 'show').toLowerCase() !== 'hide';
 
@@ -40,10 +59,7 @@
     const total = tags.length;
 
     let extraCount = 0;
-    if (limit > 0 && total > limit){
-      extraCount = total - limit;
-      tags = tags.slice(0, limit);
-    }
+    if (limit > 0 && total > limit) { extraCount = total - limit; tags = tags.slice(0, limit); }
 
     const ul = document.createElement('ul');
     ul.className = 'tag-pills__list';
@@ -51,21 +67,14 @@
 
     for (const t of tags){
       const li = document.createElement('li');
-      let node;
-      if (prefix){
-        const a = document.createElement('a');
-        a.className = 'tag-pill';
-        a.href = prefix + encodeURIComponent(t);
-        if (target) a.target = target;
-        if (target === '_blank') a.rel = 'noopener';
-        a.innerHTML = (showHash ? '<span class="hash">#</span>' : '') + t;
-        node = a;
-      } else {
-        const span = document.createElement('span');
-        span.className = 'tag-pill';
-        span.innerHTML = (showHash ? '<span class="hash">#</span>' : '') + t;
-        node = span;
+      const node = prefix ? document.createElement('a') : document.createElement('span');
+      node.className = 'tag-pill';
+      if (prefix) {
+        node.href = prefix + encodeURIComponent(t);
+        if (target) node.target = target;
+        if (target === '_blank') node.rel = 'noopener';
       }
+      node.innerHTML = (showHash ? '<span class="hash">#</span>' : '') + t;
       li.appendChild(node);
       ul.appendChild(li);
     }
@@ -75,7 +84,7 @@
       const more = document.createElement(prefix ? 'a' : 'span');
       more.className = 'tag-pill is-more';
       more.textContent = `+${extraCount}`;
-      if (prefix){ more.href = prefix.replace(/\\=$/, ''); }
+      if (prefix){ more.href = prefix.replace(/=$/, ''); }
       li.appendChild(more);
       ul.appendChild(li);
     }
@@ -83,14 +92,10 @@
   }
 
   function render(el){
-    // prevent re-entrant loops from its own MutationObserver
     if (el.__rendering) return;
     el.__rendering = true;
-
-    // (Re)render
     const ul = buildList(el);
     el.replaceChildren(ul);
-
     el.__rendering = false;
     el.dataset.enhanced = '1';
   }
@@ -104,26 +109,21 @@
 
   function enhanceAll(root=document){
     root.querySelectorAll('.tag-pills').forEach(el => {
-      // Only render if not already rendered, otherwise ensure it is being watched for edits
       if (!el.dataset.enhanced) render(el);
       observeTagPills(el);
     });
   }
 
-  // Initial run
-  if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', () => enhanceAll());
-  } else {
-    enhanceAll();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', enhanceAll);
+  else enhanceAll();
 
-  // Watch for blocks added/changed in the editor
   const pageMO = new MutationObserver(muts => {
     for (const m of muts){
       m.addedNodes?.forEach(n => {
-        if (n.nodeType !== 1) return;
-        if (n.matches?.('.tag-pills')) enhanceAll(n);
-        if (n.querySelectorAll) enhanceAll(n);
+        if (n.nodeType === 1) {
+          if (n.matches?.('.tag-pills')) enhanceAll(n);
+          if (n.querySelectorAll) enhanceAll(n);
+        }
       });
     }
   });
