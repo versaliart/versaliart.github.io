@@ -15,6 +15,7 @@
   perspective: var(--flip-perspective);
   touch-action: manipulation;
   display: block;
+  isolation: isolate;           /* keeps z-index effects self-contained */
 }
 
 /* 3D stack */
@@ -23,6 +24,7 @@
   transform-style: preserve-3d;
   transition: transform var(--flip-duration) var(--flip-ease);
   will-change: transform;
+  transform: translateZ(0);     /* nudge GPU, helps shimmer/backface seams */
 }
 
 .flip-section .flip-top .flip-front,
@@ -32,27 +34,33 @@
   backface-visibility: hidden;
 }
 
-/* Transparent back face (lets clicks pass through when visible) */
+/* Back face sits behind, never intercepts pointer */
 .flip-section .flip-top .flip-back{
-  transform: rotateY(180deg);   /* “back” side of the card */
-  pointer-events: none;         /* never block clicks itself */
+  transform: rotateY(180deg);
+  pointer-events: none;
 }
 
-/* Desktop: flip on hover; let clicks pass through while flipped */
+/* Kill the link cursor/flicker: the anchor is just a trigger */
+.flip-section .flip-top a[href="#flip-top"]{
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Desktop: flip on hover */
 @media (hover:hover) and (pointer:fine){
   .flip-section .flip-top:hover .flip-inner{ transform: rotateY(180deg); }
-  .flip-section .flip-top:hover{ pointer-events: none; } /* pass clicks to content below */
+  /* DO NOT disable pointer-events on .flip-top — it causes hover flicker */
 }
 
 /* Mobile: JS toggles .is-flipped per block */
 .flip-section .flip-top.is-flipped .flip-inner{ transform: rotateY(180deg); }
-.flip-section .flip-top.is-flipped{ pointer-events: none; } /* pass taps to content below */
 
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
   .flip-section .flip-top .flip-inner{ transition: none; }
 }
 </style>
+
 
 <script>
 /* ===== Multi-Flip setup for only this section ===== */

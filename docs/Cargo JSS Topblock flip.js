@@ -1,186 +1,179 @@
-/* Topblock Flip v1.1 — directional easing, no un-hover lag
-   Opt-in via Image Block Clickthrough URL:  <a href="#flip-top">
-   Desktop: hover flips (ease-in), un-hover flips back (ease-out), immediate
-   Mobile: tap flips; outside click/tap (not a link/control) flips back
-   While flipped, clicks are forwarded to elements underneath
-   No DOM reparenting; resets on viewport exit; SPA-safe; Externalized;
-   Fixed selector for footer injection
+/* Topblock Flip v1.0 — directional easing + real click-through
+   Opt-in via Image Block Clickthrough URL: <a href="#flip-top">
+   Desktop: hover flips (ease-in/out)
+   Mobile: tap flips; tap outside (not control) resets
+   Click-through: while rotated, forward clicks to underlying content
 */
 
-(function () {
-  // Run whether or not DOMContentLoaded already fired
-  function onReady(fn){
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', fn, { once: true });
-    } else {
-      fn();
+(function(){
+  // -------- utilities --------
+  function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
+  function closestSection(el){
+    while(el && el!==document.body){
+      if(el.matches('.page-section, [data-section-id], section')) return el;
+      el = el.parentElement;
     }
+    return null;
+  }
+  var COARSE = '(hover: none), (pointer: coarse)';
+  var FINE   = '(hover: hover) and (pointer: fine)';
+  function isCoarse(){ return matchMedia(COARSE).matches; }
+  function isFine(){ return matchMedia(FINE).matches; }
+
+  // active = “visually flipped right now”
+  function isActive(block){
+    // desktop flips via :hover; mobile via .is-flipped
+    return (isFine() && block.matches(':hover')) || block.classList.contains('is-flipped');
   }
 
-  onReady(function initTopblock(){
-    // Anchor-based opt-in (or allow an actual #flip-top marker if you add one)
-    if (!document.querySelector('#flip-top, a[href="#flip-top"]')) {
-      console.info('[Topblock] no #flip-top marker/anchor found; skipping');
-      return;
+  // robust coords for mouse/pointer/touch
+  function getPoint(e){
+    if ('clientX' in e && 'clientY' in e) return {x: e.clientX, y: e.clientY};
+    var t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+    return t ? {x: t.clientX, y: t.clientY} : {x: 0, y: 0};
+  }
+
+  // forward event to the first element under the block
+  function forwardEvent(e, block){
+    if (!isActive(block)) return;
+    var pt = getPoint(e);
+    var stack = (document.elementsFromPoint && document.elementsFromPoint(pt.x, pt.y)) || [];
+    var under = null;
+    for (var i=0; i<stack.length; i++){
+      var el = stack[i];
+      if (!block.contains(el)) { under = el; break; }
     }
+    if (!under) return;
 
-    var COARSE  = '(hover: none), (pointer: coarse)';
-    var FINE    = '(hover: hover) and (pointer: fine)';
-    var LINKISH = 'a, [role="link"], button, [role="button"], input, textarea, select, summary, [contenteditable="true"]';
-
-    function isCoarse(){ return window.matchMedia(COARSE).matches; }
-    function isFine(){ return window.matchMedia(FINE).matches; }
-
-    function closestSection(el){
-      while (el && el !== document.body){
-        if (el.matches('.page-section, [data-section-id], section')) return el;
-        el = el.parentElement;
+    // Prefer forwarding to a clickable ancestor
+    var clickable = under.closest && under.closest('a,button,[role="button"],[role="link"],label,summary,input,textarea,select');
+    if (clickable){
+      // focus early for inputs on down events
+      if ((e.type === 'pointerdown' || e.type === 'mousedown') && typeof clickable.focus === 'function'){
+        try { clickable.focus(); } catch(_){}
       }
-      return null;
+      // .click() triggers default action (navigation) unlike dispatched synthetic events
+      try { clickable.click(); } catch(_){}
+    } else {
+      // fallback: clone and dispatch the same event at the element under
+      var clone = new e.constructor(e.type, {
+        bubbles: true, cancelable: true, view: window,
+        clientX: pt.x, clientY: pt.y, screenX: e.screenX || 0, screenY: e.screenY || 0,
+        ctrlKey: e.ctrlKey || false, shiftKey: e.shiftKey || false,
+        altKey: e.altKey || false, metaKey: e.metaKey || false,
+        button: e.button || 0, buttons: e.buttons || 0
+      });
+      under.dispatchEvent(clone);
     }
 
-    function markSection(section){
-      if (!section || section.__flipBound) return;
-      section.__flipBound = true;
+    // stop the event at the flip block so the page doesn’t see a “double”
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function setupBlock(block){
+    if (block.__flipReady) return;
+    var marker = block.querySelector('a[href="#flip-top"]');
+    if (!marker) return; // opt-in only
+
+    block.__flipReady = true;
+    block.classList.add('flip-top');
+
+    // neutralize the marker: no cursor/interaction flicker
+    marker.style.pointerEvents = 'none';
+    marker.style.cursor = 'default';
+    marker.setAttribute('aria-hidden', 'true');
+    marker.setAttribute('tabindex', '-1');
+
+    // Build flip DOM: .flip-inner > (.flip-front [orig], .flip-back [empty])
+    var inner = document.createElement('div'); inner.className = 'flip-inner';
+    var front = document.createElement('div'); front.className = 'flip-front';
+    var back  = document.createElement('div'); back.className  = 'flip-back';
+    while(block.firstChild){ front.appendChild(block.firstChild); }
+    inner.appendChild(front); inner.appendChild(back);
+    block.appendChild(inner);
+
+    // Section perspective
+    var section = closestSection(block);
+    if (section && !section.__flipSection){
+      section.__flipSection = true;
       section.classList.add('flip-section');
     }
 
-    // Choose a stable internal element to rotate (no layout collapse)
-    function pickFlipTarget(block){
-      return block.querySelector('figure.image-block-figure')
-          || block.querySelector('.image-block-outer-wrapper')
-          || block.querySelector('.intrinsic')
-          || block.querySelector('.image-block-wrapper')
-          || block.querySelector('img')
-          || block;
-    }
+    // Desktop hover flips (pure CSS via :hover). No JS needed for enter/leave.
 
-    // Two-RAF to ensure ease class applies before transform toggles
-    function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
-
-    function setEase(block, mode){
-      if (mode === 'enter'){ block.classList.remove('ease-exit'); }
-      else if (mode === 'exit'){ block.classList.add('ease-exit'); }
-    }
-
-    // Forward pointer/mouse events to whatever is under a flipped block
-    function forwardEvent(e, block){
-      if (!block.classList.contains('is-flipped')) return;
-      var prev = block.style.pointerEvents;
-      block.style.pointerEvents = 'none';
-      var target = document.elementFromPoint(e.clientX, e.clientY);
-      block.style.pointerEvents = prev;
-      if (!target || target === block) return;
-
-      var evt = new e.constructor(e.type, {
-        bubbles: true, cancelable: true, view: window,
-        clientX: e.clientX, clientY: e.clientY, screenX: e.screenX, screenY: e.screenY,
-        ctrlKey: e.ctrlKey, shiftKey: e.shiftKey, altKey: e.altKey, metaKey: e.metaKey,
-        button: e.button, buttons: e.buttons
-      });
-      target.dispatchEvent(evt);
-      e.preventDefault(); e.stopPropagation();
-    }
-
-    function setupFlipBlock(block){
-      if (block.__flipReady) return;
-      var marker = block.querySelector('a[href="#flip-top"]');
-      if (!marker) return; // opt-in only
-
-      block.__flipReady = true;
-      block.classList.add('flip-top');
-
-      var target  = pickFlipTarget(block);
-      target.classList.add('flip-target');
-
-      var section = closestSection(block);
-      markSection(section);
-
-      // Prevent marker navigation (used only as a trigger)
-      marker.addEventListener('click', function(e){
-        if (!block.classList.contains('is-flipped')){ e.preventDefault(); e.stopPropagation(); }
-      }, true);
-
-      // DESKTOP: hover-in → ENTER curve; leave → EXIT curve
-      block.addEventListener('mouseenter', function(){
-        if (!isFine()) return;
-        setEase(block, 'enter');
-        nextFrame(function(){ block.classList.add('is-flipped'); });
-      });
-
-      block.addEventListener('mouseleave', function(){
-        if (!isFine()) return;
-        setEase(block, 'exit');
-        nextFrame(function(){ block.classList.remove('is-flipped'); });
-      });
-
-      // MOBILE: tap to flip (enter)
-      block.addEventListener('click', function(e){
-        if (!isCoarse()) return;
-        if (!block.classList.contains('is-flipped')){
-          e.preventDefault(); e.stopPropagation();
-          setEase(block, 'enter');
-          nextFrame(function(){ block.classList.add('is-flipped'); });
-        }
-      }, true);
-
-      // While flipped, forward click-ish events to underlying elements
-      ['pointerdown','pointerup','mousedown','mouseup','click'].forEach(function(type){
-        block.addEventListener(type, function(e){ forwardEvent(e, block); }, true);
-      });
-
-      // Clean up the ease-exit flag after the transition completes
-      target.addEventListener('transitionend', function(ev){
-        if (ev.propertyName === 'transform'){ block.classList.remove('ease-exit'); }
-      });
-
-      // Reset when leaving viewport (use exit curve)
-      if ('IntersectionObserver' in window){
-        var io = new IntersectionObserver(function(entries){
-          entries.forEach(function(entry){
-            if (!entry.isIntersecting && block.classList.contains('is-flipped')){
-              setEase(block, 'exit');
-              nextFrame(function(){ block.classList.remove('is-flipped'); });
-            }
-          });
-        }, { threshold: 0.05 });
-        io.observe(block);
+    // Mobile: tap to flip this block
+    block.addEventListener('click', function(e){
+      if (!isCoarse()) return;
+      if (!block.classList.contains('is-flipped')){
+        e.preventDefault(); e.stopPropagation();
+        block.classList.add('is-flipped');
       }
-    }
-
-    function scan(root){
-      (root || document).querySelectorAll('.sqs-block.image-block').forEach(function(block){
-        if (block.querySelector('a[href="#flip-top"]')) setupFlipBlock(block);
-      });
-    }
-
-    // Initial scan (ready-safe)
-    scan(document);
-
-    // Outside click/tap (not on a link/control) → EXIT curve then unflip all
-    document.addEventListener('click', function(e){
-      if (e.target.closest('.flip-top')) return;
-      if (e.target.closest(LINKISH)) return;
-      document.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
-        setEase(b, 'exit');
-        nextFrame(function(){ b.classList.remove('is-flipped'); });
-      });
     }, true);
 
-    // SPA / lazy-load safety
+    // Click-through while flipped/hovered
+    ['pointerdown','pointerup','mousedown','mouseup','click','touchstart','touchend'].forEach(function(type){
+      block.addEventListener(type, function(e){ forwardEvent(e, block); }, true);
+    });
+
+    // Auto-reset when leaving viewport
+    if ('IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if (!entry.isIntersecting) block.classList.remove('is-flipped');
+        });
+      }, { threshold: 0.05 });
+      io.observe(block);
+    }
+  }
+
+  ready(function(){
+    // Scope to the section that contains this script tag
+    var section = (function(sel){
+      var el = document.currentScript;
+      while (el && el !== document.body){
+        if (el.matches && el.matches(sel)) return el;
+        el = el.parentElement;
+      }
+      return closestSection(document.currentScript);
+    })('.page-section, [data-section-id], section');
+
+    if (section) section.classList.add('flip-section');
+
+    var blocks = Array.from((section || document).querySelectorAll('.sqs-block.image-block'))
+      .filter(function(blk){ return !!blk.querySelector('a[href="#flip-top"]'); });
+
+    if (!blocks.length){
+      console.warn('FlipTop: No Image Blocks with href="#flip-top" found in scope.');
+      return;
+    }
+
+    blocks.forEach(setupBlock);
+
+    // Mobile convenience: tap blank space in the section to reset all flips
+    (section || document).addEventListener('click', function(e){
+      if (!isCoarse()) return;
+      if (!e.target.closest('a, button, [role="button"], [role="link"], input, textarea, select, summary')) {
+        (section || document).querySelectorAll('.flip-top.is-flipped').forEach(function(b){
+          b.classList.remove('is-flipped');
+        });
+      }
+    }, true);
+
+    // SPA / lazy-load safety: watch for new image blocks
     new MutationObserver(function(muts){
       muts.forEach(function(m){
         m.addedNodes.forEach(function(n){
           if (!(n instanceof Element)) return;
           if (n.matches && n.matches('.sqs-block.image-block')){
-            if (n.querySelector('a[href="#flip-top"]')) setupFlipBlock(n);
+            if (n.querySelector('a[href="#flip-top"]')) setupBlock(n);
           } else {
-            scan(n);
+            n.querySelectorAll && n.querySelectorAll('.sqs-block.image-block').forEach(function(blk){
+              if (blk.querySelector('a[href="#flip-top"]')) setupBlock(blk);
+            });
           }
         });
       });
     }).observe(document.documentElement, { childList: true, subtree: true });
-
-    console.log('[Topblock] init complete');
   });
 })();
