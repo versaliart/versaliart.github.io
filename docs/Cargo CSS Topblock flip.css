@@ -12,23 +12,65 @@
 .flip-section, body{ perspective: var(--flip-perspective); }
 
 /* Your Squarespace image block that the script marks with class "flip-top" */
+/* === Topflip "layout rescue" for script-generated wrappers === */
+
+/* 1) Make the flip container participate in layout */
 .flip-top{
-  position: relative;             /* anchor pseudo-doors */
-  display: inline-block;          /* prevent “sliver” collapse */
-  overflow: hidden;               /* keep doors clipped to the image bounds */
-  transform-style: preserve-3d;
+  display:block;                 /* prevent inline shrink-collapsing */
+  position:relative;             /* anchor pseudo-doors */
+  overflow:hidden;               /* keep doors clipped */
+  transform-style:preserve-3d;
 }
 
-/* Ensure the image renders cleanly during 3D transforms */
+/* 2) Ensure the wrappers created by JS don’t zero-out height */
+.flip-top .flip-inner{
+  position:relative;
+  display:block;
+  width:100%;
+}
+
+/* The FRONT holds the original image block content — let it size naturally */
+.flip-top .flip-front{
+  position:relative;             /* NOT absolute */
+  display:block;
+  width:100%;
+}
+
+/* The BACK is just a layer; it can be absolutely positioned */
+.flip-top .flip-back{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;           /* it’s just a visual layer */
+}
+
+/* 3) Common Squarespace image wrappers — keep them block-level and full width */
+.flip-top .sqs-block-content,
+.flip-top figure,
+.flip-top .image-block-outer-wrapper,
+.flip-top .intrinsic,
+.flip-top .image-block-wrapper,
+.flip-top .image-card,
+.flip-top .image-card-wrapper{
+  display:block;
+  width:100%;
+}
+
+/* 4) Image resets: let the image dictate height; prevent ghosting */
 .flip-top img{
   display:block;
+  max-width:100%;
   width:100%;
   height:auto;
   backface-visibility:hidden;
   -webkit-backface-visibility:hidden;
+  /* In case a theme sets these to absolute for overlays, reset them: */
+  position:relative;
+  inset:auto;
 }
 
-/* FRONT "DOORS" (pseudo halves that flip away to reveal the image) */
+/* 5) Keep your split-door look (from v1.31), now anchored to a sized box */
 .flip-top::before,
 .flip-top::after{
   content:"";
@@ -36,64 +78,39 @@
   top:0; bottom:0;
   width:50%;
   pointer-events:none;
-  background:var(--door-bg);
-  border-radius:var(--door-radius);
-  box-shadow:var(--door-shadow);
+  background: var(--door-bg, rgba(0,0,0,.08));
+  border-radius: var(--door-radius, .5rem);
+  box-shadow: var(--door-shadow, 0 .75rem 1.5rem rgba(0,0,0,.18), 0 .5rem .75rem rgba(0,0,0,.12));
   transform-style:preserve-3d;
   backface-visibility:hidden;
-  transition:transform var(--flip-duration) var(--flip-ease),
-             opacity var(--flip-duration) var(--flip-ease);
+  transition: transform var(--flip-duration, .6s) var(--flip-ease, cubic-bezier(.2,.7,.2,1));
   will-change:transform;
   z-index:2;
 }
+.flip-top::before{ left:0;  transform-origin:left center;  transform:rotateY(0deg) translateZ(1px); }
+.flip-top::after { right:0; transform-origin:right center; transform:rotateY(0deg) translateZ(1px); }
 
-/* Left door (hinge on left edge) */
-.flip-top::before{
-  left:0;
-  transform-origin:left center;
-  transform:rotateY(0deg) translateZ(1px);
-}
-
-/* Right door (hinge on right edge) */
-.flip-top::after{
-  right:0;
-  transform-origin:right center;
-  transform:rotateY(0deg) translateZ(1px);
-}
-
-/* KEEP YOUR EXISTING TRIGGERS — stop whole-card rotate, flip only the doors */
+/* Neutralize whole-card rotation only WHEN flipped classes are present */
 .flip-top.is-flipped,
 .flip-top.flipped,
 .flip-top.flip-right,
 .flip-top.flip-left{
-  transform:none !important; /* neutralize any legacy block rotation */
+  transform:none !important;
 }
 
-/* Doors open away (like your example) */
+/* Doors open (two-card effect) */
 .flip-top.is-flipped::before,
 .flip-top.flipped::before,
-.flip-top.flip-right::before{
-  transform:rotateY(-180deg) translateZ(1px);
-}
+.flip-top.flip-right::before{ transform:rotateY(-180deg) translateZ(1px); }
 .flip-top.is-flipped::after,
 .flip-top.flipped::after,
-.flip-top.flip-right::after{
-  transform:rotateY(180deg) translateZ(1px);
-}
-
-/* If you ever trigger a "left" variant, mirror it (same visual result) */
+.flip-top.flip-right::after { transform:rotateY(180deg)  translateZ(1px); }
 .flip-top.flip-left::before{ transform:rotateY(-180deg) translateZ(1px); }
 .flip-top.flip-left::after { transform:rotateY(180deg)  translateZ(1px); }
 
-/* Optional hover preview (disable if not desired) */
-/*
-.flip-top:hover::before{ transform:rotateY(-180deg) translateZ(1px); }
-.flip-top:hover::after { transform:rotateY(180deg)  translateZ(1px); }
-*/
-
-@media (prefers-reduced-motion: reduce){
-  .flip-top::before, .flip-top::after{ transition-duration:.01ms; }
-}
+/* Optional: if your theme sets transforms on images/cards, make sure they don’t override */
+.flip-top img,
+.flip-top .image-card{ transform:none; }
 
 <script>
 /* ===== Multi-Flip setup for only this section ===== */
