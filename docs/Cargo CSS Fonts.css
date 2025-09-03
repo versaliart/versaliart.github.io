@@ -296,7 +296,7 @@ button.sqs-add-to-cart-button{
 
 /* Internal padding for all Squarespace Text blocks (7.1) */
 :root{
-  --tb-pad-y: 0;        /* top/bottom padding */
+  --tb-pad-y: 0.5rem;        /* top/bottom padding */
   --tb-pad-x: 0.5rem;   /* left/right padding */
 }
 
