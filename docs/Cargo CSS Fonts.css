@@ -5,23 +5,14 @@
 /* ------------------------------
    CRIMSON PRO
 --------------------------------*/
-/* Regular (400) */
-@font-face {
+@font-face{
   font-family: "Crimson Pro";
   src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b4fe9ef762c1becddd2/1756441424539/CrimsonPro-VariableFont_wght.woff2") format("woff2");
-  font-weight: 400;
+  font-weight: 200 900;   /* expose the range that file supports */
   font-style: normal;
   font-display: swap;
 }
 
-/* Medium (500) */
-@font-face {
-  font-family: "Crimson Pro";
-  src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b4fe9ef762c1becddd2/1756441424539/CrimsonPro-VariableFont_wght.woff2") format("woff2");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
 
 /* ------------------------------
    MAAX FAMILY
@@ -140,6 +131,8 @@
   font-weight:300;             /* Regular */
   font-size:var(--p2);
   line-height:1.5;
+  font-optical-sizing:auto;
+  font-synthesis-weight:none; /* guard against faux bold */
 }
 
 /* Paragraph 3 */
