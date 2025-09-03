@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.4===== */
+/* ===== Topblock Split-Flip (Doors) v2.41===== */
 
 :root{
   --flip-duration: 520ms;
@@ -115,4 +115,13 @@
 }
 .sqs-block.image-block.flip-top .flip-doors{
   overflow: hidden; /* keep overlap inside rounded corners */
+}
+
+.sqs-block.image-block.flip-top .flip-seam-shield{
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  will-change: transform;
+  pointer-events: none;
 }

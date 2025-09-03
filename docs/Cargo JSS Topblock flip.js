@@ -1,8 +1,8 @@
-/* ===== Topblock Split-Flip (Doors) v2.4===== */
+/* ===== Topblock Split-Flip (Doors) v2.41===== */
 
 (function(){
-  // ---------- Build DOM for the doors ----------
-  function buildDoors(url){
+  // ---------- DOM builders ----------
+  function buildDoors(){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
     const makeDoor = side => {
@@ -15,23 +15,22 @@
     };
     doors.appendChild(makeDoor('left'));
     doors.appendChild(makeDoor('right'));
-    doors.dataset.image = url; // used by layout()
     return doors;
   }
 
-  // ---------- Pixel-accurate cover sizing + focal point, with seam overlap ----------
-  function layout(block){
-    const container = block.querySelector('.fluid-image-container');
-    const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
-    const doors     = block.querySelector('.flip-doors');
-    if (!container || !imgEl || !doors) return;
+  function buildSeamShield(){
+    const shield = document.createElement('div');
+    shield.className = 'flip-seam-shield'; // full-size, behind doors
+    shield.style.pointerEvents = 'none';
+    return shield;
+  }
 
-    // Container size
+  // ---------- Cover sizing + focal point (shared for shield and doors) ----------
+  function computeCover(container, imgEl){
     const rect = container.getBoundingClientRect();
     const W = Math.max(1, rect.width);
     const H = Math.max(1, rect.height);
 
-    // Natural image dimensions (Squarespace also provides data-image-dimensions="WxH")
     let iw = imgEl.naturalWidth  || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
@@ -40,7 +39,6 @@
       if (dw && dh) { iw = dw; ih = dh; }
     }
 
-    // Focal point (0..1, 0..1). Default center.
     let fx = 0.5, fy = 0.5;
     const fp = imgEl.getAttribute('data-image-focal-point');
     if (fp && fp.includes(',')) {
@@ -49,49 +47,67 @@
       if (!isNaN(sy)) fy = sy;
     }
 
-    // Compute "cover" scale like object-fit: cover
     const scale = Math.max(W / iw, H / ih);
     const bgW = Math.round(iw * scale);
     const bgH = Math.round(ih * scale);
-
-    // Top-left background position so focal point aligns
     const posX = Math.round((W * fx) - (bgW * fx));
     const posY = Math.round((H * fy) - (bgH * fy));
 
-    // Seam overlap (px) from CSS variables
+    return { W, H, bgW, bgH, posX, posY };
+  }
+
+  // ---------- Layout everything (doors + seam shield) ----------
+  function layout(block){
+    const container = block.querySelector('.fluid-image-container');
+    const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
+    const doors     = block.querySelector('.flip-doors');
+    const shield    = block.querySelector('.flip-seam-shield');
+    if (!container || !imgEl || !doors || !shield) return;
+
+    const { W, H, bgW, bgH, posX, posY } = computeCover(container, imgEl);
+
+    // Read current URL (srcset may have swapped)
+    const url = imgEl.currentSrc || imgEl.src;
+
+    // Seam variables (px) — hover-aware because your CSS widens doors on hover
     const cs = getComputedStyle(doors);
     const seamIdle = parseFloat(cs.getPropertyValue('--flip-seam')) || 0;
     const seamOpen = parseFloat(cs.getPropertyValue('--flip-seam-open')) || seamIdle;
-
-    // Detect hover to switch overlap used by CSS widths
     const isHovering = block.matches(':hover');
     const seam = isHovering ? seamOpen : seamIdle;
 
-    // Faces
+    // Paint seam shield with the same image/cover — sits *under* the doors
+    shield.style.backgroundImage  = `url("${url}")`;
+    shield.style.backgroundSize   = `${bgW}px ${bgH}px`;
+    shield.style.backgroundPosition = `${posX}px ${posY}px`;
+    shield.style.backgroundRepeat = 'no-repeat';
+
+    // Door faces
     const leftFront  = doors.querySelector('.flip-door.left  .face.front');
     const rightFront = doors.querySelector('.flip-door.right .face.front');
     const leftBack   = doors.querySelector('.flip-door.left  .face.back');
     const rightBack  = doors.querySelector('.flip-door.right .face.back');
 
-    const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
-
-    // Apply background to a face; dx is the door's local x offset
     const styleFace = (el, dx) => {
       if (!el) return;
       el.style.backgroundImage    = `url("${url}")`;
       el.style.backgroundSize     = `${bgW}px ${bgH}px`;
       el.style.backgroundPosition = `${posX - dx}px ${posY}px`;
       el.style.backgroundRepeat   = 'no-repeat';
+      // promote for stability
+      el.style.transform = 'translateZ(0)';
+      el.style.backfaceVisibility = 'hidden';
+      el.style.webkitBackfaceVisibility = 'hidden';
     };
 
-    // Left door uses container origin; right door's origin is center minus overlap
+    // Left uses container origin; right uses center minus overlap
     styleFace(leftFront, 0);
     styleFace(leftBack,  0);
     styleFace(rightFront, (W / 2) - seam);
     styleFace(rightBack,  (W / 2) - seam);
   }
 
-  // ---------- Initialize one block ----------
+  // ---------- Init one Squarespace image block ----------
   function initOne(block){
     if (block.classList.contains('flip-top')) return;
 
@@ -99,36 +115,47 @@
     const img = block.querySelector('img[data-sqsp-image-block-image]');
     if (!container || !img) return;
 
-    const url = img.currentSrc || img.src;
-    if (!url) return;
+    // Leave the original IMG visible (opacity 1); we’ll cover it with shield+doors.
+    // This keeps the underlying content identical to stock and aids AA.
 
-    block.classList.add('flip-top');           // mark as processed
-    const doors = buildDoors(url);
+    // Insert seam shield (under doors)
+    const shield = buildSeamShield();
+    shield.style.position = 'absolute';
+    shield.style.inset = '0';
+    shield.style.zIndex = '0'; // base of our overlay stack
+    container.appendChild(shield);
+
+    // Insert doors (above shield)
+    const doors = buildDoors();
+    doors.style.position = 'absolute';
+    doors.style.inset = '0';
+    doors.style.zIndex = '1';
     container.appendChild(doors);
 
+    // Mark processed
+    block.classList.add('flip-top');
+
     const relayout = () => layout(block);
+    // Initial layout
     relayout();
 
-    // ResizeObserver: relayout on container size changes
+    // Resize / srcset swaps / load
     const ro = new ResizeObserver(relayout);
     ro.observe(container);
 
-    // MutationObserver: relayout if img src/srcset swaps (lazy/responsive)
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
 
-    // Ensure layout after the image fully loads
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
 
-    // Also relayout when hover state changes (so seam offset matches open/idle widths)
+    // Recompute when hover state changes, to keep offset matching open width
     block.addEventListener('mouseenter', relayout);
     block.addEventListener('mouseleave', relayout);
-    // Touch: treat first touch as hover change on mobile
     block.addEventListener('touchstart', relayout, { passive: true });
-    block.addEventListener('touchend', relayout,   { passive: true });
+    block.addEventListener('touchend',   relayout, { passive: true });
   }
 
-  // ---------- Initialize all eligible blocks ----------
+  // ---------- Init all eligible blocks (href="#flip-top") ----------
   function initAll(){
     document.querySelectorAll('.sqs-block.image-block').forEach(block => {
       const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
@@ -136,7 +163,6 @@
     });
   }
 
-  // Boot + watch DOM for dynamically added blocks (Squarespace editor/lazy)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);
   } else {
