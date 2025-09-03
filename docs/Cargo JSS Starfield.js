@@ -1,13 +1,13 @@
 <script>
 /* -----------------------------------------------------------
-   Starfield v1.0 (patched)
-   - Bootstrap wrapper ensures live/editor readiness
-   - Adds body.has-starfield
-   - Ensures #starfield-enable exists INSIDE a real section
-   - Then runs your per-section Starfield build
+   Starfield v1.0 (overlay removed) — Live + Editor safe
+   - Per-section build (targets the section that contains #starfield-enable)
+   - If no marker exists, inserts one into the first section
+   - Edge-biased placement, no drift, opacity twinkle
+   - Sizes quantized S/M/L via phi
 ----------------------------------------------------------- */
 
-console.log("[Starfield] external JS executing (patched)");
+console.log("[Starfield] external JS executing (overlay-free, patched)");
 
 (function () {
   // ---- helpers for readiness / selection
@@ -52,6 +52,10 @@ console.log("[Starfield] external JS executing (patched)");
   }
 
   onReady(function () {
+    // Optional: restrict to specific paths
+    // const ENABLE_ON_PATHS = ["/", "/work"];
+    // if (!ENABLE_ON_PATHS.some(p => location.pathname.startsWith(p))) return;
+
     // Wait until Squarespace has laid out at least one major wrapper/section
     whenSelector("section.page-section, section.sqs-section, .content-wrapper, main", function () {
       const ctx = findOrCreateTargetSection();
@@ -63,7 +67,7 @@ console.log("[Starfield] external JS executing (patched)");
       console.log("[Starfield] init start");
 
       /* =========================================================
-         Your Starfield v1.0 code (slightly tidied, no logic change)
+         Starfield core (overlay removed)
       ==========================================================*/
 
       // ---------- helpers ----------
@@ -99,7 +103,7 @@ console.log("[Starfield] external JS executing (patched)");
         return raw.endsWith('px') ? (n / remPx) : n; // convert px→rem if needed
       }
 
-      // U-shaped sampler (unused in current placement but kept for future tweaks)
+      // U-shaped sampler (kept for future tweaks)
       function uShape(power = 0.6) {
         const p = clamp(power, 0.05, 3);
         const u = Math.random();                   // [0,1]
@@ -169,7 +173,7 @@ console.log("[Starfield] external JS executing (patched)");
         return el;
       }
 
-      // ---------- ensureContainer: stars in THIS section ----------
+      // ---------- ensureContainer: stars in THIS section (no overlay) ----------
       function ensureContainer(section) {
         let container = section.querySelector(':scope > .star-container');
         if (!container) {
