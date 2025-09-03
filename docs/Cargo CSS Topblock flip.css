@@ -1,199 +1,132 @@
-/* ===== Topflip v1.33 "split-doors" appearance (no JS/markup changes) ===== */
+/* Topblock Flip v1.35  */
+
+/* ---------- Base v1.3 ---------- */
 :root{
-  --flip-duration: .6s;
-  --flip-ease: cubic-bezier(.2,.7,.2,1);
-  --flip-perspective: 62.5rem; /* ~1000px */
-  --door-bg: rgba(0,0,0,.08);  /* set to transparent if you want no tint */
-  --door-radius: .5rem;
-  --door-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18), 0 .5rem .75rem rgba(0,0,0,.12);
+  /* Tune these to taste */
+  --flip-dur-enter: 650ms;  /* first flip = slower */
+  --flip-dur-exit:  650ms;  /* unflip     = quicker */
+
+  --flip-ease-enter: cubic-bezier(.4,0,.2,1);
+  --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
+  --flip-perspective: 1000px;
 }
 
-/* Put perspective on a safe ancestor (JS adds .flip-section to the section) */
-.flip-section, body{ perspective: var(--flip-perspective); }
+.flip-section { position: relative; perspective: var(--flip-perspective); }
+.flip-top     { position: relative; isolation: isolate; }
 
-/* Your Squarespace image block that the script marks with class "flip-top" */
-/* === Topflip "layout rescue" for script-generated wrappers === */
-
-/* 1) Make the flip container participate in layout */
-.flip-top{
-  display:block;                 /* prevent inline shrink-collapsing */
-  position:relative;             /* anchor pseudo-doors */
-  overflow:hidden;               /* keep doors clipped */
-  transform-style:preserve-3d;
-}
-
-/* 2) Ensure the wrappers created by JS don’t zero-out height */
+/* Wrapper + faces fill the figure */
 .flip-top .flip-inner{
-  position:relative;
-  display:block;
-  width:100%;
+  display: grid;
+  transform-style: preserve-3d;
+  transition-property: transform; /* important! */
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
+  will-change: transform;
+  width: 100%; height: 100%;
 }
-
-/* The FRONT holds the original image block content — let it size naturally */
-.flip-top .flip-front{
-  position:relative;             /* NOT absolute */
-  display:block;
-  width:100%;
-}
-
-/* The BACK is just a layer; it can be absolutely positioned */
+.flip-top .flip-front,
 .flip-top .flip-back{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  pointer-events:none;           /* it’s just a visual layer */
+  grid-area: 1 / 1;
+  width: 100%; height: 100%;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
+}
+.flip-top .flip-back{ transform: rotateY(180deg); pointer-events: none; }
+
+/* Marker anchor is just an opt-in flag */
+.flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
+
+/* Flipped states (JS toggles .hover / .is-flipped) */
+.flip-top.hover .flip-inner,
+.flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
+
+/* Directional timing (JS swaps these classes before each change) */
+.flip-top.ease-enter .flip-inner{
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
+}
+.flip-top.ease-exit .flip-inner{
+  transition-duration: var(--flip-dur-exit);
+  transition-timing-function: var(--flip-ease-exit);
 }
 
-/* 3) Common Squarespace image wrappers — keep them block-level and full width */
-.flip-top .sqs-block-content,
-.flip-top figure,
-.flip-top .image-block-outer-wrapper,
-.flip-top .intrinsic,
-.flip-top .image-block-wrapper,
-.flip-top .image-card,
-.flip-top .image-card-wrapper{
-  display:block;
-  width:100%;
+/* Motion safety */
+@media (prefers-reduced-motion: reduce){
+  .flip-top .flip-inner { transition: none !important; }
 }
 
-/* 4) Image resets: let the image dictate height; prevent ghosting */
-.flip-top img{
-  display:block;
-  max-width:100%;
-  width:100%;
-  height:auto;
-  backface-visibility:hidden;
-  -webkit-backface-visibility:hidden;
-  /* In case a theme sets these to absolute for overlays, reset them: */
-  position:relative;
-  inset:auto;
+/* ---------- Split-Doors add-on (image halves on the FRONT face) ---------- */
+
+/* guard against hairline seam between doors */
+:root{
+  --door-overlap: 0.5px; /* center overlap to hide subpixel seams */
 }
 
-/* 5) Keep your split-door look (from v1.31), now anchored to a sized box */
-.flip-top::before,
-.flip-top::after{
+/* Front must anchor the pseudo-doors */
+.flip-top .flip-front{ position: relative; }
+
+/* Doors = the same photo, split into left/right halves via --flip-image */
+.flip-top .flip-front::before,
+.flip-top .flip-front::after{
   content:"";
   position:absolute;
-  top:0; bottom:0;
-  width:50%;
-  pointer-events:none;
-  background: var(--door-bg, rgba(0,0,0,.08));
-  border-radius: var(--door-radius, .5rem);
-  box-shadow: var(--door-shadow, 0 .75rem 1.5rem rgba(0,0,0,.18), 0 .5rem .75rem rgba(0,0,0,.12));
-  transform-style:preserve-3d;
-  backface-visibility:hidden;
-  transition: transform var(--flip-duration, .6s) var(--flip-ease, cubic-bezier(.2,.7,.2,1));
-  will-change:transform;
-  z-index:2;
-}
-.flip-top::before{ left:0;  transform-origin:left center;  transform:rotateY(0deg) translateZ(1px); }
-.flip-top::after { right:0; transform-origin:right center; transform:rotateY(0deg) translateZ(1px); }
+  inset:0;
+  width: calc(50% + var(--door-overlap));
+  z-index: 2;                                /* above the real <img> */
+  transform-style: preserve-3d;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  pointer-events: none;
 
-/* Neutralize whole-card rotation only WHEN flipped classes are present */
-.flip-top.is-flipped,
-.flip-top.flipped,
-.flip-top.flip-right,
-.flip-top.flip-left{
-  transform:none !important;
+  /* Use the CSS var that JS sets from the <img> */
+  background-image: var(--flip-image);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+  transition-property: transform, opacity;
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
 }
 
-/* Doors open (two-card effect) */
-.flip-top.is-flipped::before,
-.flip-top.flipped::before,
-.flip-top.flip-right::before{ transform:rotateY(-180deg) translateZ(1px); }
-.flip-top.is-flipped::after,
-.flip-top.flipped::after,
-.flip-top.flip-right::after { transform:rotateY(180deg)  translateZ(1px); }
-.flip-top.flip-left::before{ transform:rotateY(-180deg) translateZ(1px); }
-.flip-top.flip-left::after { transform:rotateY(180deg)  translateZ(1px); }
+/* Left half */
+.flip-top .flip-front::before{
+  left: 0;
+  transform-origin: left center;
+  background-position: left center;
+}
 
-/* Optional: if your theme sets transforms on images/cards, make sure they don’t override */
-.flip-top img,
-.flip-top .image-card{ transform:none; }
+/* Right half (mirror) */
+.flip-top .flip-front::after{
+  right: 0;
+  transform-origin: right center;
+  background-position: right center;
+}
 
-<script>
-/* ===== Multi-Flip setup for only this section ===== */
-(function(){
-  function closestSection(el){
-    while(el && el!==document.body){
-      if(el.matches('.page-section, [data-section-id], section')) return el;
-      el = el.parentElement;
-    }
-    return null;
-  }
-  function ready(fn){
-    if(document.readyState!=='loading') fn();
-    else document.addEventListener('DOMContentLoaded', fn, {once:true});
-  }
+/* Doors open on hover/tap (same triggers) */
+.flip-top.hover .flip-front::before,
+.flip-top.is-flipped .flip-front::before{
+  transform: rotateY(-180deg);
+}
+.flip-top.hover .flip-front::after,
+.flip-top.is-flipped .flip-front::after{
+  transform: rotateY(180deg);
+}
 
-  ready(function(){
-    var scriptEl = document.currentScript;
-    var section = closestSection(scriptEl);
-    if(!section) return;
-    section.classList.add('flip-section');
+/* Make door transitions respect exit timing as well */
+.flip-top.ease-exit .flip-front::before,
+.flip-top.ease-exit .flip-front::after{
+  transition-duration: var(--flip-dur-exit);
+  transition-timing-function: var(--flip-ease-exit);
+}
 
-    // Find every Image Block in this section marked as a Top Block
-    var blocks = Array.from(section.querySelectorAll('.sqs-block.image-block'))
-      .filter(function(blk){ return !!blk.querySelector('a[href="#flip-top"]'); });
+/* Neutralize the base inner rotate — doors provide the flip illusion */
+.flip-top.hover .flip-inner,
+.flip-top.is-flipped .flip-inner{
+  transform: none !important;
+}
 
-    if(!blocks.length){
-      console.warn('FlipTop: No Image Blocks with href="#flip-top" in this section.');
-      return;
-    }
+/* Hide the real image while doors are open/flipped so nothing peeks through */
+.flip-top.hover .flip-front img,
+.flip-top.is-flipped .flip-front img{
+  opacity: 0;
+}
 
-    blocks.forEach(function(block){
-      if(block.__flipReady) return; // idempotent
-      block.__flipReady = true;
-      block.classList.add('flip-top');
-
-      // Build flip DOM: .flip-inner > (.flip-front [original content], .flip-back [empty])
-      var inner = document.createElement('div'); inner.className = 'flip-inner';
-      var front = document.createElement('div'); front.className = 'flip-front';
-      var back  = document.createElement('div'); back.className  = 'flip-back';
-
-      while(block.firstChild){ front.appendChild(block.firstChild); }
-      inner.appendChild(front); inner.appendChild(back);
-      block.appendChild(inner);
-
-      // Use the marker link as a trigger; never navigate
-      var marker = front.querySelector('a[href="#flip-top"]');
-      if(marker){
-        marker.addEventListener('click', function(e){
-          e.preventDefault(); e.stopPropagation();
-          if (matchMedia('(hover: none), (pointer: coarse)').matches) {
-            block.classList.add('is-flipped'); // mobile tap → flip this block only
-          }
-        }, true);
-      }
-
-      // Also allow tapping anywhere on the Top Block (mobile) to flip
-      block.addEventListener('click', function(){
-        if (matchMedia('(hover: none), (pointer: coarse)').matches) {
-          block.classList.add('is-flipped');
-        }
-      }, true);
-
-      // Auto-reset when the block scrolls off-screen
-      if('IntersectionObserver' in window){
-        var io = new IntersectionObserver(function(entries){
-          entries.forEach(function(entry){
-            if(!entry.isIntersecting){ block.classList.remove('is-flipped'); }
-          });
-        }, {threshold: 0.05});
-        io.observe(block);
-      }
-    });
-
-    // Mobile convenience: tap blank space in the section to reset all flipped blocks
-    section.addEventListener('click', function(e){
-      if (!(matchMedia('(hover: none), (pointer: coarse)').matches)) return;
-      if (!e.target.closest('a, button, [role="button"]')) {
-        section.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
-          b.classList.remove('is-flipped');
-        });
-      }
-    });
-  });
-})();
-</script>
+/* Keep the back inert as before */
+.flip-top .flip-back{ pointer-events: none; }

@@ -1,5 +1,6 @@
-/* Topblock Flip v1.3 — non-destructive wrap + directional duration/easing + real click-through */
-
+/* Topblock Flip v1.35 — non-destructive wrap + directional duration/easing + real click-through
+   + exposes the image URL to CSS as --flip-image for split-doors
+*/
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
   var COARSE='(hover: none), (pointer: coarse)', FINE='(hover: hover) and (pointer: fine)';
@@ -23,18 +24,12 @@
         || block;
   }
 
-  // Force the browser to commit current styles before we toggle transform.
-  function flush(el){
-    try { void el.offsetWidth; } catch(_) {}
-  }
-
+  function flush(el){ try { void el.offsetWidth; } catch(_) {} }
   function setEase(block, mode){
     block.classList.toggle('ease-enter', mode === 'enter');
     block.classList.toggle('ease-exit',  mode === 'exit');
   }
-
   function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
-
   function isActive(block){ return block.classList.contains('hover') || block.classList.contains('is-flipped'); }
 
   function getPoint(e){
@@ -64,13 +59,13 @@
   }
 
   function flipEnter(block){
-    setEase(block,'enter');                 // pick enter timing + duration
-    if (block.__flipInner) flush(block.__flipInner);  // lock it in
+    setEase(block,'enter');
+    if (block.__flipInner) flush(block.__flipInner);
     nextFrame(function(){ block.classList.add('hover'); });
   }
 
   function flipExit(block){
-    setEase(block,'exit');                  // pick exit timing + duration
+    setEase(block,'exit');
     if (block.__flipInner) flush(block.__flipInner);
     nextFrame(function(){ block.classList.remove('hover'); });
   }
@@ -98,8 +93,30 @@
     front.appendChild(target);
     inner.appendChild(front);
     inner.appendChild(back);
+    block.appendChild(inner);
 
     block.__flipInner = inner; // save for flush()
+
+    // --- NEW: expose the image URL as --flip-image for the split-doors CSS ---
+    (function(){
+      var img = front.querySelector('img');
+      function pickSrc(el){
+        if (!el) return "";
+        return el.currentSrc || el.getAttribute('data-src') || el.getAttribute('data-image') || el.src || "";
+      }
+      function setVar(){
+        var src = pickSrc(img);
+        if (src) front.style.setProperty('--flip-image', 'url("'+ src +'")');
+      }
+      if (img){
+        setVar();
+        img.addEventListener('load', setVar, {passive:true});
+        if ('MutationObserver' in window){
+          new MutationObserver(setVar).observe(img, {attributes:true, attributeFilter:['src','data-src','data-image','srcset']});
+        }
+      }
+    })();
+    // -------------------------------------------------------------------------
 
     // add section perspective once
     var section = closestSection(block);
