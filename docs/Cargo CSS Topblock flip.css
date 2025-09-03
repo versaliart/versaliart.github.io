@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.3===== */
+/* ===== Topblock Split-Flip (Doors) v2.4===== */
 
 :root{
   --flip-duration: 520ms;
@@ -80,3 +80,39 @@
 
 /* extra stability while rotating */
 .sqs-block.image-block.flip-top .flip-door { backface-visibility: hidden; transform-style: preserve-3d; }
+
+/* Seam control */
+:root{
+  --flip-seam: 1px;              /* overlap when idle */
+  --flip-seam-open: 2px;         /* a bit more overlap while flipping */
+}
+
+/* Make doors physically overlap instead of negative margins */
+.sqs-block.image-block.flip-top .flip-door{
+  width: calc(50% + var(--flip-seam));
+}
+
+.sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
+.sqs-block.image-block.flip-top .flip-door.right { right: 0; transform-origin: center right; }
+
+/* While opening (hovering), increase the overlap to hide sub-pixel slivers */
+.sqs-block.image-block.flip-top:hover .flip-door{
+  width: calc(50% + var(--flip-seam-open));
+}
+
+/* Keep the right half infinitesimally in front to cover the join during rotation */
+.sqs-block.image-block.flip-top .flip-door.right{
+  transform: translateZ(0.1px) rotateY(0deg); /* Z gets composed with rotateY via transitions */
+}
+.sqs-block.image-block.flip-top.is-hovering .flip-door.right { /* if you used the class version */
+  transform: translateZ(0.1px) rotateY(180deg);
+}
+
+/* Stabilizers */
+.sqs-block.image-block.flip-top .face{
+  backface-visibility: hidden;
+  transform: translateZ(0); /* promote to its own layer */
+}
+.sqs-block.image-block.flip-top .flip-doors{
+  overflow: hidden; /* keep overlap inside rounded corners */
+}

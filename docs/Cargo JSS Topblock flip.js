@@ -1,5 +1,7 @@
-/* ===== Topblock Split-Flip (Doors) v2.3===== */
+/* ===== Topblock Split-Flip (Doors) v2.4===== */
+
 (function(){
+  // ---------- Build DOM for the doors ----------
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
@@ -13,7 +15,7 @@
     };
     doors.appendChild(makeDoor('left'));
     doors.appendChild(makeDoor('right'));
-    doors.dataset.image = url; // stash url for layout()
+    doors.dataset.image = url; // used by layout()
     return doors;
   }
 
@@ -29,7 +31,7 @@
     const W = Math.max(1, rect.width);
     const H = Math.max(1, rect.height);
 
-    // Natural image dimensions (Squarespace adds data-image-dimensions="WxH")
+    // Natural image dimensions (Squarespace also provides data-image-dimensions="WxH")
     let iw = imgEl.naturalWidth  || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
@@ -47,7 +49,7 @@
       if (!isNaN(sy)) fy = sy;
     }
 
-    // Compute "cover" scale
+    // Compute "cover" scale like object-fit: cover
     const scale = Math.max(W / iw, H / ih);
     const bgW = Math.round(iw * scale);
     const bgH = Math.round(ih * scale);
@@ -56,8 +58,14 @@
     const posX = Math.round((W * fx) - (bgW * fx));
     const posY = Math.round((H * fy) - (bgH * fy));
 
-    // Seam overlap (in px) read from CSS variable --flip-seam on .flip-doors
-    const seam = parseFloat(getComputedStyle(doors).getPropertyValue('--flip-seam')) || 0;
+    // Seam overlap (px) from CSS variables
+    const cs = getComputedStyle(doors);
+    const seamIdle = parseFloat(cs.getPropertyValue('--flip-seam')) || 0;
+    const seamOpen = parseFloat(cs.getPropertyValue('--flip-seam-open')) || seamIdle;
+
+    // Detect hover to switch overlap used by CSS widths
+    const isHovering = block.matches(':hover');
+    const seam = isHovering ? seamOpen : seamIdle;
 
     // Faces
     const leftFront  = doors.querySelector('.flip-door.left  .face.front');
@@ -67,7 +75,7 @@
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
-    // Helper to apply background to a face; dx is the door's local x offset
+    // Apply background to a face; dx is the door's local x offset
     const styleFace = (el, dx) => {
       if (!el) return;
       el.style.backgroundImage    = `url("${url}")`;
@@ -76,8 +84,7 @@
       el.style.backgroundRepeat   = 'no-repeat';
     };
 
-    // Left door uses container origin; right door's origin is shifted by half width,
-    // minus the overlap seam so the pixels line up perfectly.
+    // Left door uses container origin; right door's origin is center minus overlap
     styleFace(leftFront, 0);
     styleFace(leftBack,  0);
     styleFace(rightFront, (W / 2) - seam);
@@ -110,8 +117,15 @@
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
 
-    // If the image wasn't loaded yet, relayout after load
+    // Ensure layout after the image fully loads
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
+
+    // Also relayout when hover state changes (so seam offset matches open/idle widths)
+    block.addEventListener('mouseenter', relayout);
+    block.addEventListener('mouseleave', relayout);
+    // Touch: treat first touch as hover change on mobile
+    block.addEventListener('touchstart', relayout, { passive: true });
+    block.addEventListener('touchend', relayout,   { passive: true });
   }
 
   // ---------- Initialize all eligible blocks ----------
@@ -122,7 +136,7 @@
     });
   }
 
-  // Run now and on DOM changes (Squarespace editor / lazy mounts)
+  // Boot + watch DOM for dynamically added blocks (Squarespace editor/lazy)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);
   } else {
