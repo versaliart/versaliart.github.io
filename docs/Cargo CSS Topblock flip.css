@@ -84,3 +84,11 @@
 
 /* Optional: initial state for first render (closed by default) */
 .flip-top:not(.is-open):not(.is-closed){ /* default */ }
+
+/* Enable hover-driven doors (unless explicitly disabled with .no-hover) */
+.flip-top:not(.no-hover):hover .flip-door.left  { transform: rotateY(-180deg); }
+.flip-top:not(.no-hover):hover .flip-door.right { transform: rotateY( 180deg);  }
+
+/* Make sure the container actually receives hover */
+.flip-top{ pointer-events: auto; }
+.flip-top .flip-doors{ pointer-events: none; } /* underlying links remain clickable */
