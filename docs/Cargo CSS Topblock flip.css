@@ -24,6 +24,7 @@
   will-change: transform;
   width: 100%; height: 100%;
 }
+
 .flip-top .flip-front,
 .flip-top .flip-back{
   grid-area: 1 / 1;
@@ -65,18 +66,19 @@
 .flip-top .flip-front{ position: relative; }
 
 /* Doors = the same photo, split into left/right halves via --flip-image */
+/* --- FIX: anchor halves to their own edges (no inset:0) --- */
 .flip-top .flip-front::before,
 .flip-top .flip-front::after{
-  content:"";
-  position:absolute;
-  inset:0;
+  /* remove inset:0; */
+  top: 0;
+  bottom: 0;
   width: calc(50% + var(--door-overlap));
-  z-index: 2;                                /* above the real <img> */
+  z-index: 2;
   transform-style: preserve-3d;
-  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   pointer-events: none;
 
-  /* Use the CSS var that JS sets from the <img> */
   background-image: var(--flip-image);
   background-repeat: no-repeat;
   background-size: 200% 100%;
@@ -87,17 +89,20 @@
 
 /* Left half */
 .flip-top .flip-front::before{
-  left: 0;
+  left: 0;             /* ✅ pin to left only */
+  right: auto;         /* ✅ ensure width is respected */
   transform-origin: left center;
   background-position: left center;
 }
 
-/* Right half (mirror) */
+/* Right half */
 .flip-top .flip-front::after{
-  right: 0;
+  right: 0;            /* ✅ pin to right only */
+  left: auto;          /* ✅ ensure width is respected */
   transform-origin: right center;
   background-position: right center;
 }
+
 
 /* Doors open on hover/tap (same triggers) */
 .flip-top.hover .flip-front::before,
