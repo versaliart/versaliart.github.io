@@ -1,94 +1,72 @@
-/* ===== Topblock Split-Flip (Doors) v2.0===== */
+/* ===== Topblock Split-Flip (Doors) v2.1===== */
 :root{
-  --flip-duration: 520ms;                   /* total door flip time */
-  --flip-ease-out: cubic-bezier(.2,.7,.2,1);/* open */
-  --flip-ease-in:  cubic-bezier(.2,.7,.2,1);/* close (can differ if you want) */
+  --flip-duration: 520ms;
+  --flip-ease-out: cubic-bezier(.2,.7,.2,1);
+  --flip-ease-in:  cubic-bezier(.2,.7,.2,1);
   --flip-perspective: 1000px;
 }
 
-/* Container that already exists in your build */
-.flip-top{
-  position: relative;
+/* Opt-in marker added by JS: .flip-top */
+.sqs-block.image-block.flip-top .fluid-image-container{
   perspective: var(--flip-perspective);
-  touch-action: manipulation;
-  /* ensure underlying content stays clickable when closed */
-}
-
-/* Your existing inner 3D wrapper */
-.flip-top .flip-inner{
-  position: relative;
   transform-style: preserve-3d;
+  position: relative;
 }
 
-/* Hide the original single-piece front (we’ll recreate it as two doors) */
-.flip-top .flip-front{
-  opacity: 0;
-  pointer-events: none;
+/* Hide the <img> (we’ll redraw it as two doors); keeps layout intact */
+.sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{
+  opacity: 0 !important;
 }
 
-/* Doors host (auto-injected by JS) */
-.flip-top .flip-doors{
+/* Doors host (injected) */
+.sqs-block.image-block.flip-top .flip-doors{
   position: absolute;
   inset: 0;
-  contain: layout paint;
+  border-radius: inherit;                /* match your rounded corners */
+  overflow: hidden;                      /* respect radius/masks */
   transform-style: preserve-3d;
-  pointer-events: none; /* underlying content remains clickable */
+  pointer-events: none;                  /* clicks go to the link below */
+  contain: layout paint;
 }
 
-/* Each door half */
-.flip-top .flip-door{
+/* Each door */
+.sqs-block.image-block.flip-top .flip-door{
   position: absolute;
   top: 0; bottom: 0;
   width: 50%;
+  will-change: transform;
   transform-style: preserve-3d;
   backface-visibility: hidden;
-  will-change: transform;
   transition-property: transform;
   transition-duration: var(--flip-duration);
 }
 
-/* Origins for hinge behavior */
-.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
-.flip-top .flip-door.right { right: 0; transform-origin: center right; }
+/* Hinge origins */
+.sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
+.sqs-block.image-block.flip-top .flip-door.right { right: 0; transform-origin: center right; }
 
-/* Different easing for open vs close */
-.flip-top.is-open .flip-door{ transition-timing-function: var(--flip-ease-out); }
-.flip-top.is-closed .flip-door{ transition-timing-function: var(--flip-ease-in); }
-
-/* Faces inside each door */
-.flip-top .face{
+/* Faces share the same image, split via background-position */
+.sqs-block.image-block.flip-top .face{
   position: absolute; inset: 0;
   backface-visibility: hidden;
-  background-image: var(--flip-image);
   background-repeat: no-repeat;
-  background-size: 200% 100%; /* 2 halves of one image */
+  background-size: 200% 100%;            /* one image stretched across both halves */
   background-color: transparent;
 }
+.sqs-block.image-block.flip-top .flip-door.left  .face{ background-position: left  center; }
+.sqs-block.image-block.flip-top .flip-door.right .face{ background-position: right center; }
+.sqs-block.image-block.flip-top .back{ transform: rotateY(180deg); }
 
-/* Assign the correct half of the background to each door-face */
-.flip-top .flip-door.left  .face{ background-position: left center; }
-.flip-top .flip-door.right .face{ background-position: right center; }
+/* Default (closed) */
+.sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
+.sqs-block.image-block.flip-top .flip-door.right { transform: rotateY(0deg); }
 
-/* Invisible backside (still needed for 3D correctness) */
-.flip-top .back{ transform: rotateY(180deg); }
+/* Hover opens the doors outward; keep distinct eases on enter/leave */
+.sqs-block.image-block.flip-top:hover .flip-door{ transition-timing-function: var(--flip-ease-out); }
+.sqs-block.image-block.flip-top:not(:hover) .flip-door{ transition-timing-function: var(--flip-ease-in); }
+.sqs-block.image-block.flip-top:hover .flip-door.left  { transform: rotateY(-180deg); }
+.sqs-block.image-block.flip-top:hover .flip-door.right { transform: rotateY( 180deg); }
 
-/* ----- States ----- */
-
-/* Closed = doors together / image visible */
-.flip-top.is-closed .flip-door.left  { transform: rotateY(0deg);    }
-.flip-top.is-closed .flip-door.right { transform: rotateY(0deg);    }
-
-/* Open = doors flipped out to edges (reveals the “back”, which is invisible) */
-.flip-top.is-open .flip-door.left  { transform: rotateY(-180deg); }
-.flip-top.is-open .flip-door.right { transform: rotateY(180deg);  }
-
-/* Optional: initial state for first render (closed by default) */
-.flip-top:not(.is-open):not(.is-closed){ /* default */ }
-
-/* Enable hover-driven doors (unless explicitly disabled with .no-hover) */
-.flip-top:not(.no-hover):hover .flip-door.left  { transform: rotateY(-180deg); }
-.flip-top:not(.no-hover):hover .flip-door.right { transform: rotateY( 180deg);  }
-
-/* Make sure the container actually receives hover */
-.flip-top{ pointer-events: auto; }
-.flip-top .flip-doors{ pointer-events: none; } /* underlying links remain clickable */
+/* Ensure the block itself can receive hover while clicks still pass through */
+.sqs-block.image-block.flip-top{ pointer-events: auto; }
+.sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
