@@ -1,22 +1,21 @@
-/* Topblock Flip v1.38 — base v1.3 + Split-Doors (image halves) + layout fix */
+/* Topblock Flip v1.39 — base v1.3 + Split-Doors (image halves) + layout fix */
 
 /* ---------- Base v1.3 (kept) ---------- */
 :root{
-  --flip-dur-enter: 650ms;  /* first flip */
-  --flip-dur-exit:  650ms;  /* unflip    */
-
+  --flip-dur-enter: 650ms;
+  --flip-dur-exit:  650ms;
   --flip-ease-enter: cubic-bezier(.4,0,.2,1);
   --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
   --flip-perspective: 1000px;
 
   /* doors */
-  --door-overlap: 0.5px; /* overlap at center to hide hairline seam */
+  --door-overlap: 0.5px; /* center overlap to hide hairline seam */
 }
 
 .flip-section { position: relative; perspective: var(--flip-perspective); }
 .flip-top     { position: relative; isolation: isolate; display:block; }
 
-/* --- Layout stack (NO fixed 100% heights) --- */
+/* --- Layout stack (front drives height; back overlays) --- */
 .flip-top .flip-inner{
   position: relative;                 /* stacked context */
   transform-style: preserve-3d;
@@ -27,30 +26,28 @@
 }
 
 .flip-top .flip-front{
-  position: relative;                 /* front is in normal flow → drives height */
+  position: relative;                 /* IN FLOW → determines height */
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
 }
 
 .flip-top .flip-back{
-  position: absolute; inset: 0;       /* overlay back on top of front’s box */
+  position: absolute; inset: 0;       /* overlay on the front’s box */
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
   transform: rotateY(180deg);
   pointer-events: none;
 }
 
-/* Make sure images behave predictably */
-.flip-top .flip-front img{
-  display:block; width:100%; height:auto;
-}
+/* Do NOT force sizes on inner image; let the Squarespace wrappers handle it */
+/* (Keeps intrinsic padding/aspect intact) */
 
 /* Marker anchor is just an opt-in flag */
 .flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
 
-/* Base flip (used as fallback when doors aren't ready) */
+/* Base flip (fallback when doors aren't ready) */
 .flip-top.hover .flip-inner,
 .flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
 
-/* Directional timing (JS swaps these classes before each change) */
+/* Directional timing (JS flips these classes before each change) */
 .flip-top.ease-enter .flip-inner{
   transition-duration: var(--flip-dur-enter);
   transition-timing-function: var(--flip-ease-enter);
@@ -67,7 +64,9 @@
 
 /* ---------- Split-Doors add-on (image halves on the FRONT face) ---------- */
 
-/* Draw doors ONLY when the image URL is available */
+/* Doors only when image URL is ready */
+.flip-top.doors-ready .flip-front{ position: relative; }
+
 .flip-top.doors-ready .flip-front::before,
 .flip-top.doors-ready .flip-front::after{
   content:"";
@@ -112,7 +111,7 @@
   transform: rotateY(180deg);
 }
 
-/* Respect exit timing on doors as well */
+/* Respect exit timing on doors too */
 .flip-top.doors-ready.ease-exit .flip-front::before,
 .flip-top.doors-ready.ease-exit .flip-front::after{
   transition-duration: var(--flip-dur-exit);

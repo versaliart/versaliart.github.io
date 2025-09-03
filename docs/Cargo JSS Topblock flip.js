@@ -1,4 +1,3 @@
-<script>
 /* Topblock Flip v1.38 — non-destructive wrap + directional easing + click-through
    + exposes the image URL to CSS as --flip-image and gates doors via .doors-ready
 */
@@ -205,4 +204,3 @@
     }).observe(document.documentElement,{childList:true,subtree:true});
   });
 })();
-</script>
