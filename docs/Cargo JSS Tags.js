@@ -1,4 +1,4 @@
-// v1.1
+// v1.2
 
 (() => {
   const ATTRS = ['data-tags','data-sort','data-case','data-prefix','data-target','data-limit','data-more-pill','data-hash'];
