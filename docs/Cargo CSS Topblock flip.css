@@ -81,3 +81,31 @@
   .flip-top .flip-anchor::after,
   .flip-top .flip-anchor img{ transition: none !important; }
 }
+/* === Topflip "unsquish" fix — let the image drive height again === */
+
+/* 1) Stop wrappers from forcing 100% height */
+.flip-top .sqs-block-content,
+.flip-top .image-block-outer-wrapper,
+.flip-top .fluid-image-animation-wrapper,
+.flip-top .fluid-image-container,
+.flip-top .sqs-image,
+.flip-top .sqs-image-content{
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+/* 2) Make sure the image uses its natural aspect ratio */
+.flip-top .flip-front img,
+.flip-top .flip-anchor img{
+  display:block;
+  width:100%;
+  height:auto !important;          /* key: don’t stretch to wrapper height */
+  max-height:none !important;
+}
+
+/* 3) (Optional) if your theme adds fixed heights via flex/grid, let these stretch naturally */
+.flip-top .image-block-outer-wrapper,
+.flip-top .fluid-image-animation-wrapper,
+.flip-top .fluid-image-container{
+  align-self: stretch;
+}
