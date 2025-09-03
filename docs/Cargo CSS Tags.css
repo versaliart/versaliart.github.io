@@ -21,7 +21,7 @@
   --pill-weight: 400;
   padding: var(--pill-container-py) var(--pill-container-px);
   display:block;
-  --pill-justify: space-evenly; /* try space-between if you prefer edge-to-edge */
+  --pill-justify: space-between; /* try space-between if you prefer edge-to-edge */
   --pill-fill: 12rem;           /* adjust if last row looks too loose/tight */
 }
 
