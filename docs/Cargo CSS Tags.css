@@ -1,14 +1,15 @@
-/* Tag Pills v1.0 — sitewide styles */
+/* Tag Pills v1.1 — sitewide styles */
+
 .tag-pills{
   --pill-gap:.5rem;
   --pill-py:.25rem;
-  --pill-px:.65rem;
+  --pill-px:.5rem;
   --pill-radius:9999rem;
   --pill-font-size:.9rem;
   --pill-weight:500;
   --pill-bg:rgba(0,0,0,.05);
   --pill-border:rgba(0,0,0,.18);
-  --pill-fg:currentColor;
+  --pill-fg:#BBBABF;
   --pill-bg-hover:rgba(0,0,0,.08);
   --pill-border-hover:rgba(0,0,0,.28);
   --pill-focus:0 0 0 .16rem rgba(0,0,0,.25);
@@ -18,15 +19,16 @@
   font-family: "Crimson Pro", serif;
   --pill-font-size: var(--p3);
   --pill-weight: 400;
-
   padding: var(--pill-container-py) var(--pill-container-px);
   display:block;
+  --pill-justify: space-evenly; /* try space-between if you prefer edge-to-edge */
+  --pill-fill: 12rem;           /* adjust if last row looks too loose/tight */
 }
 
 @media (prefers-color-scheme: dark){
   .tag-pills{
     --pill-bg:rgba(255,255,255,.06);
-    --pill-border:rgba(255,255,255,.22);
+    --pill-border:rgba(153,137,246);
     --pill-bg-hover:rgba(255,255,255,.10);
     --pill-border-hover:rgba(255,255,255,.36);
     --pill-focus:0 0 0 .16rem rgba(255,255,255,.30);
@@ -39,8 +41,13 @@
 .tag-pills__list{
   display:flex;
   flex-wrap:wrap;
-  gap:var(--pill-gap);
-  margin:0; padding:0; list-style:none;
+  row-gap: var(--pill-gap);
+  column-gap: 0;
+  justify-content: var(--pill-justify, space-between);
+}
+.tag-pills__list::after{
+  content:"";
+  flex: 1 1 var(--pill-fill, 12rem); /* set to 0 to disable last-row spread */
 }
 
 .tag-pills .tag-pill{
