@@ -1,141 +1,86 @@
-/* v1.3 */
-
+/* ===== Topblock Split-Flip (Doors) v2.0===== */
 :root{
-  /* Tune these to taste */
-  --flip-dur-enter: 650ms;  /* first flip = slower */
-  --flip-dur-exit:  650ms;  /* unflip     = quicker */
-
-  --flip-ease-enter: cubic-bezier(.4,0,.2,1);
-  --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
+  --flip-duration: 520ms;                   /* total door flip time */
+  --flip-ease-out: cubic-bezier(.2,.7,.2,1);/* open */
+  --flip-ease-in:  cubic-bezier(.2,.7,.2,1);/* close (can differ if you want) */
   --flip-perspective: 1000px;
 }
 
-.flip-section { position: relative; perspective: var(--flip-perspective); }
-.flip-top     { position: relative; isolation: isolate; }
+/* Container that already exists in your build */
+.flip-top{
+  position: relative;
+  perspective: var(--flip-perspective);
+  touch-action: manipulation;
+  /* ensure underlying content stays clickable when closed */
+}
 
-/* Wrapper + faces fill the figure */
+/* Your existing inner 3D wrapper */
 .flip-top .flip-inner{
-  display: grid;
+  position: relative;
   transform-style: preserve-3d;
-  transition-property: transform; /* important! */
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
+}
+
+/* Hide the original single-piece front (we’ll recreate it as two doors) */
+.flip-top .flip-front{
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Doors host (auto-injected by JS) */
+.flip-top .flip-doors{
+  position: absolute;
+  inset: 0;
+  contain: layout paint;
+  transform-style: preserve-3d;
+  pointer-events: none; /* underlying content remains clickable */
+}
+
+/* Each door half */
+.flip-top .flip-door{
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 50%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
   will-change: transform;
-  width: 100%; height: 100%;
-}
-.flip-top .flip-front,
-.flip-top .flip-back{
-  grid-area: 1 / 1;
-  width: 100%; height: 100%;
-  -webkit-backface-visibility: hidden; backface-visibility: hidden;
-}
-.flip-top .flip-back{ transform: rotateY(180deg); pointer-events: none; }
-
-/* Marker anchor is just an opt-in flag */
-.flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
-
-/* Flipped states (JS toggles .hover / .is-flipped) */
-.flip-top.hover .flip-inner,
-.flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
-
-/* Directional timing (JS swaps these classes before each change) */
-.flip-top.ease-enter .flip-inner{
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
-}
-.flip-top.ease-exit .flip-inner{
-  transition-duration: var(--flip-dur-exit);
-  transition-timing-function: var(--flip-ease-exit);
+  transition-property: transform;
+  transition-duration: var(--flip-duration);
 }
 
-/* Motion safety */
-@media (prefers-reduced-motion: reduce){
-  .flip-top .flip-inner { transition: none !important; }
+/* Origins for hinge behavior */
+.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
+.flip-top .flip-door.right { right: 0; transform-origin: center right; }
+
+/* Different easing for open vs close */
+.flip-top.is-open .flip-door{ transition-timing-function: var(--flip-ease-out); }
+.flip-top.is-closed .flip-door{ transition-timing-function: var(--flip-ease-in); }
+
+/* Faces inside each door */
+.flip-top .face{
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  background-image: var(--flip-image);
+  background-repeat: no-repeat;
+  background-size: 200% 100%; /* 2 halves of one image */
+  background-color: transparent;
 }
 
+/* Assign the correct half of the background to each door-face */
+.flip-top .flip-door.left  .face{ background-position: left center; }
+.flip-top .flip-door.right .face{ background-position: right center; }
 
-<script>
-/* ===== Multi-Flip setup for only this section ===== */
-(function(){
-  function closestSection(el){
-    while(el && el!==document.body){
-      if(el.matches('.page-section, [data-section-id], section')) return el;
-      el = el.parentElement;
-    }
-    return null;
-  }
-  function ready(fn){
-    if(document.readyState!=='loading') fn();
-    else document.addEventListener('DOMContentLoaded', fn, {once:true});
-  }
+/* Invisible backside (still needed for 3D correctness) */
+.flip-top .back{ transform: rotateY(180deg); }
 
-  ready(function(){
-    var scriptEl = document.currentScript;
-    var section = closestSection(scriptEl);
-    if(!section) return;
-    section.classList.add('flip-section');
+/* ----- States ----- */
 
-    // Find every Image Block in this section marked as a Top Block
-    var blocks = Array.from(section.querySelectorAll('.sqs-block.image-block'))
-      .filter(function(blk){ return !!blk.querySelector('a[href="#flip-top"]'); });
+/* Closed = doors together / image visible */
+.flip-top.is-closed .flip-door.left  { transform: rotateY(0deg);    }
+.flip-top.is-closed .flip-door.right { transform: rotateY(0deg);    }
 
-    if(!blocks.length){
-      console.warn('FlipTop: No Image Blocks with href="#flip-top" in this section.');
-      return;
-    }
+/* Open = doors flipped out to edges (reveals the “back”, which is invisible) */
+.flip-top.is-open .flip-door.left  { transform: rotateY(-180deg); }
+.flip-top.is-open .flip-door.right { transform: rotateY(180deg);  }
 
-    blocks.forEach(function(block){
-      if(block.__flipReady) return; // idempotent
-      block.__flipReady = true;
-      block.classList.add('flip-top');
-
-      // Build flip DOM: .flip-inner > (.flip-front [original content], .flip-back [empty])
-      var inner = document.createElement('div'); inner.className = 'flip-inner';
-      var front = document.createElement('div'); front.className = 'flip-front';
-      var back  = document.createElement('div'); back.className  = 'flip-back';
-
-      while(block.firstChild){ front.appendChild(block.firstChild); }
-      inner.appendChild(front); inner.appendChild(back);
-      block.appendChild(inner);
-
-      // Use the marker link as a trigger; never navigate
-      var marker = front.querySelector('a[href="#flip-top"]');
-      if(marker){
-        marker.addEventListener('click', function(e){
-          e.preventDefault(); e.stopPropagation();
-          if (matchMedia('(hover: none), (pointer: coarse)').matches) {
-            block.classList.add('is-flipped'); // mobile tap → flip this block only
-          }
-        }, true);
-      }
-
-      // Also allow tapping anywhere on the Top Block (mobile) to flip
-      block.addEventListener('click', function(){
-        if (matchMedia('(hover: none), (pointer: coarse)').matches) {
-          block.classList.add('is-flipped');
-        }
-      }, true);
-
-      // Auto-reset when the block scrolls off-screen
-      if('IntersectionObserver' in window){
-        var io = new IntersectionObserver(function(entries){
-          entries.forEach(function(entry){
-            if(!entry.isIntersecting){ block.classList.remove('is-flipped'); }
-          });
-        }, {threshold: 0.05});
-        io.observe(block);
-      }
-    });
-
-    // Mobile convenience: tap blank space in the section to reset all flipped blocks
-    section.addEventListener('click', function(e){
-      if (!(matchMedia('(hover: none), (pointer: coarse)').matches)) return;
-      if (!e.target.closest('a, button, [role="button"]')) {
-        section.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
-          b.classList.remove('is-flipped');
-        });
-      }
-    });
-  });
-})();
-</script>
+/* Optional: initial state for first render (closed by default) */
+.flip-top:not(.is-open):not(.is-closed){ /* default */ }

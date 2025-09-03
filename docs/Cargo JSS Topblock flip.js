@@ -1,173 +1,95 @@
-/* Topblock Flip v1.3 — non-destructive wrap + directional duration/easing + real click-through */
+/* Topblock v2.0 */
 (function(){
-  function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
-  var COARSE='(hover: none), (pointer: coarse)', FINE='(hover: hover) and (pointer: fine)';
-  function isCoarse(){ return matchMedia(COARSE).matches; }
-  function isFine(){ return matchMedia(FINE).matches; }
+  /**
+   * Split-Flip Doors for Topblock
+   * - Finds .flip-top blocks that already have .flip-inner and .flip-front with --flip-image
+   * - Injects a .flip-doors with two hinged halves sharing the same image
+   * - Adds a click handler (optional) and exposes a tiny API:
+   *     window.TopblockDoors.open(el)
+   *     window.TopblockDoors.close(el)
+   *     window.TopblockDoors.toggle(el)
+   */
 
-  function closestSection(el){
-    while(el && el!==document.body){
-      if (el.matches('.page-section, [data-section-id], section')) return el;
-      el = el.parentElement;
-    }
-    return null;
+  // Utility: get CSS variable value even if written as url("...") / url(...)
+  function getVar(el, name){
+    const v = getComputedStyle(el).getPropertyValue(name).trim();
+    return v || null;
   }
 
-  function pickFlipTarget(block){
-    return block.querySelector('figure.image-block-figure')
-        || block.querySelector('.image-block-outer-wrapper')
-        || block.querySelector('.intrinsic')
-        || block.querySelector('.image-block-wrapper')
-        || block.querySelector('img')
-        || block;
-  }
+  function ensureDoors(flipTop){
+    if (flipTop.__doorsReady) return;
+    const inner = flipTop.querySelector('.flip-inner');
+    const front = flipTop.querySelector('.flip-front');
 
-  // Force the browser to commit current styles before we toggle transform.
-  function flush(el){
-    try { void el.offsetWidth; } catch(_) {}
-  }
+    if (!inner || !front) return;
 
-  function setEase(block, mode){
-    block.classList.toggle('ease-enter', mode === 'enter');
-    block.classList.toggle('ease-exit',  mode === 'exit');
-  }
+    // Read the image from existing variable (keeps your current pipeline)
+    const img = getVar(front, '--flip-image') || getVar(flipTop, '--flip-image') || 'none';
 
-  function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
+    // Create doors host
+    const doors = document.createElement('div');
+    doors.className = 'flip-doors';
 
-  function isActive(block){ return block.classList.contains('hover') || block.classList.contains('is-flipped'); }
+    // Create left/right doors with front/back faces
+    const makeDoor = (side) => {
+      const d = document.createElement('div');
+      d.className = 'flip-door ' + side;
 
-  function getPoint(e){
-    if ('clientX' in e) return {x:e.clientX, y:e.clientY};
-    var t=(e.changedTouches&&e.changedTouches[0])||(e.touches&&e.touches[0]);
-    return t?{x:t.clientX,y:t.clientY}:{x:0,y:0};
-  }
+      const frontFace = document.createElement('div');
+      frontFace.className = 'face front';
+      frontFace.style.setProperty('--flip-image', img);
 
-  function forwardEvent(e, block){
-    if (!isActive(block)) return;
-    var pt=getPoint(e);
-    var stack=(document.elementsFromPoint&&document.elementsFromPoint(pt.x,pt.y))||[];
-    var under=null;
-    for (var i=0;i<stack.length;i++){ if (!block.contains(stack[i])) { under=stack[i]; break; } }
-    if (!under) return;
+      const backFace = document.createElement('div');
+      backFace.className = 'face back';
+      backFace.style.setProperty('--flip-image', img);
 
-    var clickable = under.closest && under.closest('a,button,[role="button"],[role="link"],label,summary,input,textarea,select');
-    if (clickable){
-      try{ if (e.type==='pointerdown'||e.type==='mousedown') clickable.focus(); clickable.click(); }catch(_){}
-    } else {
-      var clone=new e.constructor(e.type,{bubbles:true,cancelable:true,view:window,clientX:pt.x,clientY:pt.y,
-        ctrlKey:e.ctrlKey||false,shiftKey:e.shiftKey||false,altKey:e.altKey||false,metaKey:e.metaKey||false,
-        button:e.button||0,buttons:e.buttons||0});
-      under.dispatchEvent(clone);
-    }
-    e.preventDefault(); e.stopPropagation();
-  }
+      d.appendChild(frontFace);
+      d.appendChild(backFace);
+      return d;
+    };
 
-  function flipEnter(block){
-    setEase(block,'enter');                 // pick enter timing + duration
-    if (block.__flipInner) flush(block.__flipInner);  // lock it in
-    nextFrame(function(){ block.classList.add('hover'); });
-  }
+    doors.appendChild(makeDoor('left'));
+    doors.appendChild(makeDoor('right'));
 
-  function flipExit(block){
-    setEase(block,'exit');                  // pick exit timing + duration
-    if (block.__flipInner) flush(block.__flipInner);
-    nextFrame(function(){ block.classList.remove('hover'); });
-  }
+    // Put doors on top of the old front, but let clicks pass through
+    inner.appendChild(doors);
 
-  function setupBlock(block){
-    if (block.__flipReady) return;
-    var anchor = block.querySelector('a[href="#flip-top"]');
-    if (!anchor) return; // opt-in only
-    block.__flipReady = true;
-    block.classList.add('flip-top');
-
-    // neutralize the anchor
-    anchor.style.pointerEvents='none'; anchor.style.cursor='default';
-    anchor.setAttribute('aria-hidden','true'); anchor.setAttribute('tabindex','-1');
-
-    // NON-DESTRUCTIVE: wrap only the figure target
-    var target = pickFlipTarget(block);
-    if (!target || !target.parentNode) return;
-
-    var inner = document.createElement('div'); inner.className='flip-inner';
-    var front = document.createElement('div'); front.className='flip-front';
-    var back  = document.createElement('div'); back.className='flip-back';
-
-    target.parentNode.insertBefore(inner, target);
-    front.appendChild(target);
-    inner.appendChild(front);
-    inner.appendChild(back);
-
-    block.__flipInner = inner; // save for flush()
-
-    // add section perspective once
-    var section = closestSection(block);
-    if (section && !section.__flipSection){ section.__flipSection=true; section.classList.add('flip-section'); }
-
-    // Desktop: manage hover via JS so we can set direction before transform
-    if (isFine()){
-      block.addEventListener('mouseenter', function(){ flipEnter(block); });
-      block.addEventListener('mouseleave', function(){ flipExit(block);  });
+    // Default state
+    if (!flipTop.classList.contains('is-open') && !flipTop.classList.contains('is-closed')){
+      flipTop.classList.add('is-closed');
     }
 
-    // Mobile: tap to flip (enter)
-    block.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (!block.classList.contains('is-flipped')){
-        e.preventDefault(); e.stopPropagation();
-        setEase(block,'enter'); if (inner) flush(inner);
-        nextFrame(function(){ block.classList.add('is-flipped'); });
-      }
-    }, true);
-
-    // Click-through while flipped/hovered
-    ['pointerdown','pointerup','mousedown','mouseup','click','touchstart','touchend'].forEach(function(type){
-      block.addEventListener(type, function(e){ forwardEvent(e, block); }, true);
-    });
-
-    // Auto-reset off-screen (exit)
-    if ('IntersectionObserver' in window){
-      var io=new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if (!entry.isIntersecting && block.classList.contains('is-flipped')){
-            flipExit(block);
-            nextFrame(function(){ block.classList.remove('is-flipped'); });
-          }
-        });
-      },{threshold:0.05});
-      io.observe(block);
-    }
+    flipTop.__doorsReady = true;
   }
 
-  ready(function(){
-    document.querySelectorAll('.sqs-block.image-block').forEach(function(blk){
-      if (blk.querySelector('a[href="#flip-top"]')) setupBlock(blk);
-    });
+  // Public API so you can drive state from your existing triggers (scroll, hover, etc.)
+  const API = {
+    open(el){ el.classList.remove('is-closed'); el.classList.add('is-open'); },
+    close(el){ el.classList.remove('is-open'); el.classList.add('is-closed'); },
+    toggle(el){
+      if (el.classList.contains('is-open')) API.close(el);
+      else API.open(el);
+    }
+  };
+  window.TopblockDoors = API;
 
-    // Mobile: tap blank space to unflip all (exit)
-    document.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary')) return;
-      document.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
-        setEase(b,'exit'); if (b.__flipInner) flush(b.__flipInner);
-        nextFrame(function(){ b.classList.remove('is-flipped'); });
-      });
-    }, true);
+  // Init on DOM ready + editor mutations
+  function init(){
+    document.querySelectorAll('.flip-top').forEach(ensureDoors);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 
-    // SPA/lazy
-    new MutationObserver(function(muts){
-      muts.forEach(function(m){
-        m.addedNodes.forEach(function(n){
-          if (!(n instanceof Element)) return;
-          if (n.matches && n.matches('.sqs-block.image-block')){
-            if (n.querySelector('a[href="#flip-top"]')) setupBlock(n);
-          } else {
-            n.querySelectorAll && n.querySelectorAll('.sqs-block.image-block').forEach(function(blk){
-              if (blk.querySelector('a[href="#flip-top"]')) setupBlock(blk);
-            });
-          }
-        });
-      });
-    }).observe(document.documentElement,{childList:true,subtree:true});
+  // Optional: delegate click to toggle (remove if you already trigger via scroll/hover)
+  document.addEventListener('click', function(ev){
+    const top = ev.target.closest('.flip-top');
+    if (!top) return;
+    // Only toggle if the block is meant to be interactive by click;
+    // if yours is scroll-driven, delete this block.
+    API.toggle(top);
   });
+
 })();
