@@ -260,6 +260,8 @@ button.sqs-add-to-cart-button{
 
 /* ----- Text block spacing (7.1): tighten gaps, keep font sizes unchanged ----- */
 
+
+
 /* 1) Zero top/bottom margins on common children (both wrappers) */
 .sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
 .sqs-block-html .sqs-html-content   > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure){
@@ -331,7 +333,18 @@ button.sqs-add-to-cart-button{
 /* Remove any theme padding that could look like bottom gap */
 .sqs-block-html .sqs-block-content{ padding-bottom: 0 !important; }
 
+/* Only collapse Text-block min-heights outside the first section */
+.page-section:not(:first-of-type) .sqs-block.html-block.sqs-block-html{
+  min-height: 0 !important;
+  height: auto !important;
+}
+.page-section:not(:first-of-type)
+  .sqs-block.html-block.sqs-block-html[style*="min-height"]{
+  min-height: 0 !important;
+}
+
 /* Optional: if the editor left a trailing empty paragraph at the end, hide it */
 .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
 /* Safe variant: hide only if the *last* paragraph is just a <br> */
 .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){ display:none !important; }
+
