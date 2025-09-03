@@ -1,44 +1,41 @@
-/* Perspective on section */
-.flip-section { position: relative; perspective: var(--flip-perspective, 1000px); }
+/* v1.1 */
 
-/* Container stays interactive; we only forward events in JS when flipped */
-.flip-top { position: relative; isolation: isolate; }
+:root{
+  --flip-duration: 420ms;
+  --flip-ease-enter: cubic-bezier(.2,.8,.2,1); /* smoother into the flip */
+  --flip-ease-exit:  cubic-bezier(.4,0,.2,1); /* smoother out of the flip */
+  --flip-perspective: 1000px;
+}
 
-/* Wrapper + faces fill the original figure’s box */
-.flip-top .flip-inner {
+.flip-section { position: relative; perspective: var(--flip-perspective); }
+.flip-top     { position: relative; isolation: isolate; }
+
+/* Wrapper + faces */
+.flip-top .flip-inner{
   display: grid;
   transform-style: preserve-3d;
-  transition: transform var(--flip-duration,420ms) var(--flip-ease, cubic-bezier(.2,.7,.2,1));
+  transition: transform var(--flip-duration) var(--flip-ease-enter); /* default = enter curve */
   will-change: transform;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
 }
-
 .flip-top .flip-front,
-.flip-top .flip-back {
+.flip-top .flip-back{
   grid-area: 1 / 1;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  width: 100%; height: 100%;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
 }
+.flip-top .flip-back{ transform: rotateY(180deg); pointer-events: none; }
 
-/* Back face rendered behind; never intercepts pointer */
-.flip-top .flip-back {
-  transform: rotateY(180deg);
-  pointer-events: none;
-}
+/* Marker anchor is not interactive */
+.flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
 
-/* Anchor is only a marker */
-.flip-top a[href="#flip-top"] { pointer-events: none; cursor: default; }
-
-/* Desktop: hover flips via CSS */
-@media (hover:hover) and (pointer:fine){
-  .flip-top:hover .flip-inner { transform: rotateY(180deg); }
-}
-
-/* Mobile: JS toggles .is-flipped */
+/* Flipped states */
+.flip-top.hover .flip-inner,
 .flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
+
+/* Directional easing toggles set by JS */
+.flip-top.ease-exit  .flip-inner { transition-timing-function: var(--flip-ease-exit); }
+.flip-top.ease-enter .flip-inner { transition-timing-function: var(--flip-ease-enter); }
 
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
