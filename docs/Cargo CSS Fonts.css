@@ -343,6 +343,23 @@ button.sqs-add-to-cart-button{
   min-height: 0 !important;
 }
 
+/* Apply only when the block contains ONLY p.sqsrte-large paragraphs */
+.sqs-block.html-block .sqs-html-content:
+  has(> p.sqsrte-large)
+  :not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large))))
+{
+  display: grid;
+  row-gap: .55rem;                 /* your base gap */
+  padding-block: var(--tb-pad-y, 0);
+  padding-inline: var(--tb-pad-x, .5rem);
+}
+.sqs-block.html-block .sqs-html-content:
+  has(> p.sqsrte-large)
+  :not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large))))
+  > *{
+  margin: 0 !important;            /* prevent margin-based reflow */
+}
+
 /* Optional: if the editor left a trailing empty paragraph at the end, hide it */
 .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
 /* Safe variant: hide only if the *last* paragraph is just a <br> */
