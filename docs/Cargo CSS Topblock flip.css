@@ -1,118 +1,49 @@
-/* ===== Topflip v1.4 — keep your #flip-top triggers, change only the look ===== */
+/* ===== Topflip — image-only 3D flip (no overlays) ===== */
 :root{
   --flip-duration: .6s;
   --flip-ease: cubic-bezier(.2,.7,.2,1);
-  --flip-perspective: 62.5rem;         /* ~1000px */
-  --flip-shadow: 0 .75rem 1.5rem rgba(0,0,0,.20), 0 .5rem .75rem rgba(0,0,0,.12);
-  --front-bg: #2196F3;                 /* example front color */
-  --back-bg: rgb(220,220,220);         /* example back color */
-  --circle-size: 6.25rem;              /* ~100px white circle */
+  --flip-perspective: 62.5rem; /* ~1000px */
 }
 
-/* Put perspective on a container that wraps your image block if you have one.
-   If not, this selector also works on BODY safely. */
-.flip-section, body{
+/* Put perspective on a safe ancestor (your section wrapper is ideal). */
+.flip-section, body {
   perspective: var(--flip-perspective);
 }
 
-/* Ensure the image block (the element with id="flip-top") is visible and flippable */
+/* Your image block as the flipping card */
 #flip-top{
-  /* DO NOT set width/height here—use your block’s natural size */
-  display: inline-block;                 /* avoid collapsing/“sliver” */
+  display: inline-block;                       /* prevent “sliver” collapse */
   transform-style: preserve-3d;
-  backface-visibility: hidden;           /* prevent mirror ghosting */
-  transition: transform var(--flip-duration) var(--flip-ease),
-              box-shadow var(--flip-duration) var(--flip-ease);
+  transition: transform var(--flip-duration) var(--flip-ease);
   will-change: transform;
-  position: relative;                    /* for pseudo elements */
-  box-shadow: var(--flip-shadow);
+  /* keep whatever natural size the image block sets */
 }
 
-/* Optional: if your image block has an inner <img>, keep it crisp during 3D */
+/* Make sure the content itself doesn’t ghost when seen from the back */
 #flip-top img{
   display:block;
   width:100%;
   height:auto;
-  backface-visibility: hidden;
+  backface-visibility: hidden;                 /* hide the mirrored backside */
+  -webkit-backface-visibility: hidden;
 }
 
-/* ---------------------------
-   FRONT “look” (no markup change)
-   We paint a front panel + circle as a pseudo-front face.
-----------------------------*/
-#flip-top::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background: var(--front-bg);
-  border-radius: .5rem;                  /* subtle rounding like the demo */
-  transform: translateZ(1px);            /* render in front of the image */
-  backface-visibility: hidden;
-  transition: opacity var(--flip-duration) var(--flip-ease);
-}
-
-/* White circle accent on the front, like the demo */
-#flip-top::after{
-  content:"";
-  position:absolute;
-  top:50%;
-  right: calc(-.5 * var(--circle-size)); /* “front-right” look */
-  width: var(--circle-size);
-  height: var(--circle-size);
-  border-radius: 9999rem;
-  background:#fff;
-  box-shadow: var(--flip-shadow);
-  transform: translateY(-50%) translateZ(2px);
-  backface-visibility: hidden;
-  transition: opacity var(--flip-duration) var(--flip-ease);
-}
-
-/* Provide a neutral “backing” for the image so the back matches the demo tone */
-#flip-top{
-  background: var(--back-bg);
-  border-radius:.5rem;
-  overflow:hidden;
-}
-
-/* ---------------------------
-   FLIP STATES — map to your EXISTING class toggles on #flip-top
-   (No JS changes needed.)
-   Support common flags: .is-flipped, .flipped, .flip-right, .flip-left
-----------------------------*/
-
-/* Rightward 180° (like demo) */
+/* ---------- Flip states (KEEPING your triggers) ---------- */
+/* Rightward 180° (default) */
 #flip-top.is-flipped,
 #flip-top.flipped,
 #flip-top.flip-right{
   transform: rotateY(180deg);
 }
 
-/* Leftward 180° if your script ever uses that */
+/* Leftward 180° if your script uses it */
 #flip-top.flip-left{
   transform: rotateY(-180deg);
-}
-
-/* When flipped, hide the pseudo front so your image feels like the “back” */
-#flip-top.is-flipped::before,
-#flip-top.is-flipped::after,
-#flip-top.flipped::before,
-#flip-top.flipped::after,
-#flip-top.flip-right::before,
-#flip-top.flip-right::after,
-#flip-top.flip-left::before,
-#flip-top.flip-left::after{
-  opacity:0;
-}
-
-/* Subtle depth cue mid-flip */
-#flip-top:is(.is-flipped,.flipped,.flip-right,.flip-left){
-  box-shadow: var(--flip-shadow);
 }
 
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce){
   #flip-top{ transition-duration: .01ms; }
-  #flip-top::before,#flip-top::after{ transition-duration: .01ms; }
 }
 
 
