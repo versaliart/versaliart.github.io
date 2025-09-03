@@ -7,7 +7,7 @@
   --flip-perspective: 1000px;
 
   /* tiny physical overlap so there's never "daylight" between halves */
-  --flip-seam: 1px;   /* adjust to 0.75px–1.5px if you ever see a sliver on some zooms */
+  --flip-seam: 1.25px;   /* adjust to 0.75px–1.5px if you ever see a sliver on some zooms */
 }
 
 /* Opt-in marker added by JS: .flip-top */
