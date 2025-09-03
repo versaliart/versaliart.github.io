@@ -5,7 +5,7 @@
   --flip-dur-enter: 650ms;  /* first flip = slower */
   --flip-dur-exit:  650ms;  /* unflip     = quicker */
 
-  --flip-ease-enter: cubic-bezier(.2,.8,.2,1);
+  --flip-ease-enter: cubic-bezier(.4,0,.2,1);
   --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
   --flip-perspective: 1000px;
 }
