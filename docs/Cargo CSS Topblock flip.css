@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.41===== */
+/* ===== Topblock Split-Flip (Doors) v2.42===== */
 
 :root{
   --flip-duration: 520ms;
@@ -117,11 +117,50 @@
   overflow: hidden; /* keep overlap inside rounded corners */
 }
 
-.sqs-block.image-block.flip-top .flip-seam-shield{
+/* hide the original img so nothing shows underneath */
+.sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{
+  opacity: 0 !important;
+}
+
+/* consistent tiny overlap to kill sub-pixel cracks */
+:root{ --flip-seam: 1px; } /* adjust 0.5px–1.5px if needed */
+
+/* each door covers the FULL width; we clip to left/right + overlap */
+.sqs-block.image-block.flip-top .flip-door{
   position: absolute;
   inset: 0;
+  width: 100%;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform;
+  transition-property: transform;
+}
+
+/* hinge points */
+.sqs-block.image-block.flip-top .flip-door.left  { transform-origin: center left;  z-index: 2; }
+.sqs-block.image-block.flip-top .flip-door.right { transform-origin: center right; z-index: 3; transform: translateZ(0.1px) rotateY(0deg); }
+
+/* clip to halves with a tiny overlap so there’s never daylight */
+.sqs-block.image-block.flip-top .flip-door.left{
+  clip-path: polygon(0 0, calc(50% + var(--flip-seam)) 0, calc(50% + var(--flip-seam)) 100%, 0 100%);
+}
+.sqs-block.image-block.flip-top .flip-door.right{
+  clip-path: polygon(calc(50% - var(--flip-seam)) 0, 100% 0, 100% 100%, calc(50% - var(--flip-seam)) 100%);
+}
+
+/* faces paint the image (JS sets size/pos) */
+.sqs-block.image-block.flip-top .face{
+  position: absolute; inset: 0;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* layer promotion */
+}
+
+/* wrapper keeps rounded corners etc. */
+.sqs-block.image-block.flip-top .flip-doors{
+  position: absolute; inset: 0;
   border-radius: inherit;
   overflow: hidden;
-  will-change: transform;
   pointer-events: none;
 }
