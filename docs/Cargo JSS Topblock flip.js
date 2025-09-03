@@ -1,4 +1,5 @@
-/* Topblock Flip v1.3 — non-destructive wrap + directional duration/easing + real click-through */
+/* Topblock Flip v1.4 — non-destructive wrap + directional duration/easing + real click-through */
+
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
   var COARSE='(hover: none), (pointer: coarse)', FINE='(hover: hover) and (pointer: fine)';

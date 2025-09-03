@@ -1,58 +1,125 @@
-/* v1.3 */
+/* v1.4 */
 
-:root{
-  /* Tune these to taste */
-  --flip-dur-enter: 650ms;  /* first flip = slower */
-  --flip-dur-exit:  650ms;  /* unflip     = quicker */
-
-  --flip-ease-enter: cubic-bezier(.4,0,.2,1);
-  --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
-  --flip-perspective: 1000px;
+/* ======= Topflip: Example-Style Y Flip (appearance only) ======= */
+/* Tweakables */
+.flip-section{
+  --flip-duration: 0.6s;
+  --flip-ease: cubic-bezier(.2,.7,.2,1);
+  --flip-perspective: 62.5rem;            /* = 1000px at 16px base */
+  --card-w: 11.25rem;                     /* = 180px */
+  --card-h: 15rem;                        /* = 240px */
+  --front-bg: #2196F3;
+  --back-bg:  rgb(220,220,220);
+  --circle-size: 6.25rem;                 /* = 100px */
+  --shadow-lg: 0 1.1875rem 2.375rem rgba(0,0,0,0.20), 0 0.9375rem 0.75rem rgba(0,0,0,0.12);
 }
 
-.flip-section { position: relative; perspective: var(--flip-perspective); }
-.flip-top     { position: relative; isolation: isolate; }
+/* The top block acts as the perspective container */
+.flip-section .flip-top{
+  position: relative;
+  perspective: var(--flip-perspective);
+  /* Let clicks pass through except where we explicitly re-enable them on the card */
+  pointer-events: none;
+  /* stacking as you had */
+  z-index: 999 !important;
+}
 
-/* Wrapper + faces fill the figure */
-.flip-top .flip-inner{
-  display: grid;
+/* The “card” stack you flip (name-agnostic so it works with your DOM) */
+.flip-section .flip-top .flip,
+.flip-section .flip-top .flip-card{
+  width: var(--card-w);
+  height: var(--card-h);
   transform-style: preserve-3d;
-  transition-property: transform; /* important! */
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
-  will-change: transform;
-  width: 100%; height: 100%;
-}
-.flip-top .flip-front,
-.flip-top .flip-back{
-  grid-area: 1 / 1;
-  width: 100%; height: 100%;
-  -webkit-backface-visibility: hidden; backface-visibility: hidden;
-}
-.flip-top .flip-back{ transform: rotateY(180deg); pointer-events: none; }
-
-/* Marker anchor is just an opt-in flag */
-.flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
-
-/* Flipped states (JS toggles .hover / .is-flipped) */
-.flip-top.hover .flip-inner,
-.flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
-
-/* Directional timing (JS swaps these classes before each change) */
-.flip-top.ease-enter .flip-inner{
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
-}
-.flip-top.ease-exit .flip-inner{
-  transition-duration: var(--flip-dur-exit);
-  transition-timing-function: var(--flip-ease-exit);
+  position: relative;
+  transition: transform var(--flip-duration) var(--flip-ease);
+  pointer-events: auto; /* re-enable on the flipping element itself */
 }
 
-/* Motion safety */
+/* Faces */
+.flip-section .flip-top .front,
+.flip-section .flip-top .back{
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  overflow: hidden;
+  border-radius: .5rem; /* optional polish */
+}
+
+/* Front above back by default – like the example */
+.flip-section .flip-top .front{
+  z-index: 2;
+  transform: rotateY(0deg);
+  background: var(--front-bg);
+}
+
+/* Back is reversed */
+.flip-section .flip-top .back{
+  transform: rotateY(180deg);
+  background: var(--back-bg);
+}
+
+/* “Circle” accent (optional — matches the example motif) */
+.flip-section .flip-top .circle{
+  position: absolute;
+  width: var(--circle-size);
+  height: var(--circle-size);
+  border-radius: 9999rem;
+  background: #fff;
+  box-shadow: var(--shadow-lg);
+}
+
+/* Position helpers matching the example’s left/right variants */
+.flip-section .flip-top .front-left .circle{ right: calc(-.5 * var(--circle-size)); top: 50%; transform: translateY(-50%); }
+.flip-section .flip-top .front-right .circle{ left:  calc(-.5 * var(--circle-size)); top: 50%; transform: translateY(-50%); }
+
+.flip-section .flip-top .back-left img{ position:absolute; left:0; width: calc(2 * var(--card-w)); height: var(--card-h); object-fit: cover; }
+.flip-section .flip-top .back-right img{ position:absolute; right:0; width: calc(2 * var(--card-w)); height: var(--card-h); object-fit: cover; }
+
+/* ---------------------------
+   FLIP STATES (APPEARANCE)
+   We support multiple flags so your existing JS keeps working.
+   - .is-flipped            → default rightward 180°
+   - .is-flipped-right      → rightward 180°
+   - .is-flipped-left       → leftward  -180°
+   - :hover (for quick testing in editor)
+----------------------------*/
+
+/* Rightward flip (like example .flip-right) */
+.flip-section .flip-top:is(.is-flipped, .is-flipped-right) .flip,
+.flip-section .flip-top:is(.is-flipped, .is-flipped-right) .flip-card{
+  transform: rotateY(180deg);
+}
+
+/* Leftward flip (like example .flip-left) */
+.flip-section .flip-top.is-flipped-left .flip,
+.flip-section .flip-top.is-flipped-left .flip-card{
+  transform: rotateY(-180deg);
+}
+
+/* Optional: keep hover-to-preview without changing your triggers */
+.flip-section .flip-top:hover .flip,
+.flip-section .flip-top:hover .flip-card{
+  /* Comment out this next line if hover preview is not desired on your page */
+  /* transform: rotateY(180deg); */
+}
+
+/* Timing polish: first flip feels a hair slower on the initial movement */
+.flip-section .flip-top .flip,
+.flip-section .flip-top .flip-card{
+  transition-property: transform;
+  transition-duration: var(--flip-duration);
+  transition-timing-function: var(--flip-ease);
+}
+
+/* Accessibility: reduce motion if user prefers */
 @media (prefers-reduced-motion: reduce){
-  .flip-top .flip-inner { transition: none !important; }
+  .flip-section .flip-top .flip,
+  .flip-section .flip-top .flip-card{
+    transition-duration: .01ms;
+  }
 }
-
 
 <script>
 /* ===== Multi-Flip setup for only this section ===== */
