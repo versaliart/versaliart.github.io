@@ -1,4 +1,3 @@
-<script>
 /* -----------------------------------------------------------
    Starfield v1.0 (overlay removed) — Live + Editor safe
    - Per-section build (targets the section that contains #starfield-enable)
@@ -306,4 +305,3 @@ console.log("[Starfield] external JS executing (overlay-free, patched)");
     });
   });
 })();
-</script>
