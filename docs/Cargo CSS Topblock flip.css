@@ -1,10 +1,13 @@
-/* ===== Topblock Split-Flip (Doors) v2.3===== */
+/* ===== Topblock Split-Flip (Doors) v2.45 — FULL CSS ===== */
 
 :root{
   --flip-duration: 520ms;
   --flip-ease-out: cubic-bezier(.2,.7,.2,1);
   --flip-ease-in:  cubic-bezier(.2,.7,.2,1);
   --flip-perspective: 1000px;
+
+  /* tiny physical overlap so there's never "daylight" between halves */
+  --flip-seam: 1px;   /* adjust to 0.75px–1.5px if you ever see a sliver on some zooms */
 }
 
 /* Opt-in marker added by JS: .flip-top */
@@ -14,7 +17,7 @@
   position: relative;
 }
 
-/* Hide the <img> (we’ll redraw it as two doors); keeps layout intact */
+/* Hide the original image; we redraw it on the doors */
 .sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{
   opacity: 0 !important;
 }
@@ -23,60 +26,64 @@
 .sqs-block.image-block.flip-top .flip-doors{
   position: absolute;
   inset: 0;
-  border-radius: inherit;                /* match your rounded corners */
-  overflow: hidden;                      /* respect radius/masks */
+  border-radius: inherit;   /* match rounded corners/masks */
+  overflow: hidden;
   transform-style: preserve-3d;
-  pointer-events: none;                  /* clicks go to the link below */
+  pointer-events: none;     /* clicks pass through to the underlying link */
   contain: layout paint;
 }
 
-/* Each door */
+/* Each door (physically wider than 50% so halves overlap by 2*--flip-seam) */
 .sqs-block.image-block.flip-top .flip-door{
   position: absolute;
   top: 0; bottom: 0;
-  width: 50%;
+  width: calc(50% + var(--flip-seam));
   will-change: transform;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transition-property: transform;
   transition-duration: var(--flip-duration);
 }
 
-/* Hinge origins */
 .sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
 .sqs-block.image-block.flip-top .flip-door.right { right: 0; transform-origin: center right; }
 
-/* Faces share the same image, split via background-position */
+/* Keep right door infinitesimally "in front" to cover any AA at the join */
+.sqs-block.image-block.flip-top .flip-door.right{
+  transform: translateZ(0.1px) rotateY(0deg);
+}
+
+/* Faces (JS paints size/position exactly; sub-pixel allowed) */
 .sqs-block.image-block.flip-top .face{
   position: absolute; inset: 0;
-  backface-visibility: hidden;
   background-repeat: no-repeat;
   background-color: transparent;
-  /* size/position injected inline as pixels */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0); /* layer promotion for stability */
 }
-.sqs-block.image-block.flip-top .flip-door.left  .face{ background-position: left  center; }
-.sqs-block.image-block.flip-top .flip-door.right .face{ background-position: right center; }
+
+/* Back faces */
 .sqs-block.image-block.flip-top .back{ transform: rotateY(180deg); }
 
-/* Default (closed) */
-.sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
-.sqs-block.image-block.flip-top .flip-door.right { transform: rotateY(0deg); }
+/* ----- States ----- */
 
-/* Hover opens the doors outward; keep distinct eases on enter/leave */
-.sqs-block.image-block.flip-top:hover .flip-door{ transition-timing-function: var(--flip-ease-out); }
-.sqs-block.image-block.flip-top:not(:hover) .flip-door{ transition-timing-function: var(--flip-ease-in); }
+/* Closed = image visible */
+.sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
+.sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
+
+/* Hover opens outward */
+.sqs-block.image-block.flip-top:hover .flip-door{
+  transition-timing-function: var(--flip-ease-out);
+}
+.sqs-block.image-block.flip-top:not(:hover) .flip-door{
+  transition-timing-function: var(--flip-ease-in);
+}
 .sqs-block.image-block.flip-top:hover .flip-door.left  { transform: rotateY(-180deg); }
-.sqs-block.image-block.flip-top:hover .flip-door.right { transform: rotateY( 180deg); }
+.sqs-block.image-block.flip-top:hover .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
 
 /* Ensure the block itself can receive hover while clicks still pass through */
 .sqs-block.image-block.flip-top{ pointer-events: auto; }
 .sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
-
-/* micro-overlap to hide the center seam */
-:root{ --flip-seam: 1px; }  /* try .5px–1.5px depending on your screen */
-
-.sqs-block.image-block.flip-top .flip-door.left  { margin-right: calc(-1 * var(--flip-seam)); }
-.sqs-block.image-block.flip-top .flip-door.right { margin-left:  calc(-1 * var(--flip-seam)); }
-
-/* extra stability while rotating */
-.sqs-block.image-block.flip-top .flip-door { backface-visibility: hidden; transform-style: preserve-3d; }

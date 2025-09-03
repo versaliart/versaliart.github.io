@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.3===== */
+/* ===== Topblock Split-Flip (Doors) v2.45 — FULL JS ===== */
 
 (function(){
   // ---------- Build DOM for the doors ----------
@@ -19,7 +19,7 @@
     return doors;
   }
 
-  // ---------- Pixel-accurate cover sizing + focal point, with seam overlap ----------
+  // ---------- Layout with sub-pixel precision ----------
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
     const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
@@ -31,41 +31,37 @@
     const W = Math.max(1, rect.width);
     const H = Math.max(1, rect.height);
 
-    // Natural image dimensions (Squarespace also provides data-image-dimensions="WxH")
+    // Natural image dimensions (Squarespace often adds data-image-dimensions="WxH")
     let iw = imgEl.naturalWidth  || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
     if (dims && dims.includes('x')) {
-      const [dw, dh] = dims.split('x').map(Number);
-      if (dw && dh) { iw = dw; ih = dh; }
+      const parts = dims.split('x');
+      const dw = parseFloat(parts[0]); const dh = parseFloat(parts[1]);
+      if (dw > 0 && dh > 0) { iw = dw; ih = dh; }
     }
 
-    // Focal point (0..1, 0..1). Default center.
+    // Focal point (0..1)
     let fx = 0.5, fy = 0.5;
     const fp = imgEl.getAttribute('data-image-focal-point');
     if (fp && fp.includes(',')) {
-      const [sx, sy] = fp.split(',').map(Number);
-      if (!isNaN(sx)) fx = sx;
-      if (!isNaN(sy)) fy = sy;
+      const parts = fp.split(',');
+      const sx = parseFloat(parts[0]); const sy = parseFloat(parts[1]);
+      if (!Number.isNaN(sx)) fx = sx;
+      if (!Number.isNaN(sy)) fy = sy;
     }
 
-    // Compute "cover" scale like object-fit: cover
+    // object-fit: cover (NO rounding — keep sub-pixel precision)
     const scale = Math.max(W / iw, H / ih);
-    const bgW = Math.round(iw * scale);
-    const bgH = Math.round(ih * scale);
+    const bgW = iw * scale;
+    const bgH = ih * scale;
 
-    // Top-left background position so focal point aligns
-    const posX = Math.round((W * fx) - (bgW * fx));
-    const posY = Math.round((H * fy) - (bgH * fy));
+    // Top-left background position so focal maps correctly
+    const posX = (W * fx) - (bgW * fx);
+    const posY = (H * fy) - (bgH * fy);
 
-    // Seam overlap (px) from CSS variables
-    const cs = getComputedStyle(doors);
-    const seamIdle = parseFloat(cs.getPropertyValue('--flip-seam')) || 0;
-    const seamOpen = parseFloat(cs.getPropertyValue('--flip-seam-open')) || seamIdle;
-
-    // Detect hover to switch overlap used by CSS widths
-    const isHovering = block.matches(':hover');
-    const seam = isHovering ? seamOpen : seamIdle;
+    // Constant seam overlap (in px) from CSS var on .flip-doors
+    const seam = parseFloat(getComputedStyle(doors).getPropertyValue('--flip-seam')) || 0;
 
     // Faces
     const leftFront  = doors.querySelector('.flip-door.left  .face.front');
@@ -75,20 +71,23 @@
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
-    // Apply background to a face; dx is the door's local x offset
-    const styleFace = (el, dx) => {
+    // Apply background with sub-pixel values
+    const paint = (el, dx) => {
       if (!el) return;
       el.style.backgroundImage    = `url("${url}")`;
       el.style.backgroundSize     = `${bgW}px ${bgH}px`;
-      el.style.backgroundPosition = `${posX - dx}px ${posY}px`;
+      el.style.backgroundPosition = `${posX - dx}px ${posY}px`;  // allow decimals
       el.style.backgroundRepeat   = 'no-repeat';
+      el.style.transform          = 'translateZ(0)';             // promote layer
+      el.style.backfaceVisibility = 'hidden';
+      el.style.webkitBackfaceVisibility = 'hidden';
     };
 
-    // Left door uses container origin; right door's origin is center minus overlap
-    styleFace(leftFront, 0);
-    styleFace(leftBack,  0);
-    styleFace(rightFront, (W / 2) - seam);
-    styleFace(rightBack,  (W / 2) - seam);
+    // Left uses container origin; right uses center minus overlap
+    paint(leftFront, 0);
+    paint(leftBack,  0);
+    paint(rightFront, (W / 2) - seam);
+    paint(rightBack,  (W / 2) - seam);
   }
 
   // ---------- Initialize one block ----------
@@ -109,23 +108,23 @@
     const relayout = () => layout(block);
     relayout();
 
-    // ResizeObserver: relayout on container size changes
+    // Relayout on container resize
     const ro = new ResizeObserver(relayout);
     ro.observe(container);
 
-    // MutationObserver: relayout if img src/srcset swaps (lazy/responsive)
+    // Relayout on image src/srcset change (Squarespace lazy/responsive)
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
 
-    // Ensure layout after the image fully loads
+    // Ensure layout once image fully loads
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
 
-    // Also relayout when hover state changes (so seam offset matches open/idle widths)
+    // Relayout on hover enter/leave (rare, but keeps offsets perfect mid-flip)
     block.addEventListener('mouseenter', relayout);
     block.addEventListener('mouseleave', relayout);
-    // Touch: treat first touch as hover change on mobile
-    block.addEventListener('touchstart', relayout, { passive: true });
-    block.addEventListener('touchend', relayout,   { passive: true });
+
+    // Also on window resize (some themes resize outside container RO)
+    window.addEventListener('resize', relayout);
   }
 
   // ---------- Initialize all eligible blocks ----------
