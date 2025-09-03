@@ -1,4 +1,4 @@
-/* Topblock Flip v1.38 — non-destructive wrap + directional easing + click-through
+/* Topblock Flip v1.39 — non-destructive wrap + directional easing + click-through
    + exposes the image URL to CSS as --flip-image and gates doors via .doors-ready
 */
 (function(){
@@ -15,10 +15,11 @@
     return null;
   }
 
+  /* Prefer the dimension provider first (Squarespace 'intrinsic') */
   function pickFlipTarget(block){
-    return block.querySelector('figure.image-block-figure')
-        || block.querySelector('.image-block-outer-wrapper')
-        || block.querySelector('.intrinsic')
+    return block.querySelector('.intrinsic')                      /* BEST: aspect-ratio padding box */
+        || block.querySelector('.image-block-outer-wrapper')      /* then outer wrapper */
+        || block.querySelector('figure.image-block-figure')       /* then figure */
         || block.querySelector('.image-block-wrapper')
         || block.querySelector('img')
         || block;
@@ -112,7 +113,7 @@
     anchor.style.pointerEvents='none'; anchor.style.cursor='default';
     anchor.setAttribute('aria-hidden','true'); anchor.setAttribute('tabindex','-1');
 
-    // Wrap only the figure target
+    // Wrap the dimension-providing target (keeps height intact)
     var target = pickFlipTarget(block);
     if (!target || !target.parentNode) return;
 
@@ -120,13 +121,13 @@
     var front = document.createElement('div'); front.className='flip-front';
     var back  = document.createElement('div'); back.className='flip-back';
 
-    // Insert wrapper before the target, move target into front, then put wrapper back in block
-    target.parentNode.insertBefore(inner, target);
+    // Insert wrapper before the target, move target into front, then LEAVE wrapper in place
+    var parent = target.parentNode;
+    parent.insertBefore(inner, target);
     front.appendChild(target);
     inner.appendChild(front);
     inner.appendChild(back);
-    block.appendChild(inner);                // keep .flip-inner inside .flip-top
-
+    // Do NOT re-append inner into block; keeping it here preserves SQS layout
     block.__flipInner = inner;
 
     // Expose image URL for the split doors (and gate with .doors-ready)

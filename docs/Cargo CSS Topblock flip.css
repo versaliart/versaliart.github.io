@@ -1,4 +1,4 @@
-/* Topblock Flip v1.39 — base v1.3 + Split-Doors (image halves) + layout fix */
+/* Topblock Flip v1.39 — base v1.3 + Split-Doors (image halves) + layout assurance */
 
 /* ---------- Base v1.3 (kept) ---------- */
 :root{
@@ -7,38 +7,47 @@
   --flip-ease-enter: cubic-bezier(.4,0,.2,1);
   --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
   --flip-perspective: 1000px;
-
-  /* doors */
-  --door-overlap: 0.5px; /* center overlap to hide hairline seam */
+  --door-overlap: 0.5px; /* hide hairline seam at center */
 }
 
 .flip-section { position: relative; perspective: var(--flip-perspective); }
 .flip-top     { position: relative; isolation: isolate; display:block; }
 
-/* --- Layout stack (front drives height; back overlays) --- */
+/* --- Layout stack: FRONT stays in normal flow so it drives height --- */
 .flip-top .flip-inner{
-  position: relative;                 /* stacked context */
+  position: relative;
   transform-style: preserve-3d;
   transition-property: transform;
   transition-duration: var(--flip-dur-enter);
   transition-timing-function: var(--flip-ease-enter);
   will-change: transform;
+  width: 100%;
 }
 
+/* FRONT = in flow → determines height */
 .flip-top .flip-front{
-  position: relative;                 /* IN FLOW → determines height */
+  position: relative;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
 }
 
+/* BACK overlays FRONT’s box */
 .flip-top .flip-back{
-  position: absolute; inset: 0;       /* overlay on the front’s box */
+  position: absolute; inset: 0;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
   transform: rotateY(180deg);
   pointer-events: none;
 }
 
-/* Do NOT force sizes on inner image; let the Squarespace wrappers handle it */
-/* (Keeps intrinsic padding/aspect intact) */
+/* Ensure common SQS wrappers inside the front occupy width (preserve intrinsic sizing) */
+.flip-top .flip-front > .intrinsic,
+.flip-top .flip-front > .image-block-outer-wrapper,
+.flip-top .flip-front > figure.image-block-figure,
+.flip-top .flip-front > .image-block-wrapper{
+  display:block; width:100%;
+}
+
+/* Images behave predictably */
+.flip-top .flip-front img{ display:block; width:100%; height:auto; }
 
 /* Marker anchor is just an opt-in flag */
 .flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
@@ -47,7 +56,7 @@
 .flip-top.hover .flip-inner,
 .flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
 
-/* Directional timing (JS flips these classes before each change) */
+/* Directional timing */
 .flip-top.ease-enter .flip-inner{
   transition-duration: var(--flip-dur-enter);
   transition-timing-function: var(--flip-ease-enter);
@@ -64,21 +73,20 @@
 
 /* ---------- Split-Doors add-on (image halves on the FRONT face) ---------- */
 
-/* Doors only when image URL is ready */
+/* Only when image URL is ready */
 .flip-top.doors-ready .flip-front{ position: relative; }
 
 .flip-top.doors-ready .flip-front::before,
 .flip-top.doors-ready .flip-front::after{
   content:"";
   position:absolute;
-  top:0; bottom:0;                     /* full height of the front face */
+  top:0; bottom:0;                     /* full height of front */
   width: calc(50% + var(--door-overlap));
-  z-index: 2;                          /* above the real <img> */
+  z-index: 2;                          /* above real <img> */
   transform-style: preserve-3d;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
   pointer-events: none;
 
-  /* Use the CSS var that JS sets from the <img> */
   background-image: var(--flip-image);
   background-repeat: no-repeat;
   background-size: 200% 100%;
@@ -89,43 +97,31 @@
 
 /* Left half */
 .flip-top.doors-ready .flip-front::before{
-  left: 0;                             /* pin to left only */
-  transform-origin: left center;
-  background-position: left center;
+  left: 0; transform-origin: left center; background-position: left center;
 }
 
 /* Right half */
 .flip-top.doors-ready .flip-front::after{
-  right: 0;                            /* pin to right only */
-  transform-origin: right center;
-  background-position: right center;
+  right: 0; transform-origin: right center; background-position: right center;
 }
 
 /* Doors open on hover/tap (only when ready) */
 .flip-top.doors-ready.hover .flip-front::before,
-.flip-top.doors-ready.is-flipped .flip-front::before{
-  transform: rotateY(-180deg);
-}
+.flip-top.doors-ready.is-flipped .flip-front::before{ transform: rotateY(-180deg); }
 .flip-top.doors-ready.hover .flip-front::after,
-.flip-top.doors-ready.is-flipped .flip-front::after{
-  transform: rotateY(180deg);
-}
+.flip-top.doors-ready.is-flipped .flip-front::after{  transform: rotateY(180deg); }
 
-/* Respect exit timing on doors too */
+/* Respect exit timing on doors */
 .flip-top.doors-ready.ease-exit .flip-front::before,
 .flip-top.doors-ready.ease-exit .flip-front::after{
   transition-duration: var(--flip-dur-exit);
   transition-timing-function: var(--flip-ease-exit);
 }
 
-/* Neutralize base inner rotate ONLY when doors are ready */
+/* Neutralize base inner-rotate ONLY when doors are ready */
 .flip-top.doors-ready.hover .flip-inner,
-.flip-top.doors-ready.is-flipped .flip-inner{
-  transform: none !important;
-}
+.flip-top.doors-ready.is-flipped .flip-inner{ transform: none !important; }
 
 /* Hide the real image ONLY when doors are ready */
 .flip-top.doors-ready.hover .flip-front img,
-.flip-top.doors-ready.is-flipped .flip-front img{
-  opacity: 0;
-}
+.flip-top.doors-ready.is-flipped .flip-front img{ opacity: 0; }
