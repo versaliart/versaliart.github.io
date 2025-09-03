@@ -1,4 +1,4 @@
-/* Tag Pills — sitewide styles */
+/* Tag Pills v1.0 — sitewide styles */
 .tag-pills{
   --pill-gap:.5rem;
   --pill-py:.25rem;
@@ -12,6 +12,9 @@
   --pill-bg-hover:rgba(0,0,0,.08);
   --pill-border-hover:rgba(0,0,0,.28);
   --pill-focus:0 0 0 .16rem rgba(0,0,0,.25);
+  --pill-container-py:.25rem;
+  --pill-container-px:.5rem;
+  padding: var(--pill-container-py) var(--pill-container-px);
   display:block;
 }
 
