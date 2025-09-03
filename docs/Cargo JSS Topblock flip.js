@@ -1,5 +1,6 @@
-/* Topblock Flip v1.37 — non-destructive wrap + directional easing + click-through
-   + exposes the image URL to CSS as --flip-image and flags .doors-ready
+<script>
+/* Topblock Flip v1.38 — non-destructive wrap + directional easing + click-through
+   + exposes the image URL to CSS as --flip-image and gates doors via .doors-ready
 */
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
@@ -204,3 +205,4 @@
     }).observe(document.documentElement,{childList:true,subtree:true});
   });
 })();
+</script>
