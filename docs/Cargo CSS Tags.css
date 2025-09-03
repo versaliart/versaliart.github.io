@@ -22,7 +22,7 @@
   padding: var(--pill-container-py) var(--pill-container-px);
   display:block;
   --pill-justify: space-between; /* try space-between if you prefer edge-to-edge */
-  --pill-fill: 0rem;           /* adjust if last row looks too loose/tight */
+  --pill-fill: 6rem;           /* adjust if last row looks too loose/tight */
 }
 
 @media (prefers-color-scheme: dark){
