@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/* FONT DECLARATIONS */
+/* FONT DECLARATIONS v1.1 */
 /*----------------------------------------------------------------------*/
 
 /* ------------------------------
@@ -118,7 +118,7 @@
   font-family:"Maax";
   font-weight:700;             /* Bold */
   font-size:var(--p1);
-  line-height:1.5;
+  line-height:1.4;
   text-transform: uppercase;
   letter-spacing: .02em;
   font-feature-settings: "case" 1, "cpsp" 1;
