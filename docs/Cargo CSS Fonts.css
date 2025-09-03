@@ -351,12 +351,10 @@ button.sqs-add-to-cart-button{
   margin: 0 !important;            /* prevent margin-based reflow */
 }
 
-/* Gap between Paragraph 1 → Paragraph 2 (inside Text Blocks only) */
-:root{ --gap-p1p2: 1rem; }  /* adjust to taste */
-
-.sqs-block.html-block.sqs-block-html .sqs-html-content > p.sqsrte-large + p.sqsrte-medium,
-.sqs-block.html-block.sqs-block-html .sqs-block-content > p.sqsrte-large + p.sqsrte-medium {
-  margin-top: var(--gap-p1p2) !important;
+/* Bigger gap between display lines and paragraph sizes */
+.sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + *,
+.sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium,p.sqsrte-small,p.sqsrte-body) + *{
+  margin-top: 0.75rem !important;   /* smaller gap after a style change */
 }
 
 
