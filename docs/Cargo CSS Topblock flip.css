@@ -1,4 +1,4 @@
-/* Topblock Flip v1.37  */
+/* Topblock Flip v1.37 */
 
 /* ---------- Base v1.3 ---------- */
 :root{
@@ -8,7 +8,7 @@
 
   --flip-ease-enter: cubic-bezier(.4,0,.2,1);
   --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
-  --flip-perspective: 1000px;
+  --flip-perspective: 1000px; /* keep as-is for now */
 }
 
 .flip-section { position: relative; perspective: var(--flip-perspective); }
@@ -24,7 +24,6 @@
   will-change: transform;
   width: 100%; height: 100%;
 }
-
 .flip-top .flip-front,
 .flip-top .flip-back{
   grid-area: 1 / 1;
@@ -65,20 +64,19 @@
 /* Front must anchor the pseudo-doors */
 .flip-top .flip-front{ position: relative; }
 
-/* Doors = the same photo, split into left/right halves via --flip-image */
-/* --- FIX: anchor halves to their own edges (no inset:0) --- */
-.flip-top .flip-front::before,
-.flip-top .flip-front::after{
-  /* remove inset:0; */
-  top: 0;
-  bottom: 0;
+/* Draw doors only when image is ready */
+.flip-top.doors-ready .flip-front::before,
+.flip-top.doors-ready .flip-front::after{
+  content:"";
+  position:absolute;
+  top:0; bottom:0;                     /* anchor vertically */
   width: calc(50% + var(--door-overlap));
-  z-index: 2;
+  z-index: 2;                          /* above the real <img> */
   transform-style: preserve-3d;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
   pointer-events: none;
 
+  /* Use the CSS var that JS sets from the <img> */
   background-image: var(--flip-image);
   background-repeat: no-repeat;
   background-size: 200% 100%;
@@ -88,50 +86,44 @@
 }
 
 /* Left half */
-.flip-top .flip-front::before{
-  left: 0;             /* ✅ pin to left only */
-  right: auto;         /* ✅ ensure width is respected */
+.flip-top.doors-ready .flip-front::before{
+  left: 0;                             /* pin to left only */
   transform-origin: left center;
   background-position: left center;
 }
 
 /* Right half */
-.flip-top .flip-front::after{
-  right: 0;            /* ✅ pin to right only */
-  left: auto;          /* ✅ ensure width is respected */
+.flip-top.doors-ready .flip-front::after{
+  right: 0;                            /* pin to right only */
   transform-origin: right center;
   background-position: right center;
 }
 
-
-/* Doors open on hover/tap (same triggers) */
-.flip-top.hover .flip-front::before,
-.flip-top.is-flipped .flip-front::before{
+/* Doors open on hover/tap (ready-only) */
+.flip-top.doors-ready.hover .flip-front::before,
+.flip-top.doors-ready.is-flipped .flip-front::before{
   transform: rotateY(-180deg);
 }
-.flip-top.hover .flip-front::after,
-.flip-top.is-flipped .flip-front::after{
+.flip-top.doors-ready.hover .flip-front::after,
+.flip-top.doors-ready.is-flipped .flip-front::after{
   transform: rotateY(180deg);
 }
 
-/* Make door transitions respect exit timing as well */
-.flip-top.ease-exit .flip-front::before,
-.flip-top.ease-exit .flip-front::after{
+/* Respect exit timing too */
+.flip-top.doors-ready.ease-exit .flip-front::before,
+.flip-top.doors-ready.ease-exit .flip-front::after{
   transition-duration: var(--flip-dur-exit);
   transition-timing-function: var(--flip-ease-exit);
 }
 
-/* Neutralize the base inner rotate — doors provide the flip illusion */
-.flip-top.hover .flip-inner,
-.flip-top.is-flipped .flip-inner{
+/* Neutralize base inner rotate ONLY when doors are ready */
+.flip-top.doors-ready.hover .flip-inner,
+.flip-top.doors-ready.is-flipped .flip-inner{
   transform: none !important;
 }
 
-/* Hide the real image while doors are open/flipped so nothing peeks through */
-.flip-top.hover .flip-front img,
-.flip-top.is-flipped .flip-front img{
+/* Hide the real image ONLY when doors are ready */
+.flip-top.doors-ready.hover .flip-front img,
+.flip-top.doors-ready.is-flipped .flip-front img{
   opacity: 0;
 }
-
-/* Keep the back inert as before */
-.flip-top .flip-back{ pointer-events: none; }

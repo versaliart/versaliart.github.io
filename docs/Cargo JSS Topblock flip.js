@@ -1,5 +1,5 @@
 /* Topblock Flip v1.37 — non-destructive wrap + directional easing + click-through
-   + exposes the image URL to CSS as --flip-image for split-doors
+   + exposes the image URL to CSS as --flip-image and flags .doors-ready
 */
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
@@ -38,7 +38,7 @@
     return t?{x:t.clientX,y:t.clientY}:{x:0,y:0};
   }
 
-  // Forward clicks/pointers to whatever is under the flipping block
+  // Forward pointer/click events to what's beneath the flipped block
   function forwardEvent(e, block){
     if (!isActive(block)) return;
     var pt=getPoint(e);
@@ -59,9 +59,10 @@
     e.preventDefault(); e.stopPropagation();
   }
 
-  // Copy the visible <img> URL into a CSS var on the FRONT face
-  function exposeImageToCSS(front){
+  // Copy the visible <img> URL into CSS and flag readiness
+  function exposeImageToCSS(front, block){
     var img = front.querySelector('img');
+
     function pickSrc(el){
       if (!el) return "";
       return el.currentSrc
@@ -70,15 +71,23 @@
           || el.src
           || "";
     }
+
     function setVar(){
       var src = pickSrc(img);
-      if (src) front.style.setProperty('--flip-image', 'url("'+ src +'")');
+      if (src) {
+        front.style.setProperty('--flip-image', 'url("'+ src +'")');
+        block.classList.add('doors-ready');     // enable doors CSS
+      } else {
+        block.classList.remove('doors-ready');  // fall back to base flip
+      }
     }
+
     if (img){
       setVar();
       img.addEventListener('load', setVar, {passive:true});
       if ('MutationObserver' in window){
-        new MutationObserver(setVar).observe(img, {attributes:true, attributeFilter:['src','data-src','data-image','srcset']});
+        new MutationObserver(setVar)
+          .observe(img, {attributes:true, attributeFilter:['src','data-src','data-image','srcset']});
       }
     }
   }
@@ -111,18 +120,17 @@
     var front = document.createElement('div'); front.className='flip-front';
     var back  = document.createElement('div'); back.className='flip-back';
 
-    // Insert wrapper before the target, move target into front, then
-    // **append the wrapper back into the block** (critical for CSS selectors)
+    // Insert wrapper before the target, move target into front, then put wrapper back in block
     target.parentNode.insertBefore(inner, target);
     front.appendChild(target);
     inner.appendChild(front);
     inner.appendChild(back);
-    block.appendChild(inner);                // ✅ put inner inside .flip-top
+    block.appendChild(inner);                // keep .flip-inner inside .flip-top
 
     block.__flipInner = inner;
 
-    // Expose the image URL for the split doors
-    exposeImageToCSS(front);
+    // Expose image URL for the split doors (and gate with .doors-ready)
+    exposeImageToCSS(front, block);
 
     // add section perspective once
     var section = closestSection(block);
@@ -134,7 +142,7 @@
       block.addEventListener('mouseleave', function(){ flipExit(block);  });
     }
 
-    // Mobile tap to flip
+    // Mobile: tap to flip (enter)
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
