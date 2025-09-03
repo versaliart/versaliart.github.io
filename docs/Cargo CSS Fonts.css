@@ -253,8 +253,6 @@ button.sqs-add-to-cart-button{
 
 /* ----- Text block spacing (7.1): tighten gaps, keep font sizes unchanged ----- */
 
-
-
 /* 1) Zero top/bottom margins on common children (both wrappers) */
 .sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
 .sqs-block-html .sqs-html-content   > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure){
@@ -352,6 +350,15 @@ button.sqs-add-to-cart-button{
   > *{
   margin: 0 !important;            /* prevent margin-based reflow */
 }
+
+/* Header → Paragraph gap (only inside Squarespace Text Blocks, SS 7.1) */
+:root{ --gap-hp: 0.4rem; }  /* adjust this value to taste */
+
+.sqs-block.html-block.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
+.sqs-block.html-block.sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p {
+  margin-top: var(--gap-hp) !important;
+}
+
 
 /* Optional: if the editor left a trailing empty paragraph at the end, hide it */
 .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
