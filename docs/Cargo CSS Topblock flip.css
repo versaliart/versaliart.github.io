@@ -1,111 +1,141 @@
-/* Topblock Flip v1.40 — overlay split-doors (image halves) without moving DOM */
+/* v1.3 */
 
 :root{
-  --flip-dur-enter: 650ms;
-  --flip-dur-exit:  650ms;
+  /* Tune these to taste */
+  --flip-dur-enter: 650ms;  /* first flip = slower */
+  --flip-dur-exit:  650ms;  /* unflip     = quicker */
+
   --flip-ease-enter: cubic-bezier(.4,0,.2,1);
   --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
   --flip-perspective: 1000px;
-  --door-overlap: 0.5px; /* hide hairline seam at center */
 }
 
 .flip-section { position: relative; perspective: var(--flip-perspective); }
-.flip-top     { position: relative; isolation: isolate; display:block; }
+.flip-top     { position: relative; isolation: isolate; }
 
-/* Anchor we paint the doors on (JS adds .flip-anchor on the chosen wrapper) */
-.flip-top .flip-anchor{
-  position: relative;         /* establishes the box for ::before/::after */
-  display:block;
-  width:100%;
-}
-
-/* Images behave predictably (preserve Squarespace sizing) */
-.flip-top .flip-anchor img{
-  display:block; width:100%; height:auto;
-  transition: opacity var(--flip-dur-enter) var(--flip-ease-enter);
-}
-
-/* ---------- Split doors (only when ready) ---------- */
-.flip-top.doors-ready .flip-anchor::before,
-.flip-top.doors-ready .flip-anchor::after{
-  content:"";
-  position:absolute;
-  top:0; bottom:0;
-  width: calc(50% + var(--door-overlap));
-  z-index:2;                                  /* above the real image */
+/* Wrapper + faces fill the figure */
+.flip-top .flip-inner{
+  display: grid;
   transform-style: preserve-3d;
+  transition-property: transform; /* important! */
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
+  will-change: transform;
+  width: 100%; height: 100%;
+}
+.flip-top .flip-front,
+.flip-top .flip-back{
+  grid-area: 1 / 1;
+  width: 100%; height: 100%;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
-  pointer-events:none;
-
-  /* Use the photo from JS */
-  background-image: var(--flip-image);
-  background-repeat:no-repeat;
-  background-size: 200% 100%;
-  transition: transform var(--flip-dur-enter) var(--flip-ease-enter);
 }
+.flip-top .flip-back{ transform: rotateY(180deg); pointer-events: none; }
 
-/* Left half */
-.flip-top.doors-ready .flip-anchor::before{
-  left:0;
-  transform-origin:left center;
-  background-position:left center;
+/* Marker anchor is just an opt-in flag */
+.flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
+
+/* Flipped states (JS toggles .hover / .is-flipped) */
+.flip-top.hover .flip-inner,
+.flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
+
+/* Directional timing (JS swaps these classes before each change) */
+.flip-top.ease-enter .flip-inner{
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
 }
-
-/* Right half */
-.flip-top.doors-ready .flip-anchor::after{
-  right:0;
-  transform-origin:right center;
-  background-position:right center;
-}
-
-/* Doors open on hover/tap (ready-only) */
-.flip-top.doors-ready.hover .flip-anchor::before,
-.flip-top.doors-ready.is-flipped .flip-anchor::before{ transform: rotateY(-180deg); }
-.flip-top.doors-ready.hover .flip-anchor::after,
-.flip-top.doors-ready.is-flipped .flip-anchor::after{  transform: rotateY(180deg);  }
-
-/* Exit timing (unflip) */
-.flip-top.doors-ready.ease-exit .flip-anchor::before,
-.flip-top.doors-ready.ease-exit .flip-anchor::after{
+.flip-top.ease-exit .flip-inner{
   transition-duration: var(--flip-dur-exit);
   transition-timing-function: var(--flip-ease-exit);
 }
 
-/* Hide the real image ONLY when doors are ready & active */
-.flip-top.doors-ready.hover .flip-anchor img,
-.flip-top.doors-ready.is-flipped .flip-anchor img{ opacity:0; }
-
-/* Respect reduced motion */
+/* Motion safety */
 @media (prefers-reduced-motion: reduce){
-  .flip-top .flip-anchor::before,
-  .flip-top .flip-anchor::after,
-  .flip-top .flip-anchor img{ transition: none !important; }
-}
-/* === Topflip "unsquish" fix — let the image drive height again === */
-
-/* 1) Stop wrappers from forcing 100% height */
-.flip-top .sqs-block-content,
-.flip-top .image-block-outer-wrapper,
-.flip-top .fluid-image-animation-wrapper,
-.flip-top .fluid-image-container,
-.flip-top .sqs-image,
-.flip-top .sqs-image-content{
-  height: auto !important;
-  min-height: 0 !important;
+  .flip-top .flip-inner { transition: none !important; }
 }
 
-/* 2) Make sure the image uses its natural aspect ratio */
-.flip-top .flip-front img,
-.flip-top .flip-anchor img{
-  display:block;
-  width:100%;
-  height:auto !important;          /* key: don’t stretch to wrapper height */
-  max-height:none !important;
-}
 
-/* 3) (Optional) if your theme adds fixed heights via flex/grid, let these stretch naturally */
-.flip-top .image-block-outer-wrapper,
-.flip-top .fluid-image-animation-wrapper,
-.flip-top .fluid-image-container{
-  align-self: stretch;
-}
+<script>
+/* ===== Multi-Flip setup for only this section ===== */
+(function(){
+  function closestSection(el){
+    while(el && el!==document.body){
+      if(el.matches('.page-section, [data-section-id], section')) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+  function ready(fn){
+    if(document.readyState!=='loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn, {once:true});
+  }
+
+  ready(function(){
+    var scriptEl = document.currentScript;
+    var section = closestSection(scriptEl);
+    if(!section) return;
+    section.classList.add('flip-section');
+
+    // Find every Image Block in this section marked as a Top Block
+    var blocks = Array.from(section.querySelectorAll('.sqs-block.image-block'))
+      .filter(function(blk){ return !!blk.querySelector('a[href="#flip-top"]'); });
+
+    if(!blocks.length){
+      console.warn('FlipTop: No Image Blocks with href="#flip-top" in this section.');
+      return;
+    }
+
+    blocks.forEach(function(block){
+      if(block.__flipReady) return; // idempotent
+      block.__flipReady = true;
+      block.classList.add('flip-top');
+
+      // Build flip DOM: .flip-inner > (.flip-front [original content], .flip-back [empty])
+      var inner = document.createElement('div'); inner.className = 'flip-inner';
+      var front = document.createElement('div'); front.className = 'flip-front';
+      var back  = document.createElement('div'); back.className  = 'flip-back';
+
+      while(block.firstChild){ front.appendChild(block.firstChild); }
+      inner.appendChild(front); inner.appendChild(back);
+      block.appendChild(inner);
+
+      // Use the marker link as a trigger; never navigate
+      var marker = front.querySelector('a[href="#flip-top"]');
+      if(marker){
+        marker.addEventListener('click', function(e){
+          e.preventDefault(); e.stopPropagation();
+          if (matchMedia('(hover: none), (pointer: coarse)').matches) {
+            block.classList.add('is-flipped'); // mobile tap → flip this block only
+          }
+        }, true);
+      }
+
+      // Also allow tapping anywhere on the Top Block (mobile) to flip
+      block.addEventListener('click', function(){
+        if (matchMedia('(hover: none), (pointer: coarse)').matches) {
+          block.classList.add('is-flipped');
+        }
+      }, true);
+
+      // Auto-reset when the block scrolls off-screen
+      if('IntersectionObserver' in window){
+        var io = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            if(!entry.isIntersecting){ block.classList.remove('is-flipped'); }
+          });
+        }, {threshold: 0.05});
+        io.observe(block);
+      }
+    });
+
+    // Mobile convenience: tap blank space in the section to reset all flipped blocks
+    section.addEventListener('click', function(e){
+      if (!(matchMedia('(hover: none), (pointer: coarse)').matches)) return;
+      if (!e.target.closest('a, button, [role="button"]')) {
+        section.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
+          b.classList.remove('is-flipped');
+        });
+      }
+    });
+  });
+})();
+</script>
