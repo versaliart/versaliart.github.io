@@ -39,12 +39,17 @@
 }
 
 .tag-pills__list{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
   display:flex;
   flex-wrap:wrap;
   row-gap: var(--pill-gap);
   column-gap: 0;
-  justify-content: var(--pill-justify, space-between);
+  justify-content: var(--pill-justify, space-evenly);
 }
+
 .tag-pills__list::after{
   content:"";
   flex: 1 1 var(--pill-fill, 12rem); /* set to 0 to disable last-row spread */
@@ -76,3 +81,11 @@
   overflow-wrap: normal;
   hyphens: manual;
 }
+
+/* Some Squarespace themes draw bullets via ::before or ::marker */
+.tag-pills__list > li{ list-style: none; margin: 0; padding: 0; }
+.tag-pills__list > li::before,
+.tag-pills__list > li::marker{ content: none !important; }
+
+/* Kill any global link “›/→” decoration inside pills */
+.tag-pills a.tag-pill::after{ content: none !important; }
