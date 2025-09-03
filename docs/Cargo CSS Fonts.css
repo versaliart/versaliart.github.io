@@ -352,7 +352,7 @@ button.sqs-add-to-cart-button{
 }
 
 /* Gap between Paragraph 1 → Paragraph 2 (inside Text Blocks only) */
-:root{ --gap-p1p2: 0.35rem; }  /* adjust to taste */
+:root{ --gap-p1p2: 0.55rem; }  /* adjust to taste */
 
 .sqs-block.html-block.sqs-block-html .sqs-html-content > p.sqsrte-large + p.sqsrte-medium,
 .sqs-block.html-block.sqs-block-html .sqs-block-content > p.sqsrte-large + p.sqsrte-medium {
