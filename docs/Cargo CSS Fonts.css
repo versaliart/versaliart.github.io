@@ -116,7 +116,7 @@
 /* Paragraph 1 */
 .sqs-block-content p.sqsrte-large{
   font-family:"Maax";
-  font-weight:700;             /* Bold */
+  font-weight:500;            
   font-size:var(--p1);
   line-height:1.4;
   text-transform: uppercase;
