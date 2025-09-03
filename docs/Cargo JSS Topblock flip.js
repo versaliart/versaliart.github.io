@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.45 — FULL JS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.46 — FULL JS ===== */
 
 (function(){
   // ---------- Build DOM for the doors ----------
@@ -63,6 +63,9 @@
     // Constant seam overlap (in px) from CSS var on .flip-doors
     const seam = parseFloat(getComputedStyle(doors).getPropertyValue('--flip-seam')) || 0;
 
+   const bleed = parseFloat(getComputedStyle(doors).getPropertyValue('--edge-bleed')) || 0;
+
+    
     // Faces
     const leftFront  = doors.querySelector('.flip-door.left  .face.front');
     const rightFront = doors.querySelector('.flip-door.right .face.front');
@@ -72,16 +75,18 @@
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
     // Apply background with sub-pixel values
-    const paint = (el, dx) => {
-      if (!el) return;
-      el.style.backgroundImage    = `url("${url}")`;
-      el.style.backgroundSize     = `${bgW}px ${bgH}px`;
-      el.style.backgroundPosition = `${posX - dx}px ${posY}px`;  // allow decimals
-      el.style.backgroundRepeat   = 'no-repeat';
-      el.style.transform          = 'translateZ(0)';             // promote layer
-      el.style.backfaceVisibility = 'hidden';
-      el.style.webkitBackfaceVisibility = 'hidden';
-    };
+  const paint = (el, dx) => {
+  if (!el) return;
+  el.style.backgroundImage    = `url("${url}")`;
+  el.style.backgroundSize     = `${bgW}px ${bgH}px`;
+  // +bleed on X and Y because the face grew outward by that amount
+  el.style.backgroundPosition = `${(posX - dx + bleed)}px ${(posY + bleed)}px`;
+  el.style.backgroundRepeat   = 'no-repeat';
+  el.style.transform          = 'translateZ(0)';
+  el.style.backfaceVisibility = 'hidden';
+  el.style.webkitBackfaceVisibility = 'hidden';
+};
+
 
     // Left uses container origin; right uses center minus overlap
     paint(leftFront, 0);
