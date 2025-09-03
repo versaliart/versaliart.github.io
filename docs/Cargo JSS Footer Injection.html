@@ -54,29 +54,26 @@
       }
     })();
 
-    // Bump this when you push new files to GitHub Pages to avoid stale cache
-    var v = "v=2025-09-02-1";
-
     // Queue: load Starfield when its marker exists
     whenSelector("#starfield-enable", function () {
-      loadScript("https://versaliart.github.io/Cargo%20JSS%20Starfield.js?" + v)
+      loadScript("https://versaliart.github.io/Cargo%20JSS%20Starfield.js")
         .then(function(){ console.log("[Loader] Starfield loaded"); })
         .catch(function(e){ console.warn(e); });
     });
 
     // Queue: load Tags only when a .tag-pills host exists (so we don’t load it sitewide)
     whenSelector(".tag-pills", function () {
-      loadScript("https://versaliart.github.io/Cargo%20JSS%20Tags.js?" + v)
+      loadScript("https://versaliart.github.io/Cargo%20JSS%20Tags.js")
         .then(function(){ console.log("[Loader] Tags loaded"); })
         .catch(function(e){ console.warn(e); });
     });
 
   // Load Topblock flip only when #flip-top exists
-  whenSelector('#flip-top', function () {
-    loadScript('https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js?' + v)
-      .then(function(){ console.log('[Loader] Topblock loaded'); })
-      .catch(function(e){ console.warn(e); });
-  });
+whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
+  loadScript('https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js')
+    .then(()=>console.log('[Loader] Topblock loaded'))
+    .catch(console.warn);
+});
   });
 })();
 </script>
