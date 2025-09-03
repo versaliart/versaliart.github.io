@@ -137,7 +137,7 @@
 .sqs-block-content p,
 .sqs-block-content p.sqsrte-body{
   font-family:"Crimson Pro",serif;
-  font-weight:400;             /* Regular */
+  font-weight:300;             /* Regular */
   font-size:var(--p2);
   line-height:1.5;
 }
