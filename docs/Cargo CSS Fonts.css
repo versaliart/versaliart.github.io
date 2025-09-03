@@ -127,7 +127,7 @@
   font-family:"Maax";
   font-weight:700;             /* Bold */
   font-size:var(--p1);
-  line-height:1.6;
+  line-height:1.5;
   text-transform: uppercase;
   letter-spacing: .02em;
   font-feature-settings: "case" 1, "cpsp" 1;
@@ -139,7 +139,7 @@
   font-family:"Crimson Pro",serif;
   font-weight:400;             /* Regular */
   font-size:var(--p2);
-  line-height:1.65;
+  line-height:1.5;
 }
 
 /* Paragraph 3 */

@@ -14,6 +14,11 @@
   --pill-focus:0 0 0 .16rem rgba(0,0,0,.25);
   --pill-container-py:.5rem;
   --pill-container-px:.5rem;
+  --pill-line-height: 1;
+  font-family: "Crimson Pro", serif;
+  --pill-font-size: var(--p3);
+  --pill-weight: 400;
+
   padding: var(--pill-container-py) var(--pill-container-px);
   display:block;
 }
@@ -25,6 +30,9 @@
     --pill-bg-hover:rgba(255,255,255,.10);
     --pill-border-hover:rgba(255,255,255,.36);
     --pill-focus:0 0 0 .16rem rgba(255,255,255,.30);
+  font-family: "Crimson Pro", serif;  /* same as P3 */
+  --pill-font-size: var(--p3);        /* same size as P3 */
+  --pill-weight: 400;                 /* P3 Regular */
   }
 }
 
@@ -36,7 +44,7 @@
 }
 
 .tag-pills .tag-pill{
-  display:inline-flex; align-items:center; white-space:nowrap; line-height:1;
+  display:inline-flex; align-items:center; white-space:nowrap; line-height:var(--pill-line-height);
   font-size:var(--pill-font-size); font-weight:var(--pill-weight); color:var(--pill-fg);
   border:1px solid var(--pill-border); background:var(--pill-bg); border-radius:var(--pill-radius);
   padding:var(--pill-py) var(--pill-px); text-decoration:none;
@@ -47,7 +55,7 @@
 .tag-pills a.tag-pill:focus-visible{ outline:none; box-shadow:var(--pill-focus); }
 .tag-pills .tag-pill.is-more{ opacity:.8; }
 
-.tag-pills .hash{ display:inline-block; opacity:.6; margin-right:.35rem; font-weight:600; }
+.tag-pills .hash{ display:inline-block; opacity:.6; margin-right:.35rem; font-weight:inherit; }
 
 /* Optional compact variant */
 .tag-pills.compact{
