@@ -352,7 +352,7 @@ button.sqs-add-to-cart-button{
 }
 
 /* Header → Paragraph gap (only inside Squarespace Text Blocks, SS 7.1) */
-:root{ --gap-hp: 0.4rem; }  /* adjust this value to taste */
+:root{ --gap-hp: 1.4rem; }  /* adjust this value to taste */
 
 .sqs-block.html-block.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
 .sqs-block.html-block.sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p {
