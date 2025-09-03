@@ -2,7 +2,7 @@
 
 :root{
   /* Tune these to taste */
-  --flip-dur-enter: 350ms;  /* first flip = slower */
+  --flip-dur-enter: 650ms;  /* first flip = slower */
   --flip-dur-exit:  650ms;  /* unflip     = quicker */
 
   --flip-ease-enter: cubic-bezier(.2,.8,.2,1);
