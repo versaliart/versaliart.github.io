@@ -1,6 +1,4 @@
-
-/* ===== Topblock Split-Flip (Doors) v2.2===== */
-
+/* ===== Topblock Split-Flip (Doors) v2.3===== */
 (function(){
   function buildDoors(url){
     const doors = document.createElement('div');
@@ -8,25 +6,22 @@
     const makeDoor = side => {
       const d = document.createElement('div');
       d.className = 'flip-door ' + side;
-      const front = document.createElement('div');
-      front.className = 'face front';
-      const back  = document.createElement('div');
-      back.className  = 'face back';
+      const front = document.createElement('div'); front.className = 'face front';
+      const back  = document.createElement('div'); back.className  = 'face back';
       d.appendChild(front); d.appendChild(back);
       return d;
     };
     doors.appendChild(makeDoor('left'));
     doors.appendChild(makeDoor('right'));
-    // Store the image URL on the host for layout()
-    doors.dataset.image = url;
+    doors.dataset.image = url; // stash url for layout()
     return doors;
   }
 
-  // Compute pixel-accurate background-size/position for both halves
+  // ---------- Pixel-accurate cover sizing + focal point, with seam overlap ----------
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
-    const imgEl = block.querySelector('img[data-sqsp-image-block-image]');
-    const doors = block.querySelector('.flip-doors');
+    const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
+    const doors     = block.querySelector('.flip-doors');
     if (!container || !imgEl || !doors) return;
 
     // Container size
@@ -34,9 +29,8 @@
     const W = Math.max(1, rect.width);
     const H = Math.max(1, rect.height);
 
-    // Natural image size (Squarespace puts this on the img)
-    // Fallback to current displayed if missing
-    let iw = imgEl.naturalWidth || 1;
+    // Natural image dimensions (Squarespace adds data-image-dimensions="WxH")
+    let iw = imgEl.naturalWidth  || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
     if (dims && dims.includes('x')) {
@@ -44,7 +38,7 @@
       if (dw && dh) { iw = dw; ih = dh; }
     }
 
-    // Focal point (0..1,0..1), default center
+    // Focal point (0..1, 0..1). Default center.
     let fx = 0.5, fy = 0.5;
     const fp = imgEl.getAttribute('data-image-focal-point');
     if (fp && fp.includes(',')) {
@@ -53,40 +47,44 @@
       if (!isNaN(sy)) fy = sy;
     }
 
-    // COVER scale
+    // Compute "cover" scale
     const scale = Math.max(W / iw, H / ih);
     const bgW = Math.round(iw * scale);
     const bgH = Math.round(ih * scale);
 
-    // Background top-left, relative to the full container (pixels)
-    // Align so the focal point in the image maps to the same focal in the container
+    // Top-left background position so focal point aligns
     const posX = Math.round((W * fx) - (bgW * fx));
     const posY = Math.round((H * fy) - (bgH * fy));
 
-    // Each half’s background-position is relative to *its own* left edge.
-    // Right half begins at containerLeft + W/2, so subtract W/2.
-    const leftDoor  = doors.querySelector('.flip-door.left  .face.front');
-    const rightDoor = doors.querySelector('.flip-door.right .face.front');
-    const leftBack  = doors.querySelector('.flip-door.left  .face.back');
-    const rightBack = doors.querySelector('.flip-door.right .face.back');
+    // Seam overlap (in px) read from CSS variable --flip-seam on .flip-doors
+    const seam = parseFloat(getComputedStyle(doors).getPropertyValue('--flip-seam')) || 0;
 
-    const url = doors.dataset.image || (imgEl.currentSrc || imgEl.src);
+    // Faces
+    const leftFront  = doors.querySelector('.flip-door.left  .face.front');
+    const rightFront = doors.querySelector('.flip-door.right .face.front');
+    const leftBack   = doors.querySelector('.flip-door.left  .face.back');
+    const rightBack  = doors.querySelector('.flip-door.right .face.back');
 
-    // Apply identical size, with door-relative X offsets
+    const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
+
+    // Helper to apply background to a face; dx is the door's local x offset
     const styleFace = (el, dx) => {
       if (!el) return;
-      el.style.backgroundImage  = `url("${url}")`;
-      el.style.backgroundSize   = `${bgW}px ${bgH}px`;
+      el.style.backgroundImage    = `url("${url}")`;
+      el.style.backgroundSize     = `${bgW}px ${bgH}px`;
       el.style.backgroundPosition = `${posX - dx}px ${posY}px`;
-      el.style.backgroundRepeat = 'no-repeat';
+      el.style.backgroundRepeat   = 'no-repeat';
     };
 
-    styleFace(leftDoor,  0);
+    // Left door uses container origin; right door's origin is shifted by half width,
+    // minus the overlap seam so the pixels line up perfectly.
+    styleFace(leftFront, 0);
     styleFace(leftBack,  0);
-    styleFace(rightDoor, W / 2);
-    styleFace(rightBack, W / 2);
+    styleFace(rightFront, (W / 2) - seam);
+    styleFace(rightBack,  (W / 2) - seam);
   }
 
+  // ---------- Initialize one block ----------
   function initOne(block){
     if (block.classList.contains('flip-top')) return;
 
@@ -97,26 +95,26 @@
     const url = img.currentSrc || img.src;
     if (!url) return;
 
-    block.classList.add('flip-top');
+    block.classList.add('flip-top');           // mark as processed
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // layout now and on changes
     const relayout = () => layout(block);
     relayout();
 
-    // When the responsive image swaps, relayout
-    const io = new ResizeObserver(relayout);
-    io.observe(container);
+    // ResizeObserver: relayout on container size changes
+    const ro = new ResizeObserver(relayout);
+    ro.observe(container);
 
-    // Also watch for src/srcset changes (Squarespace lazy loads)
+    // MutationObserver: relayout if img src/srcset swaps (lazy/responsive)
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
 
-    // In case natural sizes weren’t ready yet
+    // If the image wasn't loaded yet, relayout after load
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
   }
 
+  // ---------- Initialize all eligible blocks ----------
   function initAll(){
     document.querySelectorAll('.sqs-block.image-block').forEach(block => {
       const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
@@ -124,11 +122,12 @@
     });
   }
 
+  // Run now and on DOM changes (Squarespace editor / lazy mounts)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);
   } else {
     initAll();
   }
   const moAll = new MutationObserver(initAll);
-  moAll.observe(document.documentElement, { childList:true, subtree:true });
+  moAll.observe(document.documentElement, { childList: true, subtree: true });
 })();

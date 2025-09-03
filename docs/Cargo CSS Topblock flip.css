@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.2===== */
+/* ===== Topblock Split-Flip (Doors) v2.3===== */
 
 :root{
   --flip-duration: 520ms;
@@ -71,3 +71,12 @@
 /* Ensure the block itself can receive hover while clicks still pass through */
 .sqs-block.image-block.flip-top{ pointer-events: auto; }
 .sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
+
+/* micro-overlap to hide the center seam */
+:root{ --flip-seam: 1px; }  /* try .5px–1.5px depending on your screen */
+
+.sqs-block.image-block.flip-top .flip-door.left  { margin-right: calc(-1 * var(--flip-seam)); }
+.sqs-block.image-block.flip-top .flip-door.right { margin-left:  calc(-1 * var(--flip-seam)); }
+
+/* extra stability while rotating */
+.sqs-block.image-block.flip-top .flip-door { backface-visibility: hidden; transform-style: preserve-3d; }
