@@ -1,4 +1,3 @@
-<script>
 /* Topblock Flip v1.0 — Integrated JS (directional easing, no un-hover lag)
    - Opt-in via Image Block Clickthrough URL "#flip-top"
    - Desktop: hover flips (ease-in), un-hover flips back (ease-out), immediate
@@ -165,4 +164,3 @@
     });
   }).observe(document.documentElement, { childList: true, subtree: true });
 })();
-</script>
