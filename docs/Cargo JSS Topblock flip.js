@@ -1,9 +1,8 @@
-/* Topblock Flip v1.36 — non-destructive wrap + directional duration/easing + click-through
+/* Topblock Flip v1.37 — non-destructive wrap + directional easing + click-through
    + exposes the image URL to CSS as --flip-image for split-doors
 */
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
-
   var COARSE='(hover: none), (pointer: coarse)', FINE='(hover: hover) and (pointer: fine)';
   function isCoarse(){ return matchMedia(COARSE).matches; }
   function isFine(){ return matchMedia(FINE).matches; }
@@ -16,7 +15,6 @@
     return null;
   }
 
-  // Choose the figure we should wrap (Squarespace variants)
   function pickFlipTarget(block){
     return block.querySelector('figure.image-block-figure')
         || block.querySelector('.image-block-outer-wrapper')
@@ -26,16 +24,12 @@
         || block;
   }
 
-  // commit layout before toggling transforms
   function flush(el){ try { void el.offsetWidth; } catch(_) {} }
-
   function setEase(block, mode){
     block.classList.toggle('ease-enter', mode === 'enter');
     block.classList.toggle('ease-exit',  mode === 'exit');
   }
-
   function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
-
   function isActive(block){ return block.classList.contains('hover') || block.classList.contains('is-flipped'); }
 
   function getPoint(e){
@@ -44,13 +38,13 @@
     return t?{x:t.clientX,y:t.clientY}:{x:0,y:0};
   }
 
-  // Forward pointer/click events to what's beneath the flipped block
+  // Forward clicks/pointers to whatever is under the flipping block
   function forwardEvent(e, block){
     if (!isActive(block)) return;
     var pt=getPoint(e);
     var stack=(document.elementsFromPoint&&document.elementsFromPoint(pt.x,pt.y))||[];
     var under=null;
-    for (var i=0;i<stack.length;i++){ if (!block.contains(stack[i])) { under=stack[i]; break; } }
+    for (var i=0;i<stack.length;i++){ if (!block.contains(stack[i])){ under=stack[i]; break; } }
     if (!under) return;
 
     var clickable = under.closest && under.closest('a,button,[role="button"],[role="link"],label,summary,input,textarea,select');
@@ -65,45 +59,37 @@
     e.preventDefault(); e.stopPropagation();
   }
 
-  function flipEnter(block){
-    setEase(block,'enter');
-    if (block.__flipInner) flush(block.__flipInner);
-    nextFrame(function(){ block.classList.add('hover'); });
-  }
-
-  function flipExit(block){
-    setEase(block,'exit');
-    if (block.__flipInner) flush(block.__flipInner);
-    nextFrame(function(){ block.classList.remove('hover'); });
-  }
-
-  // Copy the visible image URL into a CSS var on the FRONT face
+  // Copy the visible <img> URL into a CSS var on the FRONT face
   function exposeImageToCSS(front){
     var img = front.querySelector('img');
-
     function pickSrc(el){
       if (!el) return "";
-      // best-available source (handles <picture>, lazy, srcset)
       return el.currentSrc
           || el.getAttribute('data-src')
           || el.getAttribute('data-image')
           || el.src
           || "";
     }
-
     function setVar(){
       var src = pickSrc(img);
       if (src) front.style.setProperty('--flip-image', 'url("'+ src +'")');
     }
-
     if (img){
       setVar();
       img.addEventListener('load', setVar, {passive:true});
       if ('MutationObserver' in window){
-        new MutationObserver(setVar)
-          .observe(img, {attributes:true, attributeFilter:['src','data-src','data-image','srcset']});
+        new MutationObserver(setVar).observe(img, {attributes:true, attributeFilter:['src','data-src','data-image','srcset']});
       }
     }
+  }
+
+  function flipEnter(block){
+    setEase(block,'enter'); if (block.__flipInner) flush(block.__flipInner);
+    nextFrame(function(){ block.classList.add('hover'); });
+  }
+  function flipExit(block){
+    setEase(block,'exit'); if (block.__flipInner) flush(block.__flipInner);
+    nextFrame(function(){ block.classList.remove('hover'); });
   }
 
   function setupBlock(block){
@@ -117,7 +103,7 @@
     anchor.style.pointerEvents='none'; anchor.style.cursor='default';
     anchor.setAttribute('aria-hidden','true'); anchor.setAttribute('tabindex','-1');
 
-    // NON-DESTRUCTIVE: wrap only the figure target
+    // Wrap only the figure target
     var target = pickFlipTarget(block);
     if (!target || !target.parentNode) return;
 
@@ -125,28 +111,30 @@
     var front = document.createElement('div'); front.className='flip-front';
     var back  = document.createElement('div'); back.className='flip-back';
 
-    // Insert wrapper next to target, then move target inside .flip-front
+    // Insert wrapper before the target, move target into front, then
+    // **append the wrapper back into the block** (critical for CSS selectors)
     target.parentNode.insertBefore(inner, target);
     front.appendChild(target);
     inner.appendChild(front);
     inner.appendChild(back);
-    // Keep wrapper where we inserted it (no extra reparenting)
+    block.appendChild(inner);                // ✅ put inner inside .flip-top
+
     block.__flipInner = inner;
 
-    // expose image URL for split-doors CSS
+    // Expose the image URL for the split doors
     exposeImageToCSS(front);
 
     // add section perspective once
     var section = closestSection(block);
     if (section && !section.__flipSection){ section.__flipSection=true; section.classList.add('flip-section'); }
 
-    // Desktop hover managed via JS (so we can set enter/exit easing)
+    // Desktop hover
     if (isFine()){
       block.addEventListener('mouseenter', function(){ flipEnter(block); });
       block.addEventListener('mouseleave', function(){ flipExit(block);  });
     }
 
-    // Mobile: tap to flip (enter)
+    // Mobile tap to flip
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
@@ -156,12 +144,12 @@
       }
     }, true);
 
-    // Click-through while flipped/hovered
+    // Click-through while active
     ['pointerdown','pointerup','mousedown','mouseup','click','touchstart','touchend'].forEach(function(type){
       block.addEventListener(type, function(e){ forwardEvent(e, block); }, true);
     });
 
-    // Auto-reset off-screen (exit)
+    // Auto-reset off-screen
     if ('IntersectionObserver' in window){
       var io=new IntersectionObserver(function(entries){
         entries.forEach(function(entry){
@@ -181,7 +169,7 @@
       if (blk.querySelector('a[href="#flip-top"]')) setupBlock(blk);
     });
 
-    // Mobile: tap blank space to unflip all (exit)
+    // Mobile: tap blank space to unflip all
     document.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary')) return;
@@ -191,7 +179,7 @@
       });
     }, true);
 
-    // Watch for SPA/lazy-loaded blocks
+    // SPA/lazy: watch for added image blocks
     new MutationObserver(function(muts){
       muts.forEach(function(m){
         m.addedNodes.forEach(function(n){
