@@ -1,4 +1,3 @@
-<script>
 (() => {
   const ATTRS = ['data-tags','data-sort','data-case','data-prefix','data-target','data-limit','data-more-pill','data-hash'];
 
@@ -129,4 +128,3 @@
   });
   pageMO.observe(document.documentElement, { childList:true, subtree:true });
 })();
-</script>
