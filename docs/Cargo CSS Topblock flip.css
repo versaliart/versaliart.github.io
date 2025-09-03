@@ -1,114 +1,99 @@
-/* ===== Topflip v1.31 "split-doors" appearance (no JS/markup changes) ===== */
+/* ===== Topflip v1.32 "split-doors" appearance (no JS/markup changes) ===== */
 :root{
-  --flip-duration: .6s;                       /* match example speed */
-  --flip-ease: cubic-bezier(.2,.7,.2,1);      /* match example feel */
-  --flip-perspective: 62.5rem;                /* ~1000px */
-  --door-bg: rgba(0,0,0,.08);                 /* subtle front panel look; tweak or set to transparent */
-  --door-radius: .5rem;                       /* optional rounding */
+  --flip-duration: .6s;
+  --flip-ease: cubic-bezier(.2,.7,.2,1);
+  --flip-perspective: 62.5rem; /* ~1000px */
+  --door-bg: rgba(0,0,0,.08);  /* set to transparent if you want no tint */
+  --door-radius: .5rem;
   --door-shadow: 0 .75rem 1.5rem rgba(0,0,0,.18), 0 .5rem .75rem rgba(0,0,0,.12);
 }
 
-/* Put perspective on a safe ancestor (your section wrapper is ideal) */
-.flip-section, body{
-  perspective: var(--flip-perspective);
-}
+/* Put perspective on a safe ancestor (JS adds .flip-section to the section) */
+.flip-section, body{ perspective: var(--flip-perspective); }
 
-/* Your Squarespace image block that your script already targets */
-#flip-top{
-  position: relative;               /* anchor pseudo-doors */
-  display: inline-block;            /* avoid collapsing into a sliver */
-  overflow: hidden;                 /* keep doors clipped to the image bounds */
-  transform-style: preserve-3d;     /* for crisp 3D on children */
-}
-
-/* Ensure the image itself is clean and doesn't "ghost" from the back side */
-#flip-top img{
-  display: block;
-  width: 100%;
-  height: auto;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* --------------------------------------------
-   FRONT "DOORS" — purely visual, sit ABOVE the image
-   They flip away in opposite directions to reveal the image.
---------------------------------------------- */
-#flip-top::before,
-#flip-top::after{
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0;
-  width: 50%;                       /* left/right halves */
-  pointer-events: none;             /* don't block clicks to underlying content */
-  background: var(--door-bg);       /* appearance of the front face */
-  border-radius: var(--door-radius);
-  box-shadow: var(--door-shadow);
+/* Your Squarespace image block that the script marks with class "flip-top" */
+.flip-top{
+  position: relative;             /* anchor pseudo-doors */
+  display: inline-block;          /* prevent “sliver” collapse */
+  overflow: hidden;               /* keep doors clipped to the image bounds */
   transform-style: preserve-3d;
-  backface-visibility: hidden;
-  transition: transform var(--flip-duration) var(--flip-ease),
-              opacity var(--flip-duration) var(--flip-ease);
-  will-change: transform;
-  z-index: 2;                       /* above the image */
 }
 
-/* Left door (hinges on its left edge) */
-#flip-top::before{
-  left: 0;
-  transform-origin: left center;
-  transform: rotateY(0deg) translateZ(1px);
+/* Ensure the image renders cleanly during 3D transforms */
+.flip-top img{
+  display:block;
+  width:100%;
+  height:auto;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
 }
 
-/* Right door (hinges on its right edge) */
-#flip-top::after{
-  right: 0;
-  transform-origin: right center;
-  transform: rotateY(0deg) translateZ(1px);
+/* FRONT "DOORS" (pseudo halves that flip away to reveal the image) */
+.flip-top::before,
+.flip-top::after{
+  content:"";
+  position:absolute;
+  top:0; bottom:0;
+  width:50%;
+  pointer-events:none;
+  background:var(--door-bg);
+  border-radius:var(--door-radius);
+  box-shadow:var(--door-shadow);
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  transition:transform var(--flip-duration) var(--flip-ease),
+             opacity var(--flip-duration) var(--flip-ease);
+  will-change:transform;
+  z-index:2;
 }
 
-/* --------------------------------------------
-   KEEP YOUR EXISTING TRIGGERS.
-   We *stop* the old whole-card flip (if present),
-   and instead flip only the doors.
-   Supported flags: .is-flipped, .flipped, .flip-right, .flip-left
---------------------------------------------- */
-
-/* If your old CSS rotates the whole card on these classes, neutralize it */
-#flip-top.is-flipped,
-#flip-top.flipped,
-#flip-top.flip-right,
-#flip-top.flip-left{
-  transform: none !important;   /* prevent the entire block from rotating */
+/* Left door (hinge on left edge) */
+.flip-top::before{
+  left:0;
+  transform-origin:left center;
+  transform:rotateY(0deg) translateZ(1px);
 }
 
-/* Default/rightward intent: doors open away from viewer */
-#flip-top.is-flipped::before,
-#flip-top.flipped::before,
-#flip-top.flip-right::before{
-  transform: rotateY(-180deg) translateZ(1px);
+/* Right door (hinge on right edge) */
+.flip-top::after{
+  right:0;
+  transform-origin:right center;
+  transform:rotateY(0deg) translateZ(1px);
 }
 
-#flip-top.is-flipped::after,
-#flip-top.flipped::after,
-#flip-top.flip-right::after{
-  transform: rotateY(180deg) translateZ(1px);
+/* KEEP YOUR EXISTING TRIGGERS — stop whole-card rotate, flip only the doors */
+.flip-top.is-flipped,
+.flip-top.flipped,
+.flip-top.flip-right,
+.flip-top.flip-left{
+  transform:none !important; /* neutralize any legacy block rotation */
 }
 
-/* If your script uses a "left" variant, we keep symmetry (same visual result) */
-#flip-top.flip-left::before{  transform: rotateY(-180deg) translateZ(1px); }
-#flip-top.flip-left::after{   transform: rotateY(180deg)  translateZ(1px);  }
+/* Doors open away (like your example) */
+.flip-top.is-flipped::before,
+.flip-top.flipped::before,
+.flip-top.flip-right::before{
+  transform:rotateY(-180deg) translateZ(1px);
+}
+.flip-top.is-flipped::after,
+.flip-top.flipped::after,
+.flip-top.flip-right::after{
+  transform:rotateY(180deg) translateZ(1px);
+}
 
-/* Optional preview on hover (comment out if you don't want it) */
+/* If you ever trigger a "left" variant, mirror it (same visual result) */
+.flip-top.flip-left::before{ transform:rotateY(-180deg) translateZ(1px); }
+.flip-top.flip-left::after { transform:rotateY(180deg)  translateZ(1px); }
+
+/* Optional hover preview (disable if not desired) */
 /*
-#flip-top:hover::before{ transform: rotateY(-180deg) translateZ(1px); }
-#flip-top:hover::after{  transform: rotateY(180deg)  translateZ(1px); }
+.flip-top:hover::before{ transform:rotateY(-180deg) translateZ(1px); }
+.flip-top:hover::after { transform:rotateY(180deg)  translateZ(1px); }
 */
 
-/* Reduced motion respect */
 @media (prefers-reduced-motion: reduce){
-  #flip-top::before, #flip-top::after{ transition-duration: .01ms; }
+  .flip-top::before, .flip-top::after{ transition-duration:.01ms; }
 }
-
 
 <script>
 /* ===== Multi-Flip setup for only this section ===== */
