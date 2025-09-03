@@ -1,4 +1,4 @@
-/* Topblock Flip v1.2 — non-destructive wrap + directional easing + real click-through */
+/* Topblock Flip v1.3 — non-destructive wrap + directional duration/easing + real click-through */
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
   var COARSE='(hover: none), (pointer: coarse)', FINE='(hover: hover) and (pointer: fine)';
@@ -13,7 +13,6 @@
     return null;
   }
 
-  // pick the stable sizing wrapper Squarespace uses
   function pickFlipTarget(block){
     return block.querySelector('figure.image-block-figure')
         || block.querySelector('.image-block-outer-wrapper')
@@ -23,24 +22,26 @@
         || block;
   }
 
-  // two-RAF helper so the ease class applies before transform changes
-  function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
+  // Force the browser to commit current styles before we toggle transform.
+  function flush(el){
+    try { void el.offsetWidth; } catch(_) {}
+  }
 
-  // set directional easing class on the container
   function setEase(block, mode){
     block.classList.toggle('ease-enter', mode === 'enter');
     block.classList.toggle('ease-exit',  mode === 'exit');
   }
 
-  // active = currently flipped (desktop: JS-managed .hover; mobile: .is-flipped)
+  function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
+
   function isActive(block){ return block.classList.contains('hover') || block.classList.contains('is-flipped'); }
 
-  // click-through forwarding while flipped
   function getPoint(e){
     if ('clientX' in e) return {x:e.clientX, y:e.clientY};
     var t=(e.changedTouches&&e.changedTouches[0])||(e.touches&&e.touches[0]);
     return t?{x:t.clientX,y:t.clientY}:{x:0,y:0};
   }
+
   function forwardEvent(e, block){
     if (!isActive(block)) return;
     var pt=getPoint(e);
@@ -61,6 +62,18 @@
     e.preventDefault(); e.stopPropagation();
   }
 
+  function flipEnter(block){
+    setEase(block,'enter');                 // pick enter timing + duration
+    if (block.__flipInner) flush(block.__flipInner);  // lock it in
+    nextFrame(function(){ block.classList.add('hover'); });
+  }
+
+  function flipExit(block){
+    setEase(block,'exit');                  // pick exit timing + duration
+    if (block.__flipInner) flush(block.__flipInner);
+    nextFrame(function(){ block.classList.remove('hover'); });
+  }
+
   function setupBlock(block){
     if (block.__flipReady) return;
     var anchor = block.querySelector('a[href="#flip-top"]');
@@ -68,7 +81,7 @@
     block.__flipReady = true;
     block.classList.add('flip-top');
 
-    // neutralize marker to avoid cursor flicker
+    // neutralize the anchor
     anchor.style.pointerEvents='none'; anchor.style.cursor='default';
     anchor.setAttribute('aria-hidden','true'); anchor.setAttribute('tabindex','-1');
 
@@ -85,43 +98,39 @@
     inner.appendChild(front);
     inner.appendChild(back);
 
+    block.__flipInner = inner; // save for flush()
+
     // add section perspective once
     var section = closestSection(block);
     if (section && !section.__flipSection){ section.__flipSection=true; section.classList.add('flip-section'); }
 
-    // ===== Desktop (fine pointer): control hover via JS to set easing direction
+    // Desktop: manage hover via JS so we can set direction before transform
     if (isFine()){
-      block.addEventListener('mouseenter', function(){
-        setEase(block,'enter');                  // ease-in for first flip
-        nextFrame(function(){ block.classList.add('hover'); }); // trigger flip
-      });
-      block.addEventListener('mouseleave', function(){
-        setEase(block,'exit');                   // ease-out when unflipping
-        nextFrame(function(){ block.classList.remove('hover'); });
-      });
+      block.addEventListener('mouseenter', function(){ flipEnter(block); });
+      block.addEventListener('mouseleave', function(){ flipExit(block);  });
     }
 
-    // ===== Mobile (coarse pointer): tap to flip with enter-ease
+    // Mobile: tap to flip (enter)
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
         e.preventDefault(); e.stopPropagation();
-        setEase(block,'enter');
+        setEase(block,'enter'); if (inner) flush(inner);
         nextFrame(function(){ block.classList.add('is-flipped'); });
       }
     }, true);
 
-    // click-through while flipped (both desktop+mobile)
+    // Click-through while flipped/hovered
     ['pointerdown','pointerup','mousedown','mouseup','click','touchstart','touchend'].forEach(function(type){
       block.addEventListener(type, function(e){ forwardEvent(e, block); }, true);
     });
 
-    // auto-reset when off-screen (exit-ease)
+    // Auto-reset off-screen (exit)
     if ('IntersectionObserver' in window){
       var io=new IntersectionObserver(function(entries){
         entries.forEach(function(entry){
           if (!entry.isIntersecting && block.classList.contains('is-flipped')){
-            setEase(block,'exit');
+            flipExit(block);
             nextFrame(function(){ block.classList.remove('is-flipped'); });
           }
         });
@@ -135,17 +144,17 @@
       if (blk.querySelector('a[href="#flip-top"]')) setupBlock(blk);
     });
 
-    // tap blank space to unflip (mobile), with exit-ease
+    // Mobile: tap blank space to unflip all (exit)
     document.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary')) return;
       document.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
-        setEase(b,'exit');
+        setEase(b,'exit'); if (b.__flipInner) flush(b.__flipInner);
         nextFrame(function(){ b.classList.remove('is-flipped'); });
       });
     }, true);
 
-    // SPA/lazy: watch for new image blocks
+    // SPA/lazy
     new MutationObserver(function(muts){
       muts.forEach(function(m){
         m.addedNodes.forEach(function(n){
@@ -159,6 +168,6 @@
           }
         });
       });
-    }).observe(document.documentElement, {childList:true, subtree:true});
+    }).observe(document.documentElement,{childList:true,subtree:true});
   });
 })();

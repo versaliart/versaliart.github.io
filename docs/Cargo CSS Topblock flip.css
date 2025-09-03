@@ -1,20 +1,25 @@
-/* v1.1 */
+/* v1.3 */
 
 :root{
-  --flip-duration: 420ms;
-  --flip-ease-enter: cubic-bezier(.2,.8,.2,1); /* smoother into the flip */
-  --flip-ease-exit:  cubic-bezier(.4,0,.2,1); /* smoother out of the flip */
+  /* Tune these to taste */
+  --flip-dur-enter: 650ms;  /* first flip = slower */
+  --flip-dur-exit:  380ms;  /* unflip     = quicker */
+
+  --flip-ease-enter: cubic-bezier(.2,.8,.2,1);
+  --flip-ease-exit:  cubic-bezier(.4,0,.2,1);
   --flip-perspective: 1000px;
 }
 
 .flip-section { position: relative; perspective: var(--flip-perspective); }
 .flip-top     { position: relative; isolation: isolate; }
 
-/* Wrapper + faces */
+/* Wrapper + faces fill the figure */
 .flip-top .flip-inner{
   display: grid;
   transform-style: preserve-3d;
-  transition: transform var(--flip-duration) var(--flip-ease-enter); /* default = enter curve */
+  transition-property: transform; /* important! */
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
   will-change: transform;
   width: 100%; height: 100%;
 }
@@ -26,21 +31,28 @@
 }
 .flip-top .flip-back{ transform: rotateY(180deg); pointer-events: none; }
 
-/* Marker anchor is not interactive */
+/* Marker anchor is just an opt-in flag */
 .flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
 
-/* Flipped states */
+/* Flipped states (JS toggles .hover / .is-flipped) */
 .flip-top.hover .flip-inner,
 .flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
 
-/* Directional easing toggles set by JS */
-.flip-top.ease-exit  .flip-inner { transition-timing-function: var(--flip-ease-exit); }
-.flip-top.ease-enter .flip-inner { transition-timing-function: var(--flip-ease-enter); }
+/* Directional timing (JS swaps these classes before each change) */
+.flip-top.ease-enter .flip-inner{
+  transition-duration: var(--flip-dur-enter);
+  transition-timing-function: var(--flip-ease-enter);
+}
+.flip-top.ease-exit .flip-inner{
+  transition-duration: var(--flip-dur-exit);
+  transition-timing-function: var(--flip-ease-exit);
+}
 
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
-  .flip-top .flip-inner { transition: none; }
+  .flip-top .flip-inner { transition: none !important; }
 }
+
 
 <script>
 /* ===== Multi-Flip setup for only this section ===== */
