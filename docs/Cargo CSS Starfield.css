@@ -5,8 +5,8 @@ body.has-starfield{
 --radial-bias-k: 4;       /* 1 = uniform disk, 2–4 = stronger ring toward edges */
 --star-min-gap: 24px;    /* extra space BETWEEN star edges; 0 disables */
 
---twinkle-min: 1.0;      /* shortest twinkle cycle (seconds) → faster flicker */
---twinkle-max: 3.0;      /* longest  twinkle cycle (seconds) → slower flicker */
+--twinkle-min: 0.5;      /* shortest twinkle cycle (seconds) → faster flicker */
+--twinkle-max: 2.0;      /* longest  twinkle cycle (seconds) → slower flicker */
 
 --opacity-min: 0.15;     /* dimmest baseline opacity (0–1) */
 --opacity-max: 1.0;     /* brightest baseline opacity (0–1) */
