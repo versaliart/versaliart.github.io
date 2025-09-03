@@ -1,6 +1,4 @@
-/* Topblock Flip v1.39 — non-destructive wrap + directional easing + click-through
-   + exposes the image URL to CSS as --flip-image and gates doors via .doors-ready
-*/
+/* Topblock Flip v1.40 — overlay doors: no DOM moves, preserve Squarespace layout */
 (function(){
   function ready(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, {once:true}); }
   var COARSE='(hover: none), (pointer: coarse)', FINE='(hover: hover) and (pointer: fine)';
@@ -15,54 +13,25 @@
     return null;
   }
 
-  /* Prefer the dimension provider first (Squarespace 'intrinsic') */
-  function pickFlipTarget(block){
-    return block.querySelector('.intrinsic')                      /* BEST: aspect-ratio padding box */
-        || block.querySelector('.image-block-outer-wrapper')      /* then outer wrapper */
-        || block.querySelector('figure.image-block-figure')       /* then figure */
+  /* Choose the element that visually matches the image box; DO NOT MOVE IT */
+  function pickAnchor(block){
+    return block.querySelector('.intrinsic')                      /* preferred: aspect-ratio box */
+        || block.querySelector('figure.image-block-figure')
+        || block.querySelector('.image-block-outer-wrapper')
         || block.querySelector('.image-block-wrapper')
         || block.querySelector('img')
         || block;
   }
 
-  function flush(el){ try { void el.offsetWidth; } catch(_) {} }
   function setEase(block, mode){
     block.classList.toggle('ease-enter', mode === 'enter');
     block.classList.toggle('ease-exit',  mode === 'exit');
   }
   function nextFrame(fn){ requestAnimationFrame(function(){ requestAnimationFrame(fn); }); }
-  function isActive(block){ return block.classList.contains('hover') || block.classList.contains('is-flipped'); }
 
-  function getPoint(e){
-    if ('clientX' in e) return {x:e.clientX, y:e.clientY};
-    var t=(e.changedTouches&&e.changedTouches[0])||(e.touches&&e.touches[0]);
-    return t?{x:t.clientX,y:t.clientY}:{x:0,y:0};
-  }
-
-  // Forward pointer/click events to what's beneath the flipped block
-  function forwardEvent(e, block){
-    if (!isActive(block)) return;
-    var pt=getPoint(e);
-    var stack=(document.elementsFromPoint&&document.elementsFromPoint(pt.x,pt.y))||[];
-    var under=null;
-    for (var i=0;i<stack.length;i++){ if (!block.contains(stack[i])){ under=stack[i]; break; } }
-    if (!under) return;
-
-    var clickable = under.closest && under.closest('a,button,[role="button"],[role="link"],label,summary,input,textarea,select');
-    if (clickable){
-      try{ if (e.type==='pointerdown'||e.type==='mousedown') clickable.focus(); clickable.click(); }catch(_){}
-    } else {
-      var clone=new e.constructor(e.type,{bubbles:true,cancelable:true,view:window,clientX:pt.x,clientY:pt.y,
-        ctrlKey:e.ctrlKey||false,shiftKey:e.shiftKey||false,altKey:e.altKey||false,metaKey:e.metaKey||false,
-        button:e.button||0,buttons:e.buttons||0});
-      under.dispatchEvent(clone);
-    }
-    e.preventDefault(); e.stopPropagation();
-  }
-
-  // Copy the visible <img> URL into CSS and flag readiness
-  function exposeImageToCSS(front, block){
-    var img = front.querySelector('img');
+  // Copy the visible <img> URL into CSS on the anchor and flag readiness
+  function exposeImageToCSS(anchor, block){
+    var img = anchor.querySelector('img') || block.querySelector('img');
 
     function pickSrc(el){
       if (!el) return "";
@@ -75,11 +44,11 @@
 
     function setVar(){
       var src = pickSrc(img);
-      if (src) {
-        front.style.setProperty('--flip-image', 'url("'+ src +'")');
-        block.classList.add('doors-ready');     // enable doors CSS
+      if (src){
+        anchor.style.setProperty('--flip-image', 'url("'+ src +'")');
+        block.classList.add('doors-ready');
       } else {
-        block.classList.remove('doors-ready');  // fall back to base flip
+        block.classList.remove('doors-ready');
       }
     }
 
@@ -93,77 +62,53 @@
     }
   }
 
-  function flipEnter(block){
-    setEase(block,'enter'); if (block.__flipInner) flush(block.__flipInner);
-    nextFrame(function(){ block.classList.add('hover'); });
-  }
-  function flipExit(block){
-    setEase(block,'exit'); if (block.__flipInner) flush(block.__flipInner);
-    nextFrame(function(){ block.classList.remove('hover'); });
-  }
-
   function setupBlock(block){
     if (block.__flipReady) return;
-    var anchor = block.querySelector('a[href="#flip-top"]');
-    if (!anchor) return; // opt-in only
+    var marker = block.querySelector('a[href="#flip-top"]');
+    if (!marker) return; // opt-in only
     block.__flipReady = true;
     block.classList.add('flip-top');
 
-    // neutralize the anchor
-    anchor.style.pointerEvents='none'; anchor.style.cursor='default';
-    anchor.setAttribute('aria-hidden','true'); anchor.setAttribute('tabindex','-1');
-
-    // Wrap the dimension-providing target (keeps height intact)
-    var target = pickFlipTarget(block);
-    if (!target || !target.parentNode) return;
-
-    var inner = document.createElement('div'); inner.className='flip-inner';
-    var front = document.createElement('div'); front.className='flip-front';
-    var back  = document.createElement('div'); back.className='flip-back';
-
-    // Insert wrapper before the target, move target into front, then LEAVE wrapper in place
-    var parent = target.parentNode;
-    parent.insertBefore(inner, target);
-    front.appendChild(target);
-    inner.appendChild(front);
-    inner.appendChild(back);
-    // Do NOT re-append inner into block; keeping it here preserves SQS layout
-    block.__flipInner = inner;
-
-    // Expose image URL for the split doors (and gate with .doors-ready)
-    exposeImageToCSS(front, block);
-
-    // add section perspective once
+    // Add section perspective once
     var section = closestSection(block);
-    if (section && !section.__flipSection){ section.__flipSection=true; section.classList.add('flip-section'); }
+    if (section && !section.__flipSection){ section.__flipSection = true; section.classList.add('flip-section'); }
 
-    // Desktop hover
+    // Choose anchor (no DOM changes), mark it for CSS
+    var anchor = pickAnchor(block);
+    if (!anchor) return;
+    anchor.classList.add('flip-anchor');
+
+    // Neutralize the marker (pure flag)
+    marker.style.pointerEvents='none';
+    marker.style.cursor='default';
+    marker.setAttribute('aria-hidden','true');
+    marker.setAttribute('tabindex','-1');
+
+    // Desktop hover state (for doors)
     if (isFine()){
-      block.addEventListener('mouseenter', function(){ flipEnter(block); });
-      block.addEventListener('mouseleave', function(){ flipExit(block);  });
+      block.addEventListener('mouseenter', function(){ setEase(block,'enter'); nextFrame(function(){ block.classList.add('hover'); }); });
+      block.addEventListener('mouseleave', function(){ setEase(block,'exit');  nextFrame(function(){ block.classList.remove('hover'); }); });
     }
 
-    // Mobile: tap to flip (enter)
+    // Mobile tap state
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
         e.preventDefault(); e.stopPropagation();
-        setEase(block,'enter'); if (inner) flush(inner);
+        setEase(block,'enter');
         nextFrame(function(){ block.classList.add('is-flipped'); });
       }
     }, true);
 
-    // Click-through while active
-    ['pointerdown','pointerup','mousedown','mouseup','click','touchstart','touchend'].forEach(function(type){
-      block.addEventListener(type, function(e){ forwardEvent(e, block); }, true);
-    });
+    // Expose image URL & gate readiness
+    exposeImageToCSS(anchor, block);
 
-    // Auto-reset off-screen
+    // Optional: reset when off-screen
     if ('IntersectionObserver' in window){
       var io=new IntersectionObserver(function(entries){
         entries.forEach(function(entry){
           if (!entry.isIntersecting && block.classList.contains('is-flipped')){
-            flipExit(block);
+            setEase(block,'exit');
             nextFrame(function(){ block.classList.remove('is-flipped'); });
           }
         });
@@ -172,23 +117,15 @@
     }
   }
 
-  ready(function(){
-    // initial pass
+  function scan(){
     document.querySelectorAll('.sqs-block.image-block').forEach(function(blk){
       if (blk.querySelector('a[href="#flip-top"]')) setupBlock(blk);
     });
+  }
 
-    // Mobile: tap blank space to unflip all
-    document.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary')) return;
-      document.querySelectorAll('.flip-top.is-flipped').forEach(function(b){
-        setEase(b,'exit'); if (b.__flipInner) flush(b.__flipInner);
-        nextFrame(function(){ b.classList.remove('is-flipped'); });
-      });
-    }, true);
-
-    // SPA/lazy: watch for added image blocks
+  ready(function(){
+    scan();
+    // SPA/lazy: watch for new image blocks
     new MutationObserver(function(muts){
       muts.forEach(function(m){
         m.addedNodes.forEach(function(n){

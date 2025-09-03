@@ -1,6 +1,5 @@
-/* Topblock Flip v1.39 — base v1.3 + Split-Doors (image halves) + layout assurance */
+/* Topblock Flip v1.40 — overlay split-doors (image halves) without moving DOM */
 
-/* ---------- Base v1.3 (kept) ---------- */
 :root{
   --flip-dur-enter: 650ms;
   --flip-dur-exit:  650ms;
@@ -13,115 +12,72 @@
 .flip-section { position: relative; perspective: var(--flip-perspective); }
 .flip-top     { position: relative; isolation: isolate; display:block; }
 
-/* --- Layout stack: FRONT stays in normal flow so it drives height --- */
-.flip-top .flip-inner{
-  position: relative;
-  transform-style: preserve-3d;
-  transition-property: transform;
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
-  will-change: transform;
-  width: 100%;
+/* Anchor we paint the doors on (JS adds .flip-anchor on the chosen wrapper) */
+.flip-top .flip-anchor{
+  position: relative;         /* establishes the box for ::before/::after */
+  display:block;
+  width:100%;
 }
 
-/* FRONT = in flow → determines height */
-.flip-top .flip-front{
-  position: relative;
-  -webkit-backface-visibility: hidden; backface-visibility: hidden;
+/* Images behave predictably (preserve Squarespace sizing) */
+.flip-top .flip-anchor img{
+  display:block; width:100%; height:auto;
+  transition: opacity var(--flip-dur-enter) var(--flip-ease-enter);
 }
 
-/* BACK overlays FRONT’s box */
-.flip-top .flip-back{
-  position: absolute; inset: 0;
-  -webkit-backface-visibility: hidden; backface-visibility: hidden;
-  transform: rotateY(180deg);
-  pointer-events: none;
-}
-
-/* Ensure common SQS wrappers inside the front occupy width (preserve intrinsic sizing) */
-.flip-top .flip-front > .intrinsic,
-.flip-top .flip-front > .image-block-outer-wrapper,
-.flip-top .flip-front > figure.image-block-figure,
-.flip-top .flip-front > .image-block-wrapper{
-  display:block; width:100%;
-}
-
-/* Images behave predictably */
-.flip-top .flip-front img{ display:block; width:100%; height:auto; }
-
-/* Marker anchor is just an opt-in flag */
-.flip-top a[href="#flip-top"]{ pointer-events: none; cursor: default; }
-
-/* Base flip (fallback when doors aren't ready) */
-.flip-top.hover .flip-inner,
-.flip-top.is-flipped .flip-inner { transform: rotateY(180deg); }
-
-/* Directional timing */
-.flip-top.ease-enter .flip-inner{
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
-}
-.flip-top.ease-exit .flip-inner{
-  transition-duration: var(--flip-dur-exit);
-  transition-timing-function: var(--flip-ease-exit);
-}
-
-/* Motion safety */
-@media (prefers-reduced-motion: reduce){
-  .flip-top .flip-inner { transition: none !important; }
-}
-
-/* ---------- Split-Doors add-on (image halves on the FRONT face) ---------- */
-
-/* Only when image URL is ready */
-.flip-top.doors-ready .flip-front{ position: relative; }
-
-.flip-top.doors-ready .flip-front::before,
-.flip-top.doors-ready .flip-front::after{
+/* ---------- Split doors (only when ready) ---------- */
+.flip-top.doors-ready .flip-anchor::before,
+.flip-top.doors-ready .flip-anchor::after{
   content:"";
   position:absolute;
-  top:0; bottom:0;                     /* full height of front */
+  top:0; bottom:0;
   width: calc(50% + var(--door-overlap));
-  z-index: 2;                          /* above real <img> */
+  z-index:2;                                  /* above the real image */
   transform-style: preserve-3d;
   -webkit-backface-visibility: hidden; backface-visibility: hidden;
-  pointer-events: none;
+  pointer-events:none;
 
+  /* Use the photo from JS */
   background-image: var(--flip-image);
-  background-repeat: no-repeat;
+  background-repeat:no-repeat;
   background-size: 200% 100%;
-  transition-property: transform, opacity;
-  transition-duration: var(--flip-dur-enter);
-  transition-timing-function: var(--flip-ease-enter);
+  transition: transform var(--flip-dur-enter) var(--flip-ease-enter);
 }
 
 /* Left half */
-.flip-top.doors-ready .flip-front::before{
-  left: 0; transform-origin: left center; background-position: left center;
+.flip-top.doors-ready .flip-anchor::before{
+  left:0;
+  transform-origin:left center;
+  background-position:left center;
 }
 
 /* Right half */
-.flip-top.doors-ready .flip-front::after{
-  right: 0; transform-origin: right center; background-position: right center;
+.flip-top.doors-ready .flip-anchor::after{
+  right:0;
+  transform-origin:right center;
+  background-position:right center;
 }
 
-/* Doors open on hover/tap (only when ready) */
-.flip-top.doors-ready.hover .flip-front::before,
-.flip-top.doors-ready.is-flipped .flip-front::before{ transform: rotateY(-180deg); }
-.flip-top.doors-ready.hover .flip-front::after,
-.flip-top.doors-ready.is-flipped .flip-front::after{  transform: rotateY(180deg); }
+/* Doors open on hover/tap (ready-only) */
+.flip-top.doors-ready.hover .flip-anchor::before,
+.flip-top.doors-ready.is-flipped .flip-anchor::before{ transform: rotateY(-180deg); }
+.flip-top.doors-ready.hover .flip-anchor::after,
+.flip-top.doors-ready.is-flipped .flip-anchor::after{  transform: rotateY(180deg);  }
 
-/* Respect exit timing on doors */
-.flip-top.doors-ready.ease-exit .flip-front::before,
-.flip-top.doors-ready.ease-exit .flip-front::after{
+/* Exit timing (unflip) */
+.flip-top.doors-ready.ease-exit .flip-anchor::before,
+.flip-top.doors-ready.ease-exit .flip-anchor::after{
   transition-duration: var(--flip-dur-exit);
   transition-timing-function: var(--flip-ease-exit);
 }
 
-/* Neutralize base inner-rotate ONLY when doors are ready */
-.flip-top.doors-ready.hover .flip-inner,
-.flip-top.doors-ready.is-flipped .flip-inner{ transform: none !important; }
+/* Hide the real image ONLY when doors are ready & active */
+.flip-top.doors-ready.hover .flip-anchor img,
+.flip-top.doors-ready.is-flipped .flip-anchor img{ opacity:0; }
 
-/* Hide the real image ONLY when doors are ready */
-.flip-top.doors-ready.hover .flip-front img,
-.flip-top.doors-ready.is-flipped .flip-front img{ opacity: 0; }
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .flip-top .flip-anchor::before,
+  .flip-top .flip-anchor::after,
+  .flip-top .flip-anchor img{ transition: none !important; }
+}
