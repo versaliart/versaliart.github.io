@@ -1,5 +1,5 @@
 /* =========================================================
-   Starfield v2.0 — EDGE-ONLY (outline sparkles for Shape Block)
+   Starfield v2.8 — EDGE-ONLY (outline sparkles for Shape Block)
    - No ambient .star-container layer is used or referenced
    - Quantity, sizing, and timing all inherit from CSS vars
    - Works with the edge-sampler JS that targets an exact block ID
@@ -9,11 +9,11 @@
 body.has-starfield{
   /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
   --star-count: 45;
-  --star-min-gap: 16px;
+  --star-min-gap: 8px;
 
-    /* outward jitter range (rem units) */
+  /* outward jitter range (rem units) */
   --jitter-min: 0.10rem;
-  --jitter-max: 0.35rem;
+  --jitter-max: 0.85rem;
 
   /* distribution balance: 0 = even, 1 = random */
   --star-randomize: 0.30;
@@ -38,55 +38,39 @@ body.has-starfield{
   --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
 }
 
-/* =========================================================
-   Edge-outline layer (inserted by JS INSIDE the Shape Block)
-   The JS creates <div class="shape-edge-sparkles">…</div>
-========================================================= */
+/* The overlay layer the JS injects inside your Shape Block */
 .shape-edge-sparkles{
   position: absolute;
   inset: 0;
-  pointer-events: none;     /* clicks pass through to the block */
-  z-index: 1;               /* adjust if you want it under/over nearby content */
+  pointer-events: none;
+  z-index: 2;
 }
 
-/* Individual stars placed along the SVG path */
+/* Individual stars (mask uses your sparkle SVG) */
 .shape-edge-sparkles .star{
   position: absolute;
-  left: var(--x, 50%);
-  top:  var(--y, 50%);
-
-  width:  var(--size, 1rem);
+  left: 0; top: 0;              /* set via inline left/top + translate */
+  width: var(--size, 1rem);
   height: var(--size, 1rem);
-
-  transform: translate(-50%, -50%) scale(var(--scale, 1));
+  transform: translate(-50%, -50%);
   opacity: var(--o, 0.85);
   color: var(--star-color);
-  background: currentColor;                     /* solid fill; masked to star shape */
+  background: currentColor;
 
   -webkit-mask: var(--star-url) center/contain no-repeat;
           mask: var(--star-url) center/contain no-repeat;
 
   filter: drop-shadow(0 0 var(--blur, 0) currentColor);
   will-change: opacity, transform;
-
-  /* Edge version: twinkle only (no drift),
-     timing provided per-star via inline vars from JS */
-  animation: twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay, 0s)
-             infinite alternate !important;
+  animation: twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay, 0s) infinite alternate;
 }
 
-/* =========================================================
-   Motion
-========================================================= */
 @keyframes twinkle{
   0%   { opacity: 0.15; }
-  50%  { opacity: 1;    }
+  50%  { opacity: 1; }
   100% { opacity: 0.25; }
 }
 
 @media (prefers-reduced-motion: reduce){
-  .shape-edge-sparkles .star{
-    animation: none !important;
-    opacity: 0.6;
-  }
+  .shape-edge-sparkles .star{ animation: none !important; opacity: 0.6; }
 }
