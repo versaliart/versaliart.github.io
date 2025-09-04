@@ -2,7 +2,7 @@
 
 :root{
   /* Timing */
-  --flip-open-duration: 900ms;                 /* slower first flip */
+  --flip-open-duration: 480ms;                 /* slower first flip */
   --flip-close-duration: 480ms;                /* snappier return */
   --flip-open-ease: cubic-bezier(.55,.055,.675,.19); /* strong ease-in (slow start) */
   --flip-close-ease: cubic-bezier(.2,.7,.2,1);       /* brisk ease-out */
