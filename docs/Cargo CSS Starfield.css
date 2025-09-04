@@ -8,12 +8,12 @@
 /* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
   /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
-  --star-count: 45;
+  --star-count: 55;
   --star-min-gap: 8px;
 
   /* outward jitter range (rem units) */
   --jitter-min: 0.10rem;
-  --jitter-max: 0.85rem;
+  --jitter-max: 2.00rem;
 
   /* distribution balance: 0 = even, 1 = random */
   --star-randomize: 0.30;

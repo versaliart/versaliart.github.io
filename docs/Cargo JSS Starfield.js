@@ -1,4 +1,4 @@
-// v2.7
+// v2.8
 
 (function(){
   const TARGETS = [
@@ -19,16 +19,6 @@
   const clamp01 = v => Math.max(0, Math.min(1, v));
   const lerp = (a,b,t) => a + (b-a)*t;
   const rand = (a,b) => a + Math.random()*(b-a);
-
-  function cssNum(fromEl, name, fallback){
-    const v = getComputedStyle(fromEl).getPropertyValue(name).trim();
-    if (!v) return fallback;
-    const n = parseFloat(v);
-    if (!Number.isFinite(n)) return fallback;
-    if (v.endsWith('rem')) return n;            // caller decides to * remPx() when needed
-    if (v.endsWith('px'))  return n / remPx();  // return as rem-equivalent where helpful
-    return n;
-  }
 
   function svgToClient(svg, x, y){
     const ctm = svg.getScreenCTM(); if (!ctm) return null;
@@ -100,24 +90,16 @@
     return (vx*nx + vy*ny) >= 0 ? +1 : -1;
   }
 
-  function chooseSizesPlan(total, sizeRems){
-    const N = Math.max(0, total|0);
+  function chooseSizesPlan(N, sizeRems){
     const minL = Math.floor(N/6);
     const maxL = Math.floor(N/3);
-    const wantL = (maxL >= minL) ? (minL + Math.floor(Math.random() * (maxL - minL + 1))) : minL;
-    let remainingL = wantL;
-    const plan = new Array(N);
-    for (let i=0;i<N;i++){
-      const remaining = N - i;
-      const pL = remainingL > 0 ? (remainingL / remaining) : 0;  // ensures we hit wantL exactly if placement always succeeds
-      const r = Math.random();
-      let pick = null;
-      if (r < pL){ pick = 'L'; remainingL--; }
-      else { pick = (Math.random() < 0.5 ? 'M' : 'S'); }
-      plan[i] = pick;
-    }
-    const map = { L: sizeRems.L, M: sizeRems.M, S: sizeRems.S };
-    return { plan, wantL, minL, maxL, sizeOf: (k)=>map[k] };
+    const wantL = Math.max(minL, Math.min(maxL, minL + Math.floor(Math.random() * (Math.max(0, maxL-minL) + 1))));
+    const planL = new Array(wantL).fill('L');
+    const rest = N - wantL;
+    const planRest = new Array(rest).fill(0).map(()=> (Math.random()<0.5?'M':'S'));
+    // Shuffle the non-Ls
+    for (let k = planRest.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [planRest[k], planRest[j]] = [planRest[j], planRest[k]]; }
+    return { Lcount: wantL, restPlan: planRest, sizeOf: k => ({L:sizeRems.L,M:sizeRems.M,S:sizeRems.S})[k] };
   }
 
   function buildFor(target, attempt=0){
@@ -133,25 +115,29 @@
 
     const layer = ensureLayer(host);
 
-    const count   = Math.max(0, Math.round(parseFloat(getComputedStyle(body).getPropertyValue('--star-count')) || 40));
-    const durMin  = parseFloat(getComputedStyle(body).getPropertyValue('--twinkle-min')) || 0.5;
-    const durMax  = parseFloat(getComputedStyle(body).getPropertyValue('--twinkle-max')) || 2.0;
-    const opMin   = parseFloat(getComputedStyle(body).getPropertyValue('--opacity-min')) || 0.15;
-    const opMax   = parseFloat(getComputedStyle(body).getPropertyValue('--opacity-max')) || 1.00;
-    const blurMax = parseFloat(getComputedStyle(body).getPropertyValue('--max-blur')) || 0.12;
-    const phi     = parseFloat(getComputedStyle(body).getPropertyValue('--phi')) || 1.618;
+    const gcsBody = getComputedStyle(body), gcsRoot = getComputedStyle(root);
+    const count   = Math.max(0, Math.round(parseFloat(gcsBody.getPropertyValue('--star-count')) || 40));
+    const durMin  = parseFloat(gcsBody.getPropertyValue('--twinkle-min')) || 0.5;
+    const durMax  = parseFloat(gcsBody.getPropertyValue('--twinkle-max')) || 2.0;
+    const opMin   = parseFloat(gcsBody.getPropertyValue('--opacity-min')) || 0.15;
+    const opMax   = parseFloat(gcsBody.getPropertyValue('--opacity-max')) || 1.00;
+    const blurMax = parseFloat(gcsBody.getPropertyValue('--max-blur')) || 0.12;
+    const phi     = parseFloat(gcsBody.getPropertyValue('--phi')) || 1.618;
 
-    const sizeLrem = parseFloat(getComputedStyle(root).getPropertyValue('--size-large')) || 1.5;
-    const sizeMrem = parseFloat(getComputedStyle(root).getPropertyValue('--size-medium')) || (sizeLrem / phi);
-    const sizeSrem = parseFloat(getComputedStyle(root).getPropertyValue('--size-small'))  || (sizeMrem / phi);
+    const sizeLrem = parseFloat(gcsRoot.getPropertyValue('--size-large'))  || 1.5;
+    const sizeMrem = parseFloat(gcsRoot.getPropertyValue('--size-medium')) || (sizeLrem / phi);
+    const sizeSrem = parseFloat(gcsRoot.getPropertyValue('--size-small'))  || (sizeMrem / phi);
 
-    const jMinRem = parseFloat(getComputedStyle(body).getPropertyValue('--jitter-min')) || 0.10;
-    const jMaxRem = parseFloat(getComputedStyle(body).getPropertyValue('--jitter-max')) || 0.35;
+    const jMinRem = parseFloat(gcsBody.getPropertyValue('--jitter-min')) || 0.10;
+    const jMaxRem = parseFloat(gcsBody.getPropertyValue('--jitter-max')) || 0.35;
     const jMinPx  = jMinRem * remPx();
     const jMaxPx  = Math.max(jMinPx, jMaxRem * remPx());
 
-    const randomize = clamp01(parseFloat(getComputedStyle(body).getPropertyValue('--star-randomize')) || 0.30);
-    const cssGap = getComputedStyle(body).getPropertyValue('--star-min-gap').trim();
+    const randomize = clamp01(parseFloat(gcsBody.getPropertyValue('--star-randomize')) || 0.30);
+    const seedVal = parseFloat(gcsBody.getPropertyValue('--star-seed')) || Math.random();
+    const phase = seedVal - Math.floor(seedVal); // in [0,1)
+
+    const cssGap = gcsBody.getPropertyValue('--star-min-gap').trim();
     const minGapPx = cssGap ? parseFloat(cssGap) * (cssGap.endsWith('rem') ? remPx() : 1) : 0;
 
     const hostRect = host.getBoundingClientRect();
@@ -169,11 +155,18 @@
     if (layer.dataset.sig === sig) return;
     layer.dataset.sig = sig;
 
+    function tForIndex(i){
+      const tEven = (i + 0.5) / Math.max(1, count);
+      const tRand = Math.random();
+      const tMix  = (1 - randomize) * tEven + randomize * tRand;
+      return (tMix + phase) % 1;
+    }
+
     nextFrame2(() => {
       const layerRect = layer.getBoundingClientRect();
       layer.innerHTML = '';
 
-      const placed = []; // {x, y, r}
+      const placed = []; // {x,y,r}
       function canPlace(x, y, r){
         for (let i=0;i<placed.length;i++){
           const p = placed[i];
@@ -183,7 +176,7 @@
         }
         return true;
       }
-      function pushStar(x, y, sizeRem){
+      function pushStar(x, y, sizeRem, inlineStyles){
         const r = (sizeRem * remPx()) / 2;
         if (!canPlace(x, y, r)) return false;
 
@@ -196,6 +189,17 @@
         star.className = 'star';
         star.style.left = x + 'px';
         star.style.top  = y + 'px';
+        if (inlineStyles){
+          star.style.position = 'absolute';
+          star.style.transform = 'translate(-50%, -50%)';
+          star.style.width = 'var(--size, 1rem)';
+          star.style.height = 'var(--size, 1rem)';
+          star.style.background = 'currentColor';
+          star.style.color = getComputedStyle(body).getPropertyValue('--star-color') || '#9989EC';
+          star.style.willChange = 'opacity, transform';
+          star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
+          star.style.animation = 'twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay,0s) infinite alternate';
+        }
         star.style.setProperty('--size',     sizeRem + 'rem');
         star.style.setProperty('--o',        opacity.toFixed(2));
         star.style.setProperty('--twinkle',  twDur.toFixed(2) + 's');
@@ -207,75 +211,76 @@
         return true;
       }
 
+      function placeAtT_SVG(t, sizeRem){
+        const total = path.getTotalLength();
+        const d = (t % 1) * total;
+        const p  = path.getPointAtLength(d);
+        const p2 = path.getPointAtLength((d + 0.75) % total);
+        let nx = -(p2.y - p.y), ny = (p2.x - p.x);
+        const nlen = Math.hypot(nx, ny) || 1; nx/=nlen; ny/=nlen;
+        const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
+        const j = sign * rand(jMinPx, jMaxPx);
+        const scr = svgToClient(svg, p.x + nx*j, p.y + ny*j);
+        if (!scr) return false;
+        return pushStar(scr.x - layerRect.left, scr.y - layerRect.top, sizeRem, false);
+      }
+
+      function placeAtT_BOX(t, sizeRem){
+        const rect = host.getBoundingClientRect();
+        if ((target.fallback || 'ellipse') === 'rect'){
+          const hit = sampleRectPerimeter(rect, t);
+          const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+          const vx = hit.x - cx, vy = hit.y - cy;
+          const vlen = Math.hypot(vx, vy) || 1;
+          const j = rand(jMinPx, jMaxPx);
+          const px = hit.x + (vx/vlen)*j, py = hit.y + (vy/vlen)*j;
+          return pushStar(px - layerRect.left, py - layerRect.top, sizeRem, false);
+        }else{
+          const hit = sampleEllipsePerimeter(rect, t);
+          const j = rand(jMinPx, jMaxPx);
+          const px = hit.x + Math.cos(hit.theta)*j, py = hit.y + Math.sin(hit.theta)*j;
+          return pushStar(px - layerRect.left, py - layerRect.top, sizeRem, false);
+        }
+      }
+
       const sizePlan = chooseSizesPlan(count, { L:sizeLrem, M:sizeMrem, S:sizeSrem });
 
-      if (mode === 'svg'){
-        const total = path.getTotalLength();
-        for (let i = 0; i < count; i++){
+      // Pass A: place L stars at evenly spaced parameters (phase-shifted)
+      if (sizePlan.Lcount > 0){
+        for (let k=0; k<sizePlan.Lcount; k++){
+          const baseT = (k + 0.5) / sizePlan.Lcount;  // even spacing
           let ok = false, tries = 0;
-          const tier = sizePlan.plan[i];
-          const sizeRem = (tier === 'L') ? sizePlan.sizeOf('L') : (tier === 'M' ? sizePlan.sizeOf('M') : sizePlan.sizeOf('S'));
-
           while (!ok && tries < 80){
             tries++;
-            const evenD = (i + 0.5) * (total / count);
-            const randD = Math.random() * total;
-            const d = (lerp(evenD, randD, randomize)) % total;
-
-            const p  = path.getPointAtLength(d);
-            const p2 = path.getPointAtLength((d + 0.75) % total);
-            let nx = -(p2.y - p.y), ny = (p2.x - p.x);
-            const nlen = Math.hypot(nx, ny) || 1; nx /= nlen; ny /= nlen;
-
-            const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-            const j = sign * rand(jMinPx, jMaxPx);
-            const scr = svgToClient(svg, p.x + nx*j, p.y + ny*j);
-            if (!scr) break;
-
-            const x = scr.x - layerRect.left;
-            const y = scr.y - layerRect.top;
-            ok = pushStar(x, y, sizeRem);
-          }
-          // If a Large fails to fit after many tries, it will be skipped.
-          // On tight perimeters you may end below the requested Large quota.
-        }
-      } else {
-        const rect = host.getBoundingClientRect();
-        for (let i = 0; i < count; i++){
-          let ok = false, tries = 0;
-          const tier = sizePlan.plan[i];
-          const sizeRem = (tier === 'L') ? sizePlan.sizeOf('L') : (tier === 'M' ? sizePlan.sizeOf('M') : sizePlan.sizeOf('S'));
-
-          while (!ok && tries < 80){
-            tries++;
-            const evenT = (i + 0.5) / count;
-            const randT = Math.random();
-            const t = (1 - randomize) * evenT + randomize * randT;
-
-            let px, py, ox, oy;
-            if ((target.fallback || 'ellipse') === 'rect'){
-              const hit = sampleRectPerimeter(rect, t);
-              const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-              const vx = hit.x - cx, vy = hit.y - cy;
-              const vlen = Math.hypot(vx, vy) || 1;
-              const j = rand(jMinPx, jMaxPx);
-              ox = (vx / vlen) * j; oy = (vy / vlen) * j;
-              px = hit.x + ox; py = hit.y + oy;
-            } else {
-              const hit = sampleEllipsePerimeter(rect, t);
-              const j = rand(jMinPx, jMaxPx);
-              ox = Math.cos(hit.theta) * j; oy = Math.sin(hit.theta) * j;
-              px = hit.x + ox; py = hit.y + oy;
-            }
-
-            const x = px - layerRect.left;
-            const y = py - layerRect.top;
-            ok = pushStar(x, y, sizeRem);
+            const dt = (randomize>0 ? (Math.random()-0.5) * (1/Math.max(6, count)) : 0); // small wiggle
+            const t = (baseT + phase + dt + 1) % 1;
+            ok = (mode === 'svg') ? placeAtT_SVG(t, sizeLrem) : placeAtT_BOX(t, sizeLrem);
           }
         }
       }
 
-      // Optional: console.info('[EdgeStars] placed', placed.length, 'of', count, '| large quota', sizePlan.wantL, '∈ [', sizePlan.minL, ',', sizePlan.maxL, ']');
+      // Pass B: place remaining M/S distributed around the path
+      const msPlan = sizePlan.restPlan;
+      // shuffle once more just to avoid any streaks
+      for (let k = msPlan.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [msPlan[k], msPlan[j]] = [msPlan[j], msPlan[k]]; }
+
+      for (let i = 0; i < msPlan.length; i++){
+        const tier = msPlan[i];
+        const sizeRem = tier === 'M' ? sizeMrem : sizeSrem;
+        let ok = false, tries = 0;
+        while (!ok && tries < 80){
+          tries++;
+          const t = tForIndex(i);
+          ok = (mode === 'svg') ? placeAtT_SVG(t, sizeRem) : placeAtT_BOX(t, sizeRem);
+        }
+      }
+
+      // If site CSS hasn’t loaded yet, give the stars minimal inline styles
+      if (!document.querySelector('.shape-edge-sparkles .star')){
+        const test = document.createElement('span');
+        test.className = 'star';
+        test.style.position='absolute'; test.style.transform='translate(-50%, -50%)';
+      }
     });
   }
 
