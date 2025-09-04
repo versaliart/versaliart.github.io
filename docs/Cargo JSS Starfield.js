@@ -1,15 +1,9 @@
-// v2.6
+// v2.7
 
 (function(){
-  const TARGETS = [
-    {
-      sel: '#block-yui_3_17_2_1_1756944426569_9957',
-      randomize: 0.30,
-      jitterRemMin: 0.10,   // min outward jitter (in rem)
-      jitterRemMax: 0.35,   // max outward jitter (in rem)
-      fallback: 'ellipse'   // used only if no inline <svg><path>; 'ellipse' | 'rect'
-    }
-  ];
+const TARGETS = [
+  { sel: '#block-yui_3_17_2_1_1756944426569_9957', fallback: 'ellipse' }
+];
   if (!TARGETS.length) return;
 
   function onReady(fn){ if (document.readyState !== 'loading') fn(); else document.addEventListener('DOMContentLoaded', fn, { once:true }); }
@@ -28,6 +22,7 @@
   const clamp01 = v => Math.max(0, Math.min(1, v));
   const lerp = (a,b,t) => a + (b-a)*t;
   const rand = (a,b) => a + Math.random()*(b-a);
+
   function cssNum(fromEl, name, fallback){
     const v = getComputedStyle(fromEl).getPropertyValue(name).trim();
     const n = parseFloat(v);
@@ -55,14 +50,13 @@
 
   function watchHost(host, cb){
     const mo = new MutationObserver(muts => {
-      let relevant = false;
       for (const m of muts){
-        if (m.type === 'childList') { relevant = true; break; }
-        if (m.type === 'attributes' && (m.attributeName === 'style' || m.attributeName === 'class')) { relevant = true; break; }
+        if (m.type === 'childList' || (m.type === 'attributes' && (m.attributeName === 'style' || m.attributeName === 'class'))){
+          clearTimeout(host.__edgeMoT);
+          host.__edgeMoT = setTimeout(cb, 120);
+          break;
+        }
       }
-      if (!relevant) return;
-      clearTimeout(host.__edgeMoT);
-      host.__edgeMoT = setTimeout(cb, 120);
     });
     mo.observe(host, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class'] });
     host.__edgeMo = mo;
@@ -93,13 +87,13 @@
   }
 
   function readyToDraw(host){
-    if (!host) return false;
-    const r = host.getBoundingClientRect();
-    return r.width >= 4 && r.height >= 4;
+    const r = host?.getBoundingClientRect();
+    return !!r && r.width >= 4 && r.height >= 4;
   }
 
   function nextFrame2(fn){ requestAnimationFrame(() => requestAnimationFrame(fn)); }
 
+  // Fallback perimeter samplers
   function sampleEllipsePerimeter(rect, t){
     const cx = rect.left + rect.width/2;
     const cy = rect.top  + rect.height/2;
@@ -116,23 +110,22 @@
     return { x: rect.left, y: rect.bottom - (d - rect.width*2 - rect.height), edge: 'left' };
   }
 
-  // Choose outward normal sign using isPointInFill when possible.
+  // Determine outward normal sign using isPointInFill when available
   function outwardSignSVG(path, svg, px, py, nx, ny){
     if (typeof path.isPointInFill === 'function'){
       const ptPlus = svg.createSVGPoint(); ptPlus.x = px + nx; ptPlus.y = py + ny;
       const ptMinus= svg.createSVGPoint(); ptMinus.x= px - nx; ptMinus.y= py - ny;
       const inPlus  = path.isPointInFill(ptPlus);
       const inMinus = path.isPointInFill(ptMinus);
-      if (inPlus && !inMinus) return -1; // minus is outside
-      if (!inPlus && inMinus) return +1; // plus is outside
-      if (!inPlus && !inMinus) return +1; // both outside; just pick +1
-      return +1; // both inside; default +1
+      if (inPlus && !inMinus) return -1;
+      if (!inPlus && inMinus) return +1;
+      if (!inPlus && !inMinus) return +1;
+      return +1;
     }
-    // Fallback: use vector from shape center (approx via viewBox center)
     const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : {x:0,y:0,width:svg.clientWidth,height:svg.clientHeight};
     const cx = vb.x + vb.width/2, cy = vb.y + vb.height/2;
     const vx = px - cx, vy = py - cy;
-    return (vx*nx + vy*ny) >= 0 ? +1 : -1; // if normal points away from center, treat as outward
+    return (vx*nx + vy*ny) >= 0 ? +1 : -1;
   }
 
   function buildFor(target, attempt=0){
@@ -146,12 +139,12 @@
     }
 
     const svg = host.querySelector('svg');
-    const hasSVG = !!svg;
-    const path = hasSVG ? svg.querySelector('path') : null;
-    const mode = (hasSVG && path) ? 'svg' : 'box';
+    const path = svg ? svg.querySelector('path') : null;
+    const mode = (svg && path) ? 'svg' : 'box';
 
     const layer = ensureLayer(host);
 
+    // Shared vars
     const count   = Math.max(0, Math.round(cssNum(body,'--star-count', 40)));
     const durMin  = cssNum(body,'--twinkle-min', 0.5);
     const durMax  = cssNum(body,'--twinkle-max', 2.0);
@@ -162,20 +155,26 @@
     const sizeL   = cssNum(root,'--size-large', 1.5);
     const sizeM   = sizeL / (phi || 1.618);
     const sizeS   = sizeM / (phi || 1.618);
-    const randomize = clamp01(target.randomize ?? 0.30);
-    const jMinPx  = (target.jitterRemMin ?? 0.10) * remPx();
-    const jMaxPx  = Math.max(jMinPx, (target.jitterRemMax ?? 0.35) * remPx());
+    const jMinPx  = cssNum(body, '--jitter-min', 0.10) * remPx();
+    const jMaxPx  = cssNum(body, '--jitter-max', 0.35) * remPx();
+    const randomize = clamp01(cssNum(body, '--star-randomize', 0.30));
+    const cssGap  = cssNum(body, '--star-min-gap', 0);       // from your CSS vars if present
+    const minGapPx= Number.isFinite(target.minGapPx) ? target.minGapPx : cssGap;
 
+    // Signature
     const hostRect = host.getBoundingClientRect();
-    let sigParts = [ 'c:'+count, 'w:'+Math.round(hostRect.width), 'h:'+Math.round(hostRect.height) ];
-    if (mode === 'svg'){
-      const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : { x:0, y:0, width: svg.clientWidth, height: svg.clientHeight };
-      const total = path.getTotalLength();
-      sigParts.push('vbw:'+Math.round(vb.width), 'vbh:'+Math.round(vb.height), 'len:'+Math.round(total));
-    } else {
-      sigParts.push('mode:'+ (target.fallback || 'ellipse'));
-    }
-    const sig = sigParts.join('|');
+    const sig = (() => {
+      const parts = ['c:'+count, 'w:'+Math.round(hostRect.width), 'h:'+Math.round(hostRect.height), 'gap:'+Math.round(minGapPx)];
+      if (mode === 'svg'){
+        const vb = svg.viewBox && svg.viewBox.baseVal ? svg.viewBox.baseVal : { x:0, y:0, width: svg.clientWidth, height: svg.clientHeight };
+        const total = path.getTotalLength();
+        parts.push('vbw:'+Math.round(vb.width), 'vbh:'+Math.round(vb.height), 'len:'+Math.round(total));
+      } else {
+        parts.push('mode:'+(target.fallback || 'ellipse'));
+      }
+      return parts.join('|');
+    })();
+
     if (layer.dataset.sig === sig) return;
     layer.dataset.sig = sig;
 
@@ -183,108 +182,121 @@
       const layerRect = layer.getBoundingClientRect();
       layer.innerHTML = '';
 
+      const placed = []; // {x, y, r}
+
+      function canPlace(x, y, r){
+        for (let i=0;i<placed.length;i++){
+          const p = placed[i];
+          const dx = x - p.x, dy = y - p.y;
+          const minD = p.r + r + minGapPx;
+          if (dx*dx + dy*dy < minD*minD) return false;
+        }
+        return true;
+      }
+
+      function pushStar(x, y, sizeRem){
+        const sizePx = sizeRem * remPx();
+        const r = sizePx / 2;
+        if (!canPlace(x, y, r)) return false;
+
+        const rr = Math.random();
+        const opacity = rand(opMin, opMax);
+        const twDur   = rand(durMin, durMax);
+        const twDelay = -Math.random() * twDur;
+        const blurPx  = rand(0, blurMax * remPx());
+
+        const star = document.createElement('span');
+        star.className = 'star';
+        star.style.position = 'absolute';
+        star.style.left = x + 'px';
+        star.style.top  = y + 'px';
+        star.style.transform = 'translate(-50%, -50%)';
+        star.style.width = 'var(--size, 1rem)';
+        star.style.height = 'var(--size, 1rem)';
+        star.style.setProperty('--size',     sizeRem + 'rem');
+        star.style.setProperty('--o',        opacity.toFixed(2));
+        star.style.setProperty('--twinkle',  twDur.toFixed(2) + 's');
+        star.style.setProperty('--tw-delay', twDelay.toFixed(2) + 's');
+        star.style.setProperty('--blur',     blurPx.toFixed(2) + 'px');
+        star.style.background = 'currentColor';
+        star.style.color = getComputedStyle(body).getPropertyValue('--star-color') || '#9989EC';
+        star.style.willChange = 'opacity, transform';
+        star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
+        star.style.animation = 'twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay,0s) infinite alternate';
+        layer.appendChild(star);
+
+        placed.push({ x, y, r });
+        return true;
+      }
+
+      function pickSizeRem(){
+        const r = Math.random();
+        return r < 1/3 ? sizeS : (r < 2/3 ? sizeM : sizeL);
+      }
+
       if (mode === 'svg'){
         const total = path.getTotalLength();
-        for (let i = 0; i < count; i++){
-          const evenD = (i + 0.5) * (total / count);
-          const randD = Math.random() * total;
-          const d = (lerp(evenD, randD, randomize)) % total;
+        for (let i=0; i<count; i++){
+          let ok = false, tries = 0;
+          const sizeRem = pickSizeRem();
 
-          const p  = path.getPointAtLength(d);
-          const p2 = path.getPointAtLength((d + 0.75) % total);
-          let nx = -(p2.y - p.y), ny = (p2.x - p.x);
-          const nlen = Math.hypot(nx, ny) || 1; nx /= nlen; ny /= nlen;
+          while (!ok && tries < 60){
+            tries++;
+            const evenD = (i + 0.5) * (total / count);
+            const randD = Math.random() * total;
+            const d = (lerp(evenD, randD, randomize)) % total;
 
-          const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-          const j = sign * rand(jMinPx, jMaxPx);
+            const p  = path.getPointAtLength(d);
+            const ahead = path.getPointAtLength((d + 0.75) % total);
+            let nx = -(ahead.y - p.y), ny = (ahead.x - p.x);
+            const nlen = Math.hypot(nx, ny) || 1; nx /= nlen; ny /= nlen;
 
-          const scr = svgToClient(svg, p.x + nx*j, p.y + ny*j);
-          if (!scr) continue;
+            const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
+            const j = sign * rand(jMinPx, jMaxPx);
 
-          const left = scr.x - layerRect.left;
-          const top  = scr.y  - layerRect.top;
+            const scr = svgToClient(svg, p.x + nx*j, p.y + ny*j);
+            if (!scr) break;
 
-          const r = Math.random();
-          const sizeRem = r < 1/3 ? sizeS : (r < 2/3 ? sizeM : sizeL);
-          const opacity = rand(opMin, opMax);
-          const twDur   = rand(durMin, durMax);
-          const twDelay = -Math.random() * twDur;
-          const blurPx  = rand(0, blurMax * remPx());
-
-          const star = document.createElement('span');
-          star.className = 'star';
-          star.style.position = 'absolute';
-          star.style.left = left + 'px';
-          star.style.top  = top  + 'px';
-          star.style.transform = 'translate(-50%, -50%)';
-          star.style.width = 'var(--size, 1rem)';
-          star.style.height = 'var(--size, 1rem)';
-          star.style.setProperty('--size',     sizeRem + 'rem');
-          star.style.setProperty('--o',        opacity.toFixed(2));
-          star.style.setProperty('--twinkle',  twDur.toFixed(2) + 's');
-          star.style.setProperty('--tw-delay', twDelay.toFixed(2) + 's');
-          star.style.setProperty('--blur',     blurPx.toFixed(2) + 'px');
-          star.style.background = 'currentColor';
-          star.style.color = getComputedStyle(body).getPropertyValue('--star-color') || '#9989EC';
-          star.style.willChange = 'opacity, transform';
-          star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
-          star.style.animation = 'twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay,0s) infinite alternate';
-          layer.appendChild(star);
-        }
-      } else {
-        // Fallback perimeter with outward jitter from the block’s center
-        for (let i = 0; i < count; i++){
-          const evenT = (i + 0.5) / count;
-          const randT = Math.random();
-          const t = (1 - randomize) * evenT + randomize * randT;
-
-          const r = host.getBoundingClientRect();
-          let hit, px, py, ox, oy;
-
-          if ((target.fallback || 'ellipse') === 'rect'){
-            hit = sampleRectPerimeter(r, t);
-            const cx = r.left + r.width/2, cy = r.top + r.height/2;
-            const vx = hit.x - cx, vy = hit.y - cy;
-            const vlen = Math.hypot(vx, vy) || 1;
-            const j = rand(jMinPx, jMaxPx);
-            ox = (vx / vlen) * j; oy = (vy / vlen) * j;
-            px = hit.x + ox; py = hit.y + oy;
-          } else {
-            hit = sampleEllipsePerimeter(r, t);
-            const j = rand(jMinPx, jMaxPx);
-            ox = Math.cos(hit.theta) * j; oy = Math.sin(hit.theta) * j;
-            px = hit.x + ox; py = hit.y + oy;
+            const x = scr.x - layerRect.left;
+            const y = scr.y - layerRect.top;
+            ok = pushStar(x, y, sizeRem);
           }
 
-          const left = px - layerRect.left;
-          const top  = py - layerRect.top;
+          // If we failed to place after many tries, we’ll just skip this star
+          // (You still get no overlap; total may be slightly less than --star-count)
+        }
+      } else {
+        const rect = host.getBoundingClientRect();
+        for (let i=0; i<count; i++){
+          let ok = false, tries = 0;
+          const sizeRem = pickSizeRem();
 
-          const rr = Math.random();
-          const sizeRem = rr < 1/3 ? sizeS : (rr < 2/3 ? sizeM : sizeL);
-          const opacity = rand(opMin, opMax);
-          const twDur   = rand(durMin, durMax);
-          const twDelay = -Math.random() * twDur;
-          const blurPx  = rand(0, blurMax * remPx());
+          while (!ok && tries < 60){
+            tries++;
+            const evenT = (i + 0.5) / count;
+            const randT = Math.random();
+            const t = (1 - randomize) * evenT + randomize * randT;
 
-          const star = document.createElement('span');
-          star.className = 'star';
-          star.style.position = 'absolute';
-          star.style.left = left + 'px';
-          star.style.top  = top  + 'px';
-          star.style.transform = 'translate(-50%, -50%)';
-          star.style.width = 'var(--size, 1rem)';
-          star.style.height = 'var(--size, 1rem)';
-          star.style.setProperty('--size',     sizeRem + 'rem');
-          star.style.setProperty('--o',        opacity.toFixed(2));
-          star.style.setProperty('--twinkle',  twDur.toFixed(2) + 's');
-          star.style.setProperty('--tw-delay', twDelay.toFixed(2) + 's');
-          star.style.setProperty('--blur',     blurPx.toFixed(2) + 'px');
-          star.style.background = 'currentColor';
-          star.style.color = getComputedStyle(body).getPropertyValue('--star-color') || '#9989EC';
-          star.style.willChange = 'opacity, transform';
-          star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
-          star.style.animation = 'twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay,0s) infinite alternate';
-          layer.appendChild(star);
+            let px, py, ox, oy;
+            if ((target.fallback || 'ellipse') === 'rect'){
+              const hit = sampleRectPerimeter(rect, t);
+              const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
+              const vx = hit.x - cx, vy = hit.y - cy;
+              const vlen = Math.hypot(vx, vy) || 1;
+              const j = rand(jMinPx, jMaxPx);
+              ox = (vx / vlen) * j; oy = (vy / vlen) * j;
+              px = hit.x + ox; py = hit.y + oy;
+            } else {
+              const hit = sampleEllipsePerimeter(rect, t);
+              const j = rand(jMinPx, jMaxPx);
+              ox = Math.cos(hit.theta) * j; oy = Math.sin(hit.theta) * j;
+              px = hit.x + ox; py = hit.y + oy;
+            }
+
+            const x = px - layerRect.left;
+            const y = py - layerRect.top;
+            ok = pushStar(x, y, sizeRem);
+          }
         }
       }
     });

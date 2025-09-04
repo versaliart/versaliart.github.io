@@ -9,6 +9,14 @@
 body.has-starfield{
   /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
   --star-count: 45;
+  --star-min-gap: 16px;
+
+    /* outward jitter range (rem units) */
+  --jitter-min: 0.10rem;
+  --jitter-max: 0.35rem;
+
+  /* distribution balance: 0 = even, 1 = random */
+  --star-randomize: 0.30;
 
   /* Twinkle timing (seconds) */
   --twinkle-min: 0.5;
@@ -26,8 +34,6 @@ body.has-starfield{
 
   /* Soft glow */
   --max-blur: 0.12rem;
-
-  /* Visuals */
   --star-color: #9989EC;
   --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
 }
