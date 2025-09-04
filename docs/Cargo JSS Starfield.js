@@ -17,7 +17,6 @@
   const root = document.documentElement, body = document.body;
   const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
   const clamp01 = v => Math.max(0, Math.min(1, v));
-  const lerp = (a,b,t) => a + (b-a)*t;
   const rand = (a,b) => a + Math.random()*(b-a);
   const DEG = Math.PI / 180;
 
@@ -122,6 +121,24 @@
     return { Lcount: wantL, restPlan: planRest, sizeOf: k => ({L:sizeRems.L,M:sizeRems.M,S:sizeRems.S})[k] };
   }
 
+  function makeParamList(count, phase){
+    const N = Math.max(0, count|0);
+    const T = new Array(N);
+    for (let i = 0; i < N; i++){
+      T[i] = ((i + 0.5) / N + phase) % 1;
+    }
+    return T;
+  }
+  function angleDeg(cx, cy, px, py){
+    const ang = Math.atan2(py - cy, px - cx) / DEG;
+    return (ang + 360) % 360;
+  }
+  function avoidAngle(aDeg, widthDeg){
+    const dTop = Math.min(Math.abs(aDeg - 90),  360 - Math.abs(aDeg - 90));
+    const dBot = Math.min(Math.abs(aDeg - 270), 360 - Math.abs(aDeg - 270));
+    return (dTop <= widthDeg) || (dBot <= widthDeg);
+  }
+
   function buildFor(target, attempt=0){
     const host = document.querySelector(target.sel);
     if (!host) return;
@@ -190,18 +207,11 @@
       }
       return true;
     }
-    function tForIndex(i){
-      const tEven = (i + 0.5) / Math.max(1, count);
-      const tRand = Math.random();
-      const tMix  = (1 - randomize) * tEven + randomize * tRand;
-      return (tMix + phase) % 1;
-    }
 
     nextFrame2(() => {
       const layerRect = layer.getBoundingClientRect();
       layer.innerHTML = '';
-
-      const placed = []; // {x,y,r}
+      const placed = [];
 
       function pushStar(x, y, sizeRem, inlineStyles){
         const r = (sizeRem * remPx()) / 2;
@@ -238,44 +248,6 @@
         return true;
       }
 
-      function placeAtT_SVG(t, sizeRem, center){
-        const total = path.getTotalLength();
-        const d = (t % 1) * total;
-        const p  = path.getPointAtLength(d);
-        if (angleGate && center && !angleGate(center.x, center.y, p.x, p.y)) return false;
-
-        const p2 = path.getPointAtLength((d + 0.75) % total);
-        let nx = -(p2.y - p.y), ny = (p2.x - p.x);
-        const nlen = Math.hypot(nx, ny) || 1; nx/=nlen; ny/=nlen;
-        const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-        const j = sign * rand(jMinPx, jMaxPx);
-        const scr = svgToClient(svg, p.x + nx*j, p.y + ny*j);
-        if (!scr) return false;
-        return pushStar(scr.x - layerRect.left, scr.y - layerRect.top, sizeRem, false);
-      }
-
-      function placeAtT_BOX(t, sizeRem, rect){
-        if ((target.fallback || 'ellipse') === 'rect'){
-          const hit = sampleRectPerimeter(rect, t);
-          const cx = hit.cx, cy = hit.cy;
-          if (angleGate && !angleGate(cx, cy, hit.x, hit.y)) return false;
-          const vx = hit.x - cx, vy = hit.y - cy;
-          const vlen = Math.hypot(vx, vy) || 1;
-          const j = rand(jMinPx, jMaxPx);
-          const px = hit.x + (vx/vlen)*j, py = hit.y + (vy/vlen)*j;
-          return pushStar(px - layerRect.left, py - layerRect.top, sizeRem, false);
-        }else{
-          const hit = sampleEllipsePerimeter(rect, t);
-          const cx = hit.cx, cy = hit.cy;
-          if (angleGate && !angleGate(cx, cy, hit.x, hit.y)) return false;
-          const j = rand(jMinPx, jMaxPx);
-          const px = hit.x + Math.cos(hit.theta)*j, py = hit.y + Math.sin(hit.theta)*j;
-          return pushStar(px - layerRect.left, py - layerRect.top, sizeRem, false);
-        }
-      }
-
-      const sizePlan = chooseSizesPlan(count, { L:sizeLrem, M:sizeMrem, S:sizeSrem });
-
       let svgCenter = null;
       if (mode === 'svg'){
         if (typeof path.getBBox === 'function'){
@@ -288,30 +260,84 @@
       }
       const rectForBox = host.getBoundingClientRect();
 
+      function tryPlaceAtT_SVG(t, sizeRem){
+        const total = path.getTotalLength();
+        const d = (t % 1) * total;
+        const p  = path.getPointAtLength(d);
+        if (avoidStrength > 0 && avoidWidthDeg > 0 && svgCenter){
+          const a = angleDeg(svgCenter.x, svgCenter.y, p.x, p.y);
+          if (avoidAngle(a, avoidWidthDeg)) return false;
+        }
+        const p2 = path.getPointAtLength((d + 0.75) % total);
+        let nx = -(p2.y - p.y), ny = (p2.x - p.x);
+        const nlen = Math.hypot(nx, ny) || 1; nx/=nlen; ny/=nlen;
+        const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
+        const j = sign * rand(jMinPx, jMaxPx);
+        const scr = svgToClient(svg, p.x + nx*j, p.y + ny*j);
+        if (!scr) return false;
+        return pushStar(scr.x - layerRect.left, scr.y - layerRect.top, sizeRem, false);
+      }
+      function tryPlaceAtT_BOX(t, sizeRem){
+        const rect = rectForBox;
+        let hit;
+        if ((target.fallback || 'ellipse') === 'rect'){
+          hit = sampleRectPerimeter(rect, t);
+        } else {
+          hit = sampleEllipsePerimeter(rect, t);
+        }
+        const cx = hit.cx, cy = hit.cy, hx = hit.x, hy = hit.y;
+        if (avoidStrength > 0 && avoidWidthDeg > 0){
+          const a = angleDeg(cx, cy, hx, hy);
+          if (avoidAngle(a, avoidWidthDeg)) return false;
+        }
+        let px, py;
+        if ((target.fallback || 'ellipse') === 'rect'){
+          const vx = hx - cx, vy = hy - cy;
+          const vlen = Math.hypot(vx, vy) || 1;
+          const j = rand(jMinPx, jMaxPx);
+          px = hx + (vx/vlen)*j; py = hy + (vy/vlen)*j;
+        } else {
+          const j = rand(jMinPx, jMaxPx);
+          px = hx + Math.cos(hit.theta)*j; py = hy + Math.sin(hit.theta)*j;
+        }
+        return pushStar(px - layerRect.left, py - layerRect.top, sizeRem, false);
+      }
+      function placeAtT(t, sizeRem){
+        return (mode === 'svg') ? tryPlaceAtT_SVG(t, sizeRem) : tryPlaceAtT_BOX(t, sizeRem);
+      }
+
+      const T_all = makeParamList(count, phase);
+      const sizePlan = chooseSizesPlan(count, { L:sizeLrem, M:sizeMrem, S:sizeSrem });
+
+      const usedIdx = new Set();
       if (sizePlan.Lcount > 0){
         for (let k=0; k<sizePlan.Lcount; k++){
-          const baseT = (k + 0.5) / sizePlan.Lcount;
+          const idx = Math.floor( (k + 0.5) * T_all.length / sizePlan.Lcount ) % T_all.length;
+          usedIdx.add(idx);
+          const baseT = T_all[idx];
           let ok = false, tries = 0;
-          while (!ok && tries < 80){
+          while (!ok && tries < 40){
             tries++;
             const dt = (randomize > 0 ? (Math.random()-0.5) * (1/Math.max(6, count)) : 0);
-            const t = (baseT + phase + dt + 1) % 1;
-            ok = (mode === 'svg') ? placeAtT_SVG(t, sizeLrem, svgCenter) : placeAtT_BOX(t, sizeLrem, rectForBox);
+            const t = (baseT + dt + 1) % 1;
+            ok = placeAtT(t, sizeLrem) || placeAtT((t + 0.5) % 1, sizeLrem);
           }
         }
       }
 
-      const msPlan = sizePlan.restPlan;
-      for (let k = msPlan.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [msPlan[k], msPlan[j]] = [msPlan[j], msPlan[k]]; }
+      const restTs = [];
+      for (let i=0;i<T_all.length;i++){ if (!usedIdx.has(i)) restTs.push(T_all[i]); }
+      for (let k = restTs.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [restTs[k], restTs[j]] = [restTs[j], restTs[k]]; }
 
-      for (let i = 0; i < msPlan.length; i++){
-        const tier = msPlan[i];
-        const sizeRem = tier === 'M' ? sizeMrem : sizeSrem;
+      let ti = 0;
+      for (let i = 0; i < sizePlan.restPlan.length && ti < restTs.length; i++){
+        const tier = sizePlan.restPlan[i];
+        const sizeRem = (tier === 'M') ? sizeMrem : sizeSrem;
         let ok = false, tries = 0;
-        while (!ok && tries < 80){
+        while (!ok && tries < 40 && ti < restTs.length){
+          const t = restTs[ti++];
           tries++;
-          const t = tForIndex(i);
-          ok = (mode === 'svg') ? placeAtT_SVG(t, sizeRem, svgCenter) : placeAtT_BOX(t, sizeRem, rectForBox);
+          ok = placeAtT(t, sizeRem) || placeAtT((t + 0.5) % 1, sizeRem);
         }
       }
     });
