@@ -1,5 +1,5 @@
 /* =========================================================
-   Starfield v2.8 — EDGE-ONLY (outline sparkles for Shape Block)
+   Starfield v2.9 — EDGE-ONLY (outline sparkles for Shape Block)
    - No ambient .star-container layer is used or referenced
    - Quantity, sizing, and timing all inherit from CSS vars
    - Works with the edge-sampler JS that targets an exact block ID
@@ -8,7 +8,7 @@
 /* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
   /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
-  --star-count: 55;
+  --star-count: 100;
   --star-min-gap: 8px;
 
   /* outward jitter range (rem units) */
@@ -16,7 +16,7 @@ body.has-starfield{
   --jitter-max: 2.00rem;
 
   /* distribution balance: 0 = even, 1 = random */
-  --star-randomize: 0.30;
+  --star-randomize: 0.10;
 
   /* Twinkle timing (seconds) */
   --twinkle-min: 0.5;
@@ -31,6 +31,10 @@ body.has-starfield{
   --size-large: 1.5rem;                                 /* L base */
   --size-medium: calc(var(--size-large) / var(--phi));  /* ≈ 0.927rem */
   --size-small:  calc(var(--size-medium) / var(--phi)); /* ≈ 0.573rem */
+
+  /* 0 = no avoidance, 1 = strongest avoidance */
+  --avoid-vert-strength: 0.70;
+  --avoid-vert-width-deg: 35;
 
   /* Soft glow */
   --max-blur: 0.12rem;
