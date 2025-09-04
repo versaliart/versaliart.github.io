@@ -65,7 +65,7 @@ body.has-starfield{
 
   /* Edge version: twinkle only (no drift),
      timing provided per-star via inline vars from JS */
-  animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s)
+  animation: twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay, 0s)
              infinite alternate !important;
 }
 
