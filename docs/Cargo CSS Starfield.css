@@ -1,5 +1,5 @@
 /* =========================================================
-   Starfield v2.9 — EDGE-ONLY (outline sparkles for Shape Block)
+   Starfield v3.0 — EDGE-ONLY (outline sparkles for Shape Block)
    - No ambient .star-container layer is used or referenced
    - Quantity, sizing, and timing all inherit from CSS vars
    - Works with the edge-sampler JS that targets an exact block ID
@@ -8,7 +8,7 @@
 /* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
   /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
-  --star-count: 125;
+  --star-count: 100;
   --star-min-gap: 8px;
 
   /* outward jitter range (rem units) */
