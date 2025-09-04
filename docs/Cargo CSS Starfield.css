@@ -1,64 +1,61 @@
-/* ---------- Starfield v1.0 + Bottom Overlay ---------- */
-/* Page-level toggle: only pages with the marker run the starfield */
+/* =========================================================
+   Starfield v2.0 — EDGE-ONLY (outline sparkles for Shape Block)
+   - No ambient .star-container layer is used or referenced
+   - Quantity, sizing, and timing all inherit from CSS vars
+   - Works with the edge-sampler JS that targets an exact block ID
+========================================================= */
+
+/* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
---star-count: 45;          /* TOTAL stars across the whole page */
---radial-bias-k: 4;       /* 1 = uniform disk, 2–4 = stronger ring toward edges */
---star-min-gap: 24px;    /* extra space BETWEEN star edges; 0 disables */
+  /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
+  --star-count: 45;
 
---twinkle-min: 0.5;      /* shortest twinkle cycle (seconds) → faster flicker */
---twinkle-max: 2.0;      /* longest  twinkle cycle (seconds) → slower flicker */
+  /* Twinkle timing (seconds) */
+  --twinkle-min: 0.5;
+  --twinkle-max: 2.0;
 
---opacity-min: 0.15;     /* dimmest baseline opacity (0–1) */
---opacity-max: 1.0;     /* brightest baseline opacity (0–1) */
+  /* Opacity range for stars */
+  --opacity-min: 0.15;
+  --opacity-max: 1.0;
 
---phi: 1.618;                                          /* golden ratio */
---size-large: 1.5rem;                                  /* L: base size you can tweak */
---size-medium: calc(var(--size-large) / var(--phi));   /* M = L / φ  ≈ 0.927rem */
---size-small:  calc(var(--size-medium) / var(--phi));  /* S = M / φ  ≈ 0.573rem */
+  /* Size quantization using φ (golden ratio) */
+  --phi: 1.618;
+  --size-large: 1.5rem;                                 /* L base */
+  --size-medium: calc(var(--size-large) / var(--phi));  /* ≈ 0.927rem */
+  --size-small:  calc(var(--size-medium) / var(--phi)); /* ≈ 0.573rem */
 
+  /* Soft glow */
   --max-blur: 0.12rem;
+
+  /* Visuals */
   --star-color: #9989EC;
   --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
-
 }
 
-/* Make each section a stacking context so we can layer stars under its content */
-body.has-starfield .page-section,
-body.has-starfield .sqs-section { position: relative; }
-
-/* Per-section star layer (injected by JS) – above bg, below content */
-body.has-starfield .star-container{
+/* =========================================================
+   Edge-outline layer (inserted by JS INSIDE the Shape Block)
+   The JS creates <div class="shape-edge-sparkles">…</div>
+========================================================= */
+.shape-edge-sparkles{
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background: none !important;
-  background-color: transparent !important;
+  pointer-events: none;     /* clicks pass through to the block */
+  z-index: 1;               /* adjust if you want it under/over nearby content */
 }
 
-
-/* Lift section content above both star layer and overlay image */
-body.has-starfield .page-section > .content-wrapper,
-body.has-starfield .sqs-section  > .content-wrapper,
-body.has-starfield .sqs-section .content,
-body.has-starfield .sqs-layout,
-body.has-starfield .section-border{
-  position: relative;
-  z-index: 2; /* bumped to sit above overlay (z:1) */
-}
-
-/* Individual stars */
-body.has-starfield .star-container .star{
+/* Individual stars placed along the SVG path */
+.shape-edge-sparkles .star{
   position: absolute;
   left: var(--x, 50%);
   top:  var(--y, 50%);
+
   width:  var(--size, 1rem);
   height: var(--size, 1rem);
-  transform: translate(-50%, -50%) scale(var(--scale,1));
+
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
   opacity: var(--o, 0.85);
   color: var(--star-color);
-  background: currentColor;
-  animation-fill-mode: both;
+  background: currentColor;                     /* solid fill; masked to star shape */
 
   -webkit-mask: var(--star-url) center/contain no-repeat;
           mask: var(--star-url) center/contain no-repeat;
@@ -66,71 +63,24 @@ body.has-starfield .star-container .star{
   filter: drop-shadow(0 0 var(--blur, 0) currentColor);
   will-change: opacity, transform;
 
-    animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s) infinite alternate !important;
+  /* Edge version: twinkle only (no drift),
+     timing provided per-star via inline vars from JS */
+  animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s)
+             infinite alternate !important;
 }
 
-/* Edge-outline layer that sits on top of the Shape Block (click-through) */
-.shape-edge-sparkles{
-  position: absolute; inset: 0;
-  pointer-events: none;
-  z-index: 1; /* adjust if you want it under/over neighbors */
-}
-
-/* Reuse your star styling for edge sparkles too */
-body.has-starfield .shape-edge-sparkles .star{
-  position: absolute;
-  left: var(--x, 50%);
-  top:  var(--y, 50%);
-  width:  var(--size, 1rem);
-  height: var(--size, 1rem);
-  transform: translate(-50%, -50%) scale(var(--scale,1));
-  opacity: var(--o, 0.85);
-  color: var(--star-color);
-  background: currentColor;
-
-  -webkit-mask: var(--star-url) center/contain no-repeat;
-          mask: var(--star-url) center/contain no-repeat;
-
-  filter: drop-shadow(0 0 var(--blur, 0) currentColor);
-  will-change: opacity, transform;
-  animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s) infinite alternate !important;
-}
-
-
-/* Twinkle: opacity only (no transform conflicts) */
+/* =========================================================
+   Motion
+========================================================= */
 @keyframes twinkle{
   0%   { opacity: 0.15; }
   50%  { opacity: 1;    }
   100% { opacity: 0.25; }
 }
 
-/* Floaty: the only animation that changes transform */
-@keyframes floaty{
-  0%   { transform: translate(calc(-50% + var(--dx,0px)), calc(-50% + var(--dy,0px))) scale(var(--scale,1)); }
-  50%  { transform: translate(calc(-50% - var(--dx,0px)), calc(-50% - var(--dy,0px))) scale(var(--scale,1)); }
-  100% { transform: translate(calc(-50% + var(--dx,0px)), calc(-50% + var(--dy,0px))) scale(var(--scale,1)); }
-}
-
 @media (prefers-reduced-motion: reduce){
-  body.has-starfield .star-container .star{ animation: none; opacity: 0.6; }
-}
-/* Hide ambient layer so ONLY the outline sparkles show */
-body.has-starfield .star-container{ display:none !important; }
-
-/* Edge-outline layer */
-.shape-edge-sparkles{
-  position:absolute; inset:0; pointer-events:none; z-index:1;
-}
-
-/* Reuse your star styling for edge stars */
-body.has-starfield .shape-edge-sparkles .star{
-  position:absolute; left:var(--x,50%); top:var(--y,50%);
-  width:var(--size,1rem); height:var(--size,1rem);
-  transform:translate(-50%,-50%) scale(var(--scale,1));
-  opacity:var(--o,.85); color:var(--star-color); background:currentColor;
-  -webkit-mask: var(--star-url) center/contain no-repeat;
-          mask: var(--star-url) center/contain no-repeat;
-  filter: drop-shadow(0 0 var(--blur,0) currentColor);
-  will-change: opacity, transform;
-  animation: twinkle var(--twinkle,4s) ease-in-out var(--tw-delay,0s) infinite alternate !important;
+  .shape-edge-sparkles .star{
+    animation: none !important;
+    opacity: 0.6;
+  }
 }

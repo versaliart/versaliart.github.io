@@ -1,9 +1,9 @@
-/* ===== Edge-only sparkles driven by --star-count ===== */
+/* ===== v2.0 Edge-only sparkles driven by --star-count ===== */
 (function(){
   // List your Shape Block(s) by exact ID (Squarespace 7.1)
   const TARGETS = [
     // Example: replace with your real block ID
-    // { sel:'#block-yui_3_17_2_1_1756422477850_41937', randomize:0.30, jitterRem:0.30 }
+    { sel:'#block-yui_3_17_2_1_1756944426569_9957', randomize:0.30, jitterRem:0.30 }
   ];
   if(!TARGETS.length) return;
 
