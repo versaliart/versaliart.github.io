@@ -33,7 +33,7 @@ body.has-starfield{
   --size-small:  calc(var(--size-medium) / var(--phi)); /* ≈ 0.573rem */
 
   /* 0 = no avoidance, 1 = strongest avoidance */
-  --avoid-vert-strength: 0.70;
+  --avoid-vert-strength: 1;
   --avoid-vert-width-deg: 35;
 
   /* Soft glow */
