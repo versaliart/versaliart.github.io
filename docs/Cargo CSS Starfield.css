@@ -69,6 +69,34 @@ body.has-starfield .star-container .star{
     animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s) infinite alternate !important;
 }
 
+/* Edge-outline layer that sits on top of the Shape Block (click-through) */
+.shape-edge-sparkles{
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 1; /* adjust if you want it under/over neighbors */
+}
+
+/* Reuse your star styling for edge sparkles too */
+body.has-starfield .shape-edge-sparkles .star{
+  position: absolute;
+  left: var(--x, 50%);
+  top:  var(--y, 50%);
+  width:  var(--size, 1rem);
+  height: var(--size, 1rem);
+  transform: translate(-50%, -50%) scale(var(--scale,1));
+  opacity: var(--o, 0.85);
+  color: var(--star-color);
+  background: currentColor;
+
+  -webkit-mask: var(--star-url) center/contain no-repeat;
+          mask: var(--star-url) center/contain no-repeat;
+
+  filter: drop-shadow(0 0 var(--blur, 0) currentColor);
+  will-change: opacity, transform;
+  animation: twinkle var(--twinkle, 4s) ease-in-out var(--tw-delay, 0s) infinite alternate !important;
+}
+
+
 /* Twinkle: opacity only (no transform conflicts) */
 @keyframes twinkle{
   0%   { opacity: 0.15; }
@@ -85,4 +113,24 @@ body.has-starfield .star-container .star{
 
 @media (prefers-reduced-motion: reduce){
   body.has-starfield .star-container .star{ animation: none; opacity: 0.6; }
+}
+/* Hide ambient layer so ONLY the outline sparkles show */
+body.has-starfield .star-container{ display:none !important; }
+
+/* Edge-outline layer */
+.shape-edge-sparkles{
+  position:absolute; inset:0; pointer-events:none; z-index:1;
+}
+
+/* Reuse your star styling for edge stars */
+body.has-starfield .shape-edge-sparkles .star{
+  position:absolute; left:var(--x,50%); top:var(--y,50%);
+  width:var(--size,1rem); height:var(--size,1rem);
+  transform:translate(-50%,-50%) scale(var(--scale,1));
+  opacity:var(--o,.85); color:var(--star-color); background:currentColor;
+  -webkit-mask: var(--star-url) center/contain no-repeat;
+          mask: var(--star-url) center/contain no-repeat;
+  filter: drop-shadow(0 0 var(--blur,0) currentColor);
+  will-change: opacity, transform;
+  animation: twinkle var(--twinkle,4s) ease-in-out var(--tw-delay,0s) infinite alternate !important;
 }

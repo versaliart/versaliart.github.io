@@ -1,307 +1,136 @@
-/* -----------------------------------------------------------
-   Starfield v1.0 (overlay removed) — Live + Editor safe
-   - Per-section build (targets the section that contains #starfield-enable)
-   - If no marker exists, inserts one into the first section
-   - Edge-biased placement, no drift, opacity twinkle
-   - Sizes quantized S/M/L via phi
------------------------------------------------------------ */
+/* ===== Edge-only sparkles driven by --star-count ===== */
+(function(){
+  // List your Shape Block(s) by exact ID (Squarespace 7.1)
+  const TARGETS = [
+    // Example: replace with your real block ID
+    // { sel:'#block-yui_3_17_2_1_1756422477850_41937', randomize:0.30, jitterRem:0.30 }
+  ];
+  if(!TARGETS.length) return;
 
-console.log("[Starfield] external JS executing (overlay-free, patched)");
+  // ---------- utils ----------
+  function onReady(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn,{once:true}); }
+  const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize)||16;
+  const lerp=(a,b,t)=>a+(b-a)*t, clamp01=v=>Math.max(0,Math.min(1,v));
+  const rand=(a,b)=>a+Math.random()*(b-a);
 
-(function () {
-  // ---- helpers for readiness / selection
-  function onReady(fn) {
-    if (document.readyState === "complete" || document.readyState === "interactive") {
-      setTimeout(fn, 0);
-    } else {
-      document.addEventListener("DOMContentLoaded", fn, { once: true });
-    }
+  function cssNum(el, name, fallback){
+    const v=getComputedStyle(el).getPropertyValue(name).trim();
+    const n=parseFloat(v); return Number.isFinite(n)?n:fallback;
   }
 
-  function whenSelector(sel, cb) {
-    const el = document.querySelector(sel);
-    if (el) return cb(el);
-    const mo = new MutationObserver(() => {
-      const found = document.querySelector(sel);
-      if (found) { mo.disconnect(); cb(found); }
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
+  function svgToClient(svg,x,y){
+    const pt=svg.createSVGPoint(); pt.x=x; pt.y=y;
+    const o=pt.matrixTransform(svg.getScreenCTM()); return {x:o.x,y:o.y};
   }
 
-  function findOrCreateTargetSection() {
-    // Prefer an existing marker living inside a section
-    let marker = document.getElementById("starfield-enable");
-    let section = marker?.closest?.("section.page-section, section.sqs-section") || null;
+  // Make/refresh stars for one Shape Block
+  function buildFor(target){
+    const host=document.querySelector(target.sel);
+    if(!host) return;
 
-    // If no good section-marker pair, choose the first visible Squarespace section and inject a hidden marker there
-    if (!section) {
-      section = document.querySelector("section.page-section, section.sqs-section");
-      if (!section) return null; // nothing to do yet
-      marker = document.createElement("div");
-      marker.id = "starfield-enable";
-      marker.hidden = true;
-      marker.style.display = "none";
-      const content = section.querySelector(":scope > .content-wrapper");
-      if (content) section.insertBefore(marker, content);
-      else section.prepend(marker);
-      console.info("[Starfield] injected #starfield-enable into first section");
-    }
+    if(getComputedStyle(host).position==='static') host.style.position='relative';
+    const svg=host.querySelector('svg'); if(!svg) return;
 
-    return { marker, section };
-  }
-
-  onReady(function () {
-    // Optional: restrict to specific paths
-    // const ENABLE_ON_PATHS = ["/", "/work"];
-    // if (!ENABLE_ON_PATHS.some(p => location.pathname.startsWith(p))) return;
-
-    // Wait until Squarespace has laid out at least one major wrapper/section
-    whenSelector("section.page-section, section.sqs-section, .content-wrapper, main", function () {
-      const ctx = findOrCreateTargetSection();
-      if (!ctx) { console.info("[Starfield] No section found yet; aborting"); return; }
-      const targetSection = ctx.section;
-
-      document.body.classList.add("has-starfield"); // global toggle some CSS uses
-
-      console.log("[Starfield] init start");
-
-      /* =========================================================
-         Starfield core (overlay removed)
-      ==========================================================*/
-
-      // ---------- helpers ----------
-      const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
-
-      function getCssLenPx(name, fallbackPx){
-        const root = document.documentElement;
-        const remPx = parseFloat(getComputedStyle(root).fontSize) || 16;
-        const raw = getComputedStyle(document.body).getPropertyValue(name).trim();
-        if (!raw) return fallbackPx;
-        const n = parseFloat(raw);
-        if (!Number.isFinite(n)) return fallbackPx;
-        if (raw.endsWith('rem')) return n * remPx;
-        return n; // px by default (also fine for unitless)
-      }
-
-      function getCssNum(name, fallback) {
-        const from = (el) => {
-          const v = getComputedStyle(el).getPropertyValue(name).trim();
-          const n = parseFloat(v);
-          return Number.isFinite(n) ? n : null;
-        };
-        return from(document.body) ?? from(document.documentElement) ?? fallback;
-      }
-
-      function getCssRem(name, fallbackRem) {
-        const root = document.documentElement;
-        const remPx = parseFloat(getComputedStyle(root).fontSize) || 16;
-        const raw = getComputedStyle(document.body).getPropertyValue(name).trim();
-        if (!raw) return fallbackRem;
-        const n = parseFloat(raw);
-        if (!Number.isFinite(n)) return fallbackRem;
-        return raw.endsWith('px') ? (n / remPx) : n; // convert px→rem if needed
-      }
-
-      // U-shaped sampler (kept for future tweaks)
-      function uShape(power = 0.6) {
-        const p = clamp(power, 0.05, 3);
-        const u = Math.random();                   // [0,1]
-        const v = u < 0.5 ? 2 * u : 2 * (1 - u);   // fold at center
-        const w = Math.pow(v, p);                  // bias
-        return u < 0.5 ? 0.5 - 0.5 * w : 0.5 + 0.5 * w;
-      }
-
-      // ---------- read CSS variables each build ----------
-      function readVars() {
-        return {
-          totalCount: Math.max(0, Math.round(getCssNum('--star-count', 40))),
-          durMin:     getCssNum('--twinkle-min', 2.5),
-          durMax:     getCssNum('--twinkle-max', 6.5),
-          opMin:      getCssNum('--opacity-min', 0.35),
-          opMax:      getCssNum('--opacity-max', 0.95),
-          blurMax:    getCssNum('--max-blur', 0.12),
-          phi:        getCssNum('--phi', 1.618),
-          sizeLrem:   getCssRem('--size-large', 1.5),
-          gapPx:      getCssLenPx('--star-min-gap', 0),
-          /* radial bias strength (k). 1 = uniform disk; higher = more edge-weighted */
-          radialK:    getCssNum('--radial-bias-k', 2.5)
-        };
-      }
-
-      // ---------- star factory (no drift; sizes S/M/L from CSS) ----------
-      function createStar(vars) {
-        const { durMin, durMax, opMin, opMax, blurMax, phi, sizeLrem } = vars;
-
-        const el = document.createElement('span');
-        el.className = 'star';
-
-        const sizeMrem = sizeLrem / (phi || 1.618);
-        const sizeSrem = sizeMrem / (phi || 1.618);
-
-        // Pick exactly one of S / M / L (equal weights; adjust as desired)
-        const r = Math.random();
-        const sizeRem = r < 1/3 ? sizeSrem : (r < 2/3 ? sizeMrem : sizeLrem);
-
-        const scale   = 1; // preserve quantized sizes
-        const opacity = Math.random() * (opMax - opMin) + opMin;
-
-        // Twinkle timing (opacity only), start mid-cycle (negative delay)
-        const twinkleDur   = Math.random() * (durMax - durMin) + durMin;
-        const twinkleDelay = -Math.random() * twinkleDur;
-
-        // Subtle glow
-        const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-        const blur = Math.random() * blurMax * remPx;
-
-        // Cache for safe placement
-        const sizePx = sizeRem * remPx;
-        el.dataset.sizePx = sizePx.toFixed(2);
-        el.dataset.dx = '0';
-        el.dataset.dy = '0';
-
-        // Per-star CSS vars
-        el.style.setProperty('--size', `${sizeRem}rem`);
-        el.style.setProperty('--scale', scale.toFixed(3));
-        el.style.setProperty('--o', opacity.toFixed(2));
-        el.style.setProperty('--twinkle', `${twinkleDur.toFixed(2)}s`);
-        el.style.setProperty('--tw-delay', `${twinkleDelay.toFixed(2)}s`);
-        el.style.setProperty('--dx', `0px`);
-        el.style.setProperty('--dy', `0px`);
-        el.style.setProperty('--blur', `${blur.toFixed(2)}px`);
-
-        return el;
-      }
-
-      // ---------- ensureContainer: stars in THIS section (no overlay) ----------
-      function ensureContainer(section) {
-        let container = section.querySelector(':scope > .star-container');
-        if (!container) {
-          container = document.createElement('div');
-          container.className = 'star-container';
-          const content = section.querySelector(':scope > .content-wrapper');
-          if (content) section.insertBefore(container, content);
-          else section.appendChild(container);
+    // Try to find a <path>, else approximate from circle/ellipse/polygon
+    let path=svg.querySelector('path');
+    if(!path){
+      const circ=svg.querySelector('circle,ellipse');
+      if(circ){
+        const cx=+circ.getAttribute('cx')||0, cy=+circ.getAttribute('cy')||0;
+        const rx=+(circ.getAttribute('rx')||circ.getAttribute('r')||0);
+        const ry=+(circ.getAttribute('ry')||circ.getAttribute('r')||0);
+        const d=`M ${cx-rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx+rx} ${cy} A ${rx} ${ry} 0 1 0 ${cx-rx} ${cy} Z`;
+        path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d',d); svg.appendChild(path);
+      }else{
+        const poly=svg.querySelector('polygon,polyline');
+        if(poly){
+          const pts=(poly.getAttribute('points')||'').trim().replace(/\s+/g,' ').trim();
+          const d='M '+pts.replace(/ /g,' L ')+(poly.tagName==='polygon'?' Z':'');
+          path=document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d',d); svg.appendChild(path);
         }
-        return container;
       }
+    }
+    if(!path) return;
 
-      // sample r in [0..1] with pdf ∝ r^k (k=1 uniform disk; higher = more edge bias)
-      function sampleRadius(k){
-        const kk = Math.max(0, k || 1);
-        const u  = Math.random();
-        return Math.pow(u, 1 / (kk + 1));
-      }
+    // Layer to hold edge stars
+    let layer=host.querySelector(':scope > .shape-edge-sparkles');
+    if(!layer){ layer=document.createElement('div'); layer.className='shape-edge-sparkles'; host.appendChild(layer); }
+    layer.innerHTML='';
 
-      function positionStarsInSection(section, container, vars) {
-        const vw = section.clientWidth  || 0;
-        const vh = section.clientHeight || 0;
-        if (!vw || !vh) return;
+    // Shared vars (inherit from your Starfield CSS)
+    const body=document.body, root=document.documentElement;
+    const count   = Math.max(0, Math.round(cssNum(body,'--star-count',40)));  // <-- uses CSS var
+    const durMin  = cssNum(body,'--twinkle-min',0.5);
+    const durMax  = cssNum(body,'--twinkle-max',2.0);
+    const opMin   = cssNum(body,'--opacity-min',0.15);
+    const opMax   = cssNum(body,'--opacity-max',1.0);
+    const blurMax = cssNum(body,'--max-blur',0.12);
+    const phi     = cssNum(body,'--phi',1.618);
+    const sizeL   = cssNum(root,'--size-large',1.5);
+    const sizeM   = sizeL / (phi||1.618);
+    const sizeS   = sizeM / (phi||1.618);
 
-        // Pre-extract star nodes and their radii
-        const stars = Array.from(container.querySelectorAll('.star')).map(el => ({
-          el,
-          r: (parseFloat(el.dataset.sizePx) || 0) / 2 // radius in px
-        }));
+    const randomize = clamp01(target.randomize ?? 0.35);
+    const jitterPx  = (target.jitterRem ?? 0.30) * rem();
 
-        // Safe margins so the full shape remains inside
-        const maxR = stars.reduce((m, s) => Math.max(m, s.r), 0);
-        let marginX = vw ? ((maxR) / vw * 100) : 2;
-        let marginY = vh ? ((maxR) / vh * 100) : 2;
-        marginX = Math.min(45, Math.max(0, marginX));
-        marginY = Math.min(45, Math.max(0, marginY));
+    const total = path.getTotalLength(); if(!total) return;
+    const layerRect = layer.getBoundingClientRect();
 
-        const minX = marginX / 100, maxX = 1 - marginX / 100;
-        const minY = marginY / 100, maxY = 1 - marginY / 100;
+    for(let i=0;i<count;i++){
+      // Choose arc length: blend even spacing with random
+      const evenD=(i+0.5)*(total/count), randD=Math.random()*total;
+      const d=(lerp(evenD,randD,randomize))%total;
 
-        const cx = (minX + maxX) / 2;
-        const cy = (minY + maxY) / 2;
-        const ax = (maxX - minX) / 2; // ellipse axes for radial bias
-        const ay = (maxY - minY) / 2;
+      const p=path.getPointAtLength(d), p2=path.getPointAtLength((d+0.5)%total);
+      // normal
+      let nx=-(p2.y-p.y), ny=(p2.x-p.x); const nlen=Math.hypot(nx,ny)||1; nx/=nlen; ny/=nlen;
+      const j=(Math.random()<0.5?-1:1)*rand(0,jitterPx);
+      const scr=svgToClient(svg, p.x+nx*j, p.y+ny*j);
+      const left=scr.x-layerRect.left, top=scr.y-layerRect.top;
 
-        const placed = []; // {xPx,yPx,r}
+      // Star element with your quantized sizes + timings
+      const r=Math.random();
+      const sizeRem = r<1/3 ? sizeS : (r<2/3 ? sizeM : sizeL);
+      const opacity = rand(opMin, opMax);
+      const twDur   = rand(durMin, durMax);
+      const twDelay = -Math.random()*twDur;
+      const blurPx  = rand(0, blurMax*rem());
 
-        stars.forEach((s) => {
-          const attemptsMax = 30;
-          let xPx=0, yPx=0, ok=false;
+      const star=document.createElement('span');
+      star.className='star';
+      star.style.left=left+'px'; star.style.top=top+'px';
+      star.style.setProperty('--size', sizeRem+'rem');
+      star.style.setProperty('--o', opacity.toFixed(2));
+      star.style.setProperty('--twinkle', twDur.toFixed(2)+'s');
+      star.style.setProperty('--tw-delay', twDelay.toFixed(2)+'s');
+      star.style.setProperty('--blur', blurPx.toFixed(2)+'px');
+      layer.appendChild(star);
+    }
 
-          for (let attempt=0; attempt<attemptsMax && !ok; attempt++){
-            const theta = Math.random() * Math.PI * 2;
-            const rN    = sampleRadius(vars.radialK);
+    // Rebuild on resizes/layout shifts
+    observeResize(host,  () => buildFor(target));
+    observeResize(svg,   () => buildFor(target));
+    observeResize(layer, () => buildFor(target));
+  }
 
-            // Candidate in normalized [0..1]
-            let xN = cx + ax * rN * Math.cos(theta);
-            let yN = cy + ay * rN * Math.sin(theta);
+  // Debounced ResizeObserver
+  const ro=new ResizeObserver(entries=>{
+    for(const e of entries){
+      const cb=e.target.__edgeCb; if(!cb) continue;
+      clearTimeout(e.target.__edgeTo); e.target.__edgeTo=setTimeout(cb,60);
+    }
+  });
+  function observeResize(el, cb){ el.__edgeCb=cb; ro.observe(el); }
 
-            // Clamp to box
-            xN = Math.min(maxX, Math.max(minX, xN));
-            yN = Math.min(maxY, Math.max(minY, yN));
+  // Keep in sync with editor DOM changes + var tweaks (your sentinel still works)
+  const mo=new MutationObserver(()=>{ clearTimeout(window.__edgeOnlyT); window.__edgeOnlyT=setTimeout(initAll,120); });
+  function initAll(){ TARGETS.forEach(buildFor); }
 
-            xPx = xN * vw;
-            yPx = yN * vh;
-
-            // Check distance to previous stars (radius + radius + gap)
-            ok = true;
-            for (let i=0;i<placed.length;i++){
-              const p = placed[i];
-              const dx = xPx - p.xPx;
-              const dy = yPx - p.yPx;
-              const minD = p.r + s.r + (vars.gapPx || 0);
-              if ((dx*dx + dy*dy) < (minD*minD)) { ok = false; break; }
-            }
-          }
-
-          // Accept last candidate even if not ok to avoid infinite loops
-          placed.push({ xPx, yPx, r: s.r });
-
-          // Apply as percentages back to CSS vars
-          s.el.style.setProperty('--x', `${(xPx / vw * 100).toFixed(4)}%`);
-          s.el.style.setProperty('--y', `${(yPx / vh * 100).toFixed(4)}%`);
-        });
-      }
-
-      // ---------- build ----------
-      function buildAll() {
-        const vars = readVars();
-
-        // Clear old stars ONLY in this section
-        targetSection.querySelectorAll(':scope > .star-container').forEach(n => n.remove());
-
-        if (vars.totalCount === 0 || targetSection.classList.contains('stars-off')) {
-          document.body.setAttribute('data-stars', '0');
-          return;
-        }
-
-        const container = ensureContainer(targetSection);
-        container.innerHTML = '';
-        const frag = document.createDocumentFragment();
-        for (let i = 0; i < vars.totalCount; i++) frag.appendChild(createStar(vars));
-        container.appendChild(frag);
-        positionStarsInSection(targetSection, container, vars);
-
-        document.body.setAttribute('data-stars', String(vars.totalCount));
-      }
-
-      // Initial build after one paint so CSS is applied
-      requestAnimationFrame(buildAll);
-
-      // Rebuild when --star-count changes (even with CSS panel open)
-      (function () {
-        if (document.querySelector('.star-var-sentinel')) return;
-        const s = document.createElement('div');
-        s.className = 'star-var-sentinel';
-        s.setAttribute('aria-hidden', 'true');
-        s.style.cssText =
-          'position:absolute;left:-9999px;top:-9999px;height:0;overflow:hidden;pointer-events:none;opacity:0;width:calc(var(--star-count) * 1px);';
-        document.body.appendChild(s);
-        new ResizeObserver(buildAll).observe(s);
-      })();
-
-      // Rebuild on resize / load
-      let t;
-      window.addEventListener('resize', () => { clearTimeout(t); t = setTimeout(buildAll, 150); });
-      window.addEventListener('load',   () => setTimeout(buildAll, 50));
-
-      console.log("[Starfield] init complete");
-    });
+  onReady(()=>{
+    document.body.classList.add('has-starfield');
+    initAll();
+    mo.observe(document.body,{subtree:true,childList:true});
+    window.addEventListener('resize',()=>initAll(),{passive:true});
+    window.addEventListener('load',()=>initAll());
   });
 })();
