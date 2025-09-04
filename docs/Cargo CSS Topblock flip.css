@@ -1,19 +1,23 @@
-/* ===== Topblock Split-Flip (Doors) v2.461 — FULL CSS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.463 — FULL CSS ===== */
 
 :root{
   --flip-duration: 520ms;
-  --flip-ease-out: cubic-bezier(.2,.7,.2,1);
-  --flip-ease-in:  cubic-bezier(.2,.7,.2,1);
+  --flip-ease-in:  cubic-bezier(.12,.6,.1,1); /* opening: slower/smoother */
+  --flip-ease-out: cubic-bezier(.2,.7,.2,1);  /* closing: snappier */
   --flip-perspective: 1000px;
 
   /* tiny physical overlap so there's never "daylight" between halves */
-  --flip-seam: 1px;   /* adjust to 0.75px–1.5px if you ever see a sliver on some zooms */
+  --flip-seam: 1px;     /* 0.75px–1.5px if you ever see a center sliver */
+
+  /* optional: bleed to hide edge hairlines while rotating */
+  --edge-bleed: 1px;    /* 0.75px–1.5px if needed */
 }
 
 /* Opt-in marker added by JS: .flip-top */
 .sqs-block.image-block.flip-top .fluid-image-container{
   perspective: var(--flip-perspective);
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   position: relative;
 }
 
@@ -29,11 +33,12 @@
   border-radius: inherit;   /* match rounded corners/masks */
   overflow: hidden;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   pointer-events: none;     /* clicks pass through to the underlying link */
   contain: layout paint;
 }
 
-/* Each door (physically wider than 50% so halves overlap by 2*--flip-seam) */
+/* Each door (physically wider than 50% so halves overlap) */
 .sqs-block.image-block.flip-top .flip-door{
   position: absolute;
   top: 0; bottom: 0;
@@ -55,9 +60,16 @@
   transform: translateZ(0.1px) rotateY(0deg);
 }
 
-/* Faces (JS paints size/position exactly; sub-pixel allowed) */
+/* Faces — JS paints exact background-size/position (sub-pixel allowed) */
 .sqs-block.image-block.flip-top .face{
-  position: absolute; inset: 0;
+  position: absolute;
+  inset: 0;
+
+  /* Edge bleed: extend the paint slightly beyond container; still clipped
+     by .flip-doors overflow + radius. (If you use this, make sure your JS
+     compensates backgroundPosition by +bleed on X/Y as discussed.) */
+  inset: calc(-1 * var(--edge-bleed));
+
   background-repeat: no-repeat;
   background-color: transparent;
   backface-visibility: hidden;
@@ -74,29 +86,24 @@
 .sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
 .sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-/* Hover opens outward */
-.sqs-block.image-block.flip-top:hover .flip-door{
-  transition-timing-function: var(--flip-ease-out);
-}
-.sqs-block.image-block.flip-top:not(:hover) .flip-door{
-  transition-timing-function: var(--flip-ease-in);
+/* Hover behavior (open/close timing + the actual flip) */
+.sqs-block.image-block.flip-top .flip-door{
+  transition-duration: var(--flip-duration);
 }
 
-.sqs-block.image-block.flip-top:hover .flip-door    { transition-timing-function: var(--flip-ease-in); }
-.sqs-block.image-block.flip-top:not(:hover) .flip-door { transition-timing-function: var(--flip-ease-out); }
+/* opening (hover) eases in */
+.sqs-block.image-block.flip-top:hover .flip-door{
+  transition-timing-function: var(--flip-ease-in);
+}
+/* closing (not hover) eases out */
+.sqs-block.image-block.flip-top:not(:hover) .flip-door{
+  transition-timing-function: var(--flip-ease-out);
+}
+
+/* Rotate the halves on hover */
+.sqs-block.image-block.flip-top:hover .flip-door.left  { transform: rotateY(-180deg); }
+.sqs-block.image-block.flip-top:hover .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
 
 /* Ensure the block itself can receive hover while clicks still pass through */
 .sqs-block.image-block.flip-top{ pointer-events: auto; }
 .sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
-
-/* Edge bleed to kill hairlines along the outer perimeter while rotating */
-:root{ --edge-bleed: 1px; } /* try 0.75px–1.5px if needed */
-
-/* Let each painted face extend slightly beyond the container, but still clipped
-   by .flip-doors' overflow:hidden & border-radius */
-.sqs-block.image-block.flip-top .face{
-  top:    calc(-1 * var(--edge-bleed));
-  right:  calc(-1 * var(--edge-bleed));
-  bottom: calc(-1 * var(--edge-bleed));
-  left:   calc(-1 * var(--edge-bleed));
-}
