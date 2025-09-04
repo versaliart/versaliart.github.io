@@ -1,16 +1,16 @@
-/* ===== Topblock Split-Flip (Doors) v2.463 — FULL CSS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.464 — FULL CSS ===== */
 
 :root{
-  --flip-duration: 520ms;
-  --flip-ease-in:  cubic-bezier(.12,.6,.1,1); /* opening: slower/smoother */
-  --flip-ease-out: cubic-bezier(.2,.7,.2,1);  /* closing: snappier */
+  /* Timing */
+  --flip-open-duration: 900ms;                 /* slower first flip */
+  --flip-close-duration: 480ms;                /* snappier return */
+  --flip-open-ease: cubic-bezier(.55,.055,.675,.19); /* strong ease-in (slow start) */
+  --flip-close-ease: cubic-bezier(.2,.7,.2,1);       /* brisk ease-out */
+
+  /* 3D + geometry */
   --flip-perspective: 1000px;
-
-  /* tiny physical overlap so there's never "daylight" between halves */
-  --flip-seam: 1px;     /* 0.75px–1.5px if you ever see a center sliver */
-
-  /* optional: bleed to hide edge hairlines while rotating */
-  --edge-bleed: 1px;    /* 0.75px–1.5px if needed */
+  --flip-seam: 1px;        /* physical overlap to kill center split (0.75–1.5px) */
+  --edge-bleed: 1px;       /* extend paint a hair to hide edge hairlines */
 }
 
 /* Opt-in marker added by JS: .flip-top */
@@ -49,7 +49,9 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transition-property: transform;
-  transition-duration: var(--flip-duration);
+  /* default to CLOSE timing; overridden on :hover below */
+  transition-duration: var(--flip-close-duration);
+  transition-timing-function: var(--flip-close-ease);
 }
 
 .sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
@@ -63,13 +65,8 @@
 /* Faces — JS paints exact background-size/position (sub-pixel allowed) */
 .sqs-block.image-block.flip-top .face{
   position: absolute;
-  inset: 0;
-
-  /* Edge bleed: extend the paint slightly beyond container; still clipped
-     by .flip-doors overflow + radius. (If you use this, make sure your JS
-     compensates backgroundPosition by +bleed on X/Y as discussed.) */
+  /* Edge bleed: extend paint slightly; still clipped by overflow+radius */
   inset: calc(-1 * var(--edge-bleed));
-
   background-repeat: no-repeat;
   background-color: transparent;
   backface-visibility: hidden;
@@ -86,18 +83,10 @@
 .sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
 .sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-/* Hover behavior (open/close timing + the actual flip) */
-.sqs-block.image-block.flip-top .flip-door{
-  transition-duration: var(--flip-duration);
-}
-
-/* opening (hover) eases in */
+/* OPEN (hover): slower duration + slow-start easing */
 .sqs-block.image-block.flip-top:hover .flip-door{
-  transition-timing-function: var(--flip-ease-in);
-}
-/* closing (not hover) eases out */
-.sqs-block.image-block.flip-top:not(:hover) .flip-door{
-  transition-timing-function: var(--flip-ease-out);
+  transition-duration: var(--flip-open-duration);
+  transition-timing-function: var(--flip-open-ease);
 }
 
 /* Rotate the halves on hover */
