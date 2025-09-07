@@ -128,7 +128,7 @@ header#header .header-nav-list > .header-nav-item > a{
   line-height: 1;
   text-decoration: none;
   color: #fff;
-  background: rgba(255,255,255,.10);
+  background: rgba(255,155,255,.50);
   border: 1px solid rgba(255,255,255,.35);
   transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
   margin: 0 !important;
