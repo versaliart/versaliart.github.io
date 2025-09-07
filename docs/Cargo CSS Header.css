@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (binds to your exact DOM)               */
 /*----------------------------------------------------------------------*/
-/*  v1.1 ... last update broke the header with vertical stack */
+/*  v1.1 ... edge gaps */
 /* Fluid tokens */
 :root{
   --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
@@ -10,7 +10,8 @@
   --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
   --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem); /* pill width floor */
 
-  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);
+  --mm-edge-fudge: 0rem;                /* try .0625rem (1px-ish) if needed */
+  --mm-edge-pad: calc(var(--mm-btn-pad-y) + var(--mm-edge-fudge));
   --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
 
