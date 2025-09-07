@@ -180,29 +180,26 @@ header#header{ transition: transform .36s cubic-bezier(.2,.7,.2,1), top .36s cub
 .header-menu{ z-index: 2000; }       /* Sqsp overlay already handles this */
 header#header{ z-index: 1200; }
 
-/* Ensure page content starts beneath the centered bar on load.
-   If you already have top padding on the first section, you can remove this. */
-body:not(.sqs-edit-mode) #page{
-  padding-top: calc(50vh + var(--mm-header-h));
+/* Remove reserved padding on homepage only */
+body.sqs-homepage #page{
+  padding-top: 0 !important;
+}
+
+/* Keep reserved padding elsewhere (uncomment if you removed the global rule) */
+body:not(.sqs-edit-mode):not(.sqs-homepage) #page{
+  padding-top: calc(var(--mm-header-h, 3.25rem) + var(--mm-sticky-top, 12px));
 }
 
 
-/* --- Visibility states (default hidden, reveal when JS adds .mm-visible) --- */
+/* Visibility control: header always parked at top; home reveals after section 2 */
 header#header[data-test="header"]{
-  /* Place it where it will live (stuck) but start hidden */
-  top: var(--mm-sticky-top);
-  transform: translate(-50%, -8px);   /* slight lift pre-reveal */
   opacity: 0;
   pointer-events: none;
-}
-
-header#header[data-test="header"].mm-visible{
-  opacity: 1;
-  transform: translate(-50%, 0);
-  pointer-events: auto;
   transition:
     opacity .28s ease,
     transform .36s cubic-bezier(.2,.7,.2,1);
 }
-
-/* Keep your existing .mm-stuck rule if present; it's harmless with this model */
+header#header[data-test="header"].mm-visible{
+  opacity: 1;
+  pointer-events: auto;
+}
