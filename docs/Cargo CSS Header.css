@@ -20,8 +20,8 @@
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
 
   --mm-start-shift: 0px;       /* initial downward visual offset */
-  --mm-sticky-top: 0px;        /* final stick position from top */
-  --mm-shadow: 0 6px 24px rgba(0,0,0,.98);
+  --mm-sticky-top: 12px;        /* final stick position from top */
+  --mm-shadow: 0 6px 24px rgba(30,0,32,.5);
 }
 
 /* ------------------------------------------------------------
