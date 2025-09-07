@@ -6,7 +6,7 @@
 /* Fluid tokens you actually use */
 :root{
   --mm-header-h:  clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
-  --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
+  --mm-gap-fixed: clamp(8rem, 6rem + 6vw, 16rem);   /* center gap */
   --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
 
   --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);
