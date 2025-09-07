@@ -16,7 +16,7 @@ body.has-starfield{
   --jitter-max: 2.00rem;
 
   /* distribution balance: 0 = even, 1 = random */
-  --star-randomize: 0.10;
+  --star-randomize: 0;
 
   /* Twinkle timing (seconds) */
   --twinkle-min: 0.5;
