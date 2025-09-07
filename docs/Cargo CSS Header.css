@@ -251,3 +251,55 @@ header#header[data-test="header"] .header-nav-list{
 header#header[data-test="header"] .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
 header#header[data-test="header"] .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; display:flex; align-items:center; height:100%; }
 header#header[data-test="header"] .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   display:flex; align-items:center; height:100%; }
+
+/* === Force the nav to fill the glass bar and own the layout === */
+header#header[data-test="header"] .header-title-nav-wrapper,
+header#header[data-test="header"] .header-nav,
+header#header[data-test="header"] .header-nav-wrapper{
+  position: static !important;     /* don't create a containing block */
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+/* Make the nav list the positioned element that fills the bar.
+   This sidesteps any Squarespace "container" gutters entirely. */
+header#header[data-test="header"] .header-nav-list{
+  position: absolute !important;
+  top: 0; 
+  bottom: 0;
+  left: var(--mm-edge-pad);
+  right: var(--mm-edge-pad);
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+  height: auto !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;  /* left | gap | right */
+  align-items: center;          /* perfect vertical centering */
+  justify-items: stretch;
+  box-sizing: border-box !important;
+}
+
+/* Keep only first & last items and pin them to the grid edges */
+header#header[data-test="header"] .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
+  display: none !important;
+}
+header#header[data-test="header"] .header-nav-list > .header-nav-item:first-child{ 
+  grid-column: 1; 
+  justify-self: start; 
+  display:flex; align-items:center; height:100%;
+}
+header#header[data-test="header"] .header-nav-list > .header-nav-item:last-child{  
+  grid-column: 3; 
+  justify-self: end;   
+  display:flex; align-items:center; height:100%;
+}
+
+/* Ensure the links don't reintroduce offsets */
+header#header[data-test="header"] .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+}
