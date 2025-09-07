@@ -1,9 +1,48 @@
-/*  v2.0 */
+/*  v2.4 */
 
 /* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
   function isHome(){ return normalizePath(location.pathname) === '/'; }
+
+  // Measure the vertical gap and mirror it to the horizontal edge pad
+  function syncEdgePad(){
+    const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
+    if (!leftLink) return;
+
+    const hr = hdr.getBoundingClientRect();
+    const ar = leftLink.getBoundingClientRect();
+
+    // vertical "air" between pill and bar
+    const vGap = Math.max(0, Math.round((hr.height - ar.height) / 2));
+
+    // optional tiny optical nudge via CSS var --mm-edge-fudge (defaults to 0)
+    const fudgeStr = getComputedStyle(document.documentElement)
+                      .getPropertyValue('--mm-edge-fudge').trim();
+    const fudge = parseFloat(fudgeStr) || 0;
+
+    // make L/R inset match the vertical air (+ optional fudge)
+    document.documentElement.style.setProperty('--mm-edge-pad', (vGap + fudge) + 'px');
+  }
+  // init
+  applyPagePadding();
+  computeThreshold();
+  syncEdgePad();        // ← add this
+  update();
+
+  // listeners
+  window.addEventListener('scroll', update, {passive:true});
+  window.addEventListener('resize', function(){
+    applyPagePadding(); computeThreshold(); syncEdgePad(); update();   // ← add
+  });
+
+  // re-measure once for late DOM shifts (lazy sections/announcement bar)
+  var t=null, mo=new MutationObserver(function(){
+    clearTimeout(t);
+    t = setTimeout(function(){
+      applyPagePadding(); computeThreshold(); syncEdgePad(); update(); // ← add
+    }, 100);
+  });
 
   function onceHeader(cb){
     var hdr = document.querySelector('header#header[data-test="header"]');
