@@ -28,7 +28,7 @@
 
   /* Make L/R inset equal the vertical “air” inside the bar */
   --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2));
-  --mm-edge-fudge: 4px;   /* try 8–14px; tweak to taste */
+  --mm-uniform-gap: 12px;  /* try 10–16px to taste */
 }
 
 /* Glass bar: fixed, already parked; visibility toggled by JS */

@@ -1,4 +1,5 @@
-/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) v2.5 */
+/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) 
+v2.6 */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
   function isHome(){ return normalizePath(location.pathname) === '/'; }
@@ -85,38 +86,45 @@
         }
       }
 
-      // Make left/right inset equal the vertical “air” inside the bar
-      function syncEdgePad(){
-        const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
-        if (!leftLink) return;
-        const hr = hdr.getBoundingClientRect();
-        const ar = leftLink.getBoundingClientRect();
-        const vGap = Math.max(0, Math.round((hr.height - ar.height) / 2));
-        const fudge = parseFloat(getComputedStyle(document.documentElement)
-                        .getPropertyValue('--mm-edge-fudge')) || 0;
-        document.documentElement.style.setProperty('--mm-edge-pad', (vGap + fudge) + 'px');
-      }
+// Make left/right AND top/bottom gap equal to --mm-uniform-gap
+function syncUniformGap(){
+  const g = parseFloat(
+    getComputedStyle(document.documentElement)
+      .getPropertyValue('--mm-uniform-gap')
+  );
+  if (!Number.isFinite(g)) return;
+
+  const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
+  if (!leftLink) return;
+
+  const ar = leftLink.getBoundingClientRect();   // pill height
+  // 1) set side gap
+  document.documentElement.style.setProperty('--mm-edge-pad', g + 'px');
+  // 2) set header height so vertical air = g
+  hdr.style.setProperty('--mm-header-h', (Math.round(ar.height) + 2 * g) + 'px');
+}
+
 
       // Init
       applyPagePadding();
       computeThreshold();
-      syncEdgePad();
+      syncUniformGap();
       update();
 
       // Listeners
       window.addEventListener('scroll', update, {passive:true});
-      window.addEventListener('resize', () => { applyPagePadding(); computeThreshold(); syncEdgePad(); update(); });
+      window.addEventListener('resize', () => { applyPagePadding(); computeThreshold(); syncUniformGap(); update(); });
 
       // Re-sync when fonts load (sizes change)
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(syncEdgePad).catch(()=>{});
+        document.fonts.ready.then(syncUniformGap).catch(()=>{});
       }
 
       // Re-measure once for late DOM shifts (lazy sections, announcement bar)
       let t = null;
       const mo = new MutationObserver(() => {
         clearTimeout(t);
-        t = setTimeout(() => { applyPagePadding(); computeThreshold(); syncEdgePad(); update(); }, 100);
+        t = setTimeout(() => { applyPagePadding(); computeThreshold(); syncUniformGap(); update(); }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);
