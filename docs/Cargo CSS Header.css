@@ -140,3 +140,37 @@ header#header .header-nav-list > .header-nav-item > a:focus-visible{
 
 /* Keep overlay menu above */
 .header-menu{ z-index: 2000; }
+
+/* ——— minimal fix: make pills anchor to the glass bar, not inner wrappers ——— */
+
+/* ensure the bar is the positioned ancestor */
+header#header[data-test="header"]{
+  position: fixed !important;           /* already fixed, but be explicit */
+}
+
+/* kill the positioning context that steals the anchors */
+header#header .header-nav-item{
+  position: static !important;          /* was relative in Squarespace theme */
+  transform: none !important;
+}
+
+/* belt-and-suspenders: none of these wrappers should become positioned */
+header#header .header-title-nav-wrapper,
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list{
+  position: static !important;
+  transform: none !important;
+}
+
+/* your anchors: absolute to the BAR edges, vertically centered without translate */
+header#header .header-nav-list > .header-nav-item:first-child > a{
+  position: absolute !important;
+  left: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0; margin-block: auto;
+}
+header#header .header-nav-list > .header-nav-item:last-child > a{
+  position: absolute !important;
+  right: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0; margin-block: auto;
+}
