@@ -1,13 +1,33 @@
-/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) 
-v2.7 */
+/*  v2.4 */
+
+/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
   function isHome(){ return normalizePath(location.pathname) === '/'; }
+  // Measure the vertical gap and mirror it to the horizontal edge pad
+  function syncEdgePad(){
+    const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
+    if (!leftLink) return;
+
+    const hr = hdr.getBoundingClientRect();
+    const ar = leftLink.getBoundingClientRect();
+
+    // vertical "air" between pill and bar
+    const vGap = Math.max(0, Math.round((hr.height - ar.height) / 2));
+
+    // optional tiny optical nudge via CSS var --mm-edge-fudge (defaults to 0)
+    const fudgeStr = getComputedStyle(document.documentElement)
+                      .getPropertyValue('--mm-edge-fudge').trim();
+    const fudge = parseFloat(fudgeStr) || 0;
+
+    // make L/R inset match the vertical air (+ optional fudge)
+    document.documentElement.style.setProperty('--mm-edge-pad', (vGap + fudge) + 'px');
+  }
 
   function onceHeader(cb){
-    let hdr = document.querySelector('header#header[data-test="header"]');
+    var hdr = document.querySelector('header#header[data-test="header"]');
     if (hdr) return cb(hdr);
-    const mo = new MutationObserver(() => {
+    var mo = new MutationObserver(function(){
       hdr = document.querySelector('header#header[data-test="header"]');
       if (hdr){ mo.disconnect(); cb(hdr); }
     });
@@ -15,22 +35,22 @@ v2.7 */
   }
 
   function selectSections(){
-    const root = document.getElementById('page') || document.body;
-    const sel = ['#page .page-section','#page section[data-section-id]','.page-section','section[data-section-id]'].join(',');
+    var root = document.getElementById('page') || document.body;
+    var sel = ['#page .page-section','#page section[data-section-id]',
+               '.page-section','section[data-section-id]'].join(',');
     return Array.from(root.querySelectorAll(sel));
   }
 
   function pxVar(name, fallback){
-    const v = getComputedStyle(document.documentElement).getPropertyValue(name);
-    const n = parseFloat(v);
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+    var n = parseFloat(v);
     return Number.isFinite(n) ? n : fallback;
   }
 
   function setup(){
     onceHeader(function(hdr){
-      const STICKY = pxVar('--mm-sticky-top', 12);
-
-      // Park the header (no animation)
+      var STICKY = pxVar('--mm-sticky-top', 12);
+      // Ensure header is parked (no animation)
       Object.assign(hdr.style, {
         position: 'fixed',
         left: '50%',
@@ -38,7 +58,7 @@ v2.7 */
         transform: 'translate(-50%, 0)'
       });
 
-      // Visibility helpers (make hidden truly inert)
+      // helper: make hidden truly inert
       function hideHeader(){
         hdr.classList.remove('mm-visible');
         hdr.setAttribute('aria-hidden','true');
@@ -54,25 +74,25 @@ v2.7 */
         hdr.style.visibility = 'visible';
       }
 
-      // Page top padding (none on home, space elsewhere)
-      const page = document.getElementById('page');
+      // control page top padding (no padding on home; padding elsewhere)
+      var page = document.getElementById('page');
       function applyPagePadding(){
         if (!page) return;
         if (isHome()){
           page.style.paddingTop = '0px';
         } else {
-          const h = parseFloat(getComputedStyle(hdr).height) || 52;
+          var h = parseFloat(getComputedStyle(hdr).height) || 52; // in px
           page.style.paddingTop = (h + STICKY) + 'px';
         }
       }
 
-      // Home-only reveal threshold (top of Section 2 at viewport top)
-      let revealAt = 0;
+      // compute when to reveal on home (top of second section at viewport top)
+      var revealAt = 0;
       function computeThreshold(){
         if (!isHome()){ revealAt = 0; return; }
-        const sections = selectSections();
+        var sections = selectSections();
         if (sections.length < 2){ revealAt = 0; return; }
-        const r2 = sections[1].getBoundingClientRect();
+        var r2 = sections[1].getBoundingClientRect();
         revealAt = window.scrollY + r2.top - STICKY;
         if (revealAt < 0) revealAt = 0;
       }
@@ -86,34 +106,22 @@ v2.7 */
         }
       }
 
-// Make left/right AND top/bottom gap equal to --mm-uniform-gap
-function syncUniformGap(){
-}
-
-
-      // Init
+      // init
       applyPagePadding();
       computeThreshold();
-      syncUniformGap();
       update();
 
-      // Listeners
+      // listeners
       window.addEventListener('scroll', update, {passive:true});
-      window.addEventListener('resize', () => { applyPagePadding(); computeThreshold(); syncUniformGap(); update(); });
+      window.addEventListener('resize', function(){ applyPagePadding(); computeThreshold(); update(); });
 
-      // Re-sync when fonts load (sizes change)
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(syncUniformGap).catch(()=>{});
-      }
-
-      // Re-measure once for late DOM shifts (lazy sections, announcement bar)
-      let t = null;
-      const mo = new MutationObserver(() => {
+      // re-measure once for late DOM shifts (lazy sections/announcement bar)
+      var t=null, mo=new MutationObserver(function(){
         clearTimeout(t);
-        t = setTimeout(() => { applyPagePadding(); computeThreshold(); syncUniformGap(); update(); }, 100);
+        t = setTimeout(function(){ applyPagePadding(); computeThreshold(); update(); }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
-      setTimeout(() => mo.disconnect(), 4000);
+      setTimeout(function(){ mo.disconnect(); }, 4000);
     });
   }
 
