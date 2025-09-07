@@ -14,7 +14,6 @@
   --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
 
-  --mm-center-fudge: 0.9px;     /* positive = nudges pills downward */
   --mm-radius: .75rem;
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
