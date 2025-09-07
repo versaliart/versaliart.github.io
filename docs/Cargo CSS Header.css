@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (absolute pills; no animation)          */
-/* v2.2 */
+/* v2.3 */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens you actually use */
@@ -179,4 +179,19 @@ header#header .header-nav-list > .header-nav-item:last-child > a{
   right: var(--mm-edge-pad) !important;
   top: 0; bottom: 0; margin-block: auto;
   z-index: 2;
+}
+/* Fix the positioning context: pills should anchor to the GLASS BAR, not this wrapper */
+header#header[data-test="header"] > .header-announcement-bar-wrapper{
+  position: static !important;     /* was relative — steals absolute children */
+  inset: auto !important;          /* neutralize any offsets if present */
+  transform: none !important;      /* belt/suspenders: avoid creating a containing block */
+  filter: none !important;
+  perspective: none !important;
+
+  /* also kill stray gutters so the inner box matches the bar width */
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
 }
