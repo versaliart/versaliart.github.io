@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (absolute pills; no animation)          */
-/* v2.1 */
+/* v2.2 */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens you actually use */
@@ -141,36 +141,42 @@ header#header .header-nav-list > .header-nav-item > a:focus-visible{
 /* Keep overlay menu above */
 .header-menu{ z-index: 2000; }
 
-/* ——— minimal fix: make pills anchor to the glass bar, not inner wrappers ——— */
-
-/* ensure the bar is the positioned ancestor */
+/* Make the glass bar the containing block */
 header#header[data-test="header"]{
-  position: fixed !important;           /* already fixed, but be explicit */
+  position: fixed !important;          /* already fixed; ensure it's the positioned ancestor */
+  padding-left: 0 !important;          /* keep padding off the bar so edges are exact */
+  padding-right: 0 !important;
 }
 
-/* kill the positioning context that steals the anchors */
+/* Neutralize the wrapper that creates a new positioning context */
 header#header .header-nav-item{
-  position: static !important;          /* was relative in Squarespace theme */
-  transform: none !important;
+  position: static !important;         /* was relative in the theme */
+  transform: none !important;          /* transforms also create containing blocks */
+  filter: none !important;             /* so does filter/backdrop-filter on the wrapper */
+  perspective: none !important;
 }
 
-/* belt-and-suspenders: none of these wrappers should become positioned */
+/* Belt-and-suspenders: no other nav wrappers should be positioned */
 header#header .header-title-nav-wrapper,
 header#header .header-nav,
 header#header .header-nav-wrapper,
 header#header .header-nav-list{
   position: static !important;
   transform: none !important;
+  filter: none !important;
+  perspective: none !important;
 }
 
-/* your anchors: absolute to the BAR edges, vertically centered without translate */
+/* Absolutely anchor the two pills to the bar’s edges (vertical center sans translate) */
 header#header .header-nav-list > .header-nav-item:first-child > a{
   position: absolute !important;
   left: var(--mm-edge-pad) !important;
   top: 0; bottom: 0; margin-block: auto;
+  z-index: 2;
 }
 header#header .header-nav-list > .header-nav-item:last-child > a{
   position: absolute !important;
   right: var(--mm-edge-pad) !important;
   top: 0; bottom: 0; margin-block: auto;
+  z-index: 2;
 }
