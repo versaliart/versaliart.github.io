@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (binds to your exact DOM)               */
 /*----------------------------------------------------------------------*/
-/*  v1.0 */
+/*  v1.1 ... last update broke the header with vertical stack */
 /* Fluid tokens */
 :root{
   --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
@@ -216,4 +216,73 @@ header#header[data-test="header"]:not(.mm-visible){
 /* Backup: ensure no top padding on homepage even if some theme rule fights back */
 body.sqs-homepage #page{
   padding-top: 0 !important;
+}
+
+/* Kill the old absolute placement + fake spacer */
+header#header::before{ display:none !important; }
+header#header .header-nav-list > .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+}
+
+/* The header bar: add a bit of horizontal padding; height stays var(--mm-header-h) */
+header#header[data-test="header"]{
+  padding-inline: var(--mm-edge-pad);
+  box-sizing: border-box;
+  /* keep your existing fixed/top styles */
+}
+
+/* Make the nav list a 3-col grid: [left] [center gap] [right] */
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list{
+  height: 100% !important;
+}
+
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
+  align-items: center;        /* <-- vertical centering, no sub-pixel wobble */
+  justify-items: stretch;
+  gap: 0;
+}
+
+/* Only first/last remain (keep your existing hide-middles rule) */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
+  display: none !important;
+}
+
+/* Place the two items into the outer columns */
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column: 1; justify-self: start; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column: 3; justify-self: end; }
+
+/* Ensure each nav item centers its link vertically across the bar */
+header#header .header-nav-item{
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* Pill visuals stay the same; keep min width + padding */
+header#header .header-nav-list > .header-nav-item > a{
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: var(--mm-btn-min);
+  padding-block: var(--mm-btn-pad-y);
+  padding-inline: var(--mm-btn-pad-x);
+  border-radius: .5rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  color: #fff;
+  background: rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.35);
+  transition: background-color .16s ease, border-color .16s ease;
+}
+header#header .header-nav-list > .header-nav-item > a:hover,
+header#header .header-nav-list > .header-nav-item > a:focus-visible{
+  background: rgba(255,255,255,.18);
+  border-color: rgba(255,255,255,.5);
+  outline: none;
 }
