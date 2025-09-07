@@ -320,3 +320,43 @@ header#header .header-nav-list > .header-nav-item > a{
 /* Side buffer inside the glass bar */
 :root{ --mm-edge-pad: 0.25rem; }  /* set to 0 if you want perfectly flush */
 header#header[data-test="header"]{ padding-inline: var(--mm-edge-pad); }
+
+/* 1) Nuke all wrapper padding/max-width inside the header */
+header#header .header-inner.container--fluid,
+header#header .header-title-nav-wrapper,
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list,
+header#header .header-nav-item{
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 2) Use a full-width 3-col grid with a hard center gap */
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) var(--mm-gap-fixed) minmax(0,1fr);
+  align-items: center;             /* vertical centering */
+  justify-items: stretch;
+  gap: 0;
+}
+
+/* Keep only first & last items and pin them to edges */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end; }
+
+/* 3) Ensure the links themselves don't reintroduce offsets */
+header#header .header-nav-list > .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+  max-width: none !important;
+}
+
+/* 4) Optional: reduce inner side buffer (0 = perfectly flush) */
+:root{ --mm-edge-pad: 0.25rem; }
+header#header[data-test="header"]{ padding-inline: var(--mm-edge-pad); }
