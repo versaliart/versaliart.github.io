@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (stable, no animations)                 */
-/* v2.2                                                                 */
+/* v2.3                                                                 */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens (only what we use) */
@@ -9,7 +9,7 @@
   --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);     /* fixed center gap */
   --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
   --mm-btn-pad-y: clamp(.45rem, .4rem + .1vw, .6rem);
-  --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
+  --mm-btn-pad-x: clamp(.45rem,  .4rem + .1vw, .6rem);
   --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);  /* L/R inset inside the bar */
 
   --mm-radius: .75rem;
