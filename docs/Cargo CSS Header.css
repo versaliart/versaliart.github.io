@@ -410,3 +410,60 @@ header#header .header-nav-list > .header-nav-item > a{
   transform: none !important;
   margin: 0 !important;
 }
+
+/* === Hug the pills to the bar’s inner edge ============================= */
+
+/* 0 = perfectly flush; bump up if you want a tiny inset */
+:root{ --mm-edge-pad: 0rem; }
+
+header#header[data-test="header"]{
+  padding-inline: var(--mm-edge-pad) !important;
+}
+
+/* 1) Kill Squarespace header gutters/max-widths */
+header#header .container,
+header#header .container--fluid,
+header#header .header-inner,
+header#header .header-display-desktop,
+header#header .header-display-mobile,
+header#header .header-title-nav-wrapper,
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 2) Flatten wrappers so the grid spans the full bar exactly */
+@supports (display: contents){
+  header#header .header-title-nav-wrapper{
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) var(--mm-gap-fixed) minmax(0,1fr);
+    align-items: center;                 /* vertical centering */
+    justify-items: stretch;
+    gap: 0;
+  }
+  header#header .header-nav,
+  header#header .header-nav-wrapper,
+  header#header .header-nav-list{
+    display: contents !important;        /* remove their boxes entirely */
+  }
+}
+
+/* 3) Keep only first & last, pin to outer columns */
+header#header .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
+header#header .header-nav-item:first-child{ grid-column: 1; justify-self: start; }
+header#header .header-nav-item:last-child { grid-column: 3; justify-self: end; }
+header#header .header-nav-item{ display:flex; align-items:center; height:100%; }
+
+/* 4) Links: no stray margins/offsets */
+header#header .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+}
