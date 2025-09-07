@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (absolute pills; no animation)          */
-/* v2.3 */
+/* v2.4 SUCCESS - announcement bar was the culprit in margin fucking    */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens you actually use */
@@ -19,6 +19,19 @@
   --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
 
   --mm-sticky-top: 12px; /* parked offset (no animations) */
+
+    /* The nav link font size used in the pills (set to whatever yours is) */
+  --mm-pill-font: 1rem;          /* adjust if your pill text is larger/smaller */
+  --mm-pill-line: 1;             /* matches your link's line-height: 1 */
+
+  /* Pill height = text height + vertical padding */
+  --mm-pill-h: calc(var(--mm-pill-font) * var(--mm-pill-line) + (2 * var(--mm-btn-pad-y)));
+
+  /* Make L/R inset equal the vertical “air” inside the bar */
+  --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2));
+  /* Optional nudge if optics look off:
+     --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2 + 0.5px));
+  */
 }
 
 /* Glass bar: fixed, already parked; visibility toggled by JS */
@@ -194,4 +207,9 @@ header#header[data-test="header"] > .header-announcement-bar-wrapper{
   padding: 0 !important;
   margin: 0 !important;
   box-sizing: border-box !important;
+}
+
+header#header .header-nav-list > .header-nav-item > a{
+  font-size: var(--mm-pill-font);
+  line-height: var(--mm-pill-line);
 }
