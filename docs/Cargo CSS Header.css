@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (stable, no animations)                 */
-/* v2.1                                                                 */
+/* v2.2                                                                 */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens (only what we use) */
@@ -138,3 +138,69 @@ header#header .header-nav-list > .header-nav-item > a:focus-visible{
 
 /* Keep Sqsp overlay menu above */
 .header-menu{ z-index: 2000; }
+
+
+/* ===== Fix: make the header's layout box match the glass bar ===== */
+
+/* 1) Remove side padding on the bar itself so inner boxes can equal its width */
+header#header[data-test="header"]{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 2) Force the main wrapper to fill the bar exactly */
+header#header .header-title-nav-wrapper{
+  position: absolute !important;
+  inset: 0 !important;           /* fill the glass bar */
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+/* 3) Nuke residual gutters on all header containers */
+header#header .container,
+header#header .container--fluid,
+header#header .header-inner,
+header#header .header-display-desktop,
+header#header .header-display-mobile,
+header#header .header-nav,
+header#header .header-nav-wrapper{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 4) The nav list becomes the ONLY place that applies left/right inset */
+:root{ --mm-edge-pad: clamp(.125rem, .1rem + .3vw, .5rem); }
+
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
+  align-items: center;
+  justify-items: stretch;
+  height: 100% !important;
+  width: 100% !important;
+  padding-left: var(--mm-edge-pad) !important;
+  padding-right: var(--mm-edge-pad) !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 5) Keep only first/last and pin them to the edges (unchanged) */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; display:flex; align-items:center; height:100%; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   display:flex; align-items:center; height:100%; }
+
+/* 6) Links: no stray margins/offsets (unchanged) */
+header#header .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+}
