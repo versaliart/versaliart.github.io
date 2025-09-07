@@ -1,18 +1,10 @@
-/*  v1.0 */
+/*  v2.0 */
 
-/* Mystic Munson — Header behavior (top-of-section everywhere; home waits for section 2) */
+/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) */
 (function(){
-  function getStickyTopPx(){
-    var v = getComputedStyle(document.documentElement).getPropertyValue('--mm-sticky-top');
-    var n = parseFloat(v);
-    return Number.isFinite(n) ? n : 12;
-  }
-  function selectSections(){
-    var page = document.getElementById('page') || document.body;
-    var sel = ['#page .page-section','#page section[data-section-id]','.page-section','section[data-section-id]'].join(',');
-    return Array.from(page.querySelectorAll(sel)).filter(Boolean);
-  }
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
+  function isHome(){ return normalizePath(location.pathname) === '/'; }
+
   function onceHeader(cb){
     var hdr = document.querySelector('header#header[data-test="header"]');
     if (hdr) return cb(hdr);
@@ -23,13 +15,23 @@
     mo.observe(document.documentElement, {childList:true, subtree:true});
   }
 
+  function selectSections(){
+    var root = document.getElementById('page') || document.body;
+    var sel = ['#page .page-section','#page section[data-section-id]',
+               '.page-section','section[data-section-id]'].join(',');
+    return Array.from(root.querySelectorAll(sel));
+  }
+
+  function pxVar(name, fallback){
+    var v = getComputedStyle(document.documentElement).getPropertyValue(name);
+    var n = parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
   function setup(){
     onceHeader(function(hdr){
-      var isHome = normalizePath(location.pathname) === '/';
-      var STICKY = getStickyTopPx();
-      var threshold = 0;
-
-      // park at top offset always
+      var STICKY = pxVar('--mm-sticky-top', 12);
+      // Ensure header is parked (no animation)
       Object.assign(hdr.style, {
         position: 'fixed',
         left: '50%',
@@ -37,7 +39,7 @@
         transform: 'translate(-50%, 0)'
       });
 
-      // helpers to toggle real invisibility / interactivity
+      // helper: make hidden truly inert
       function hideHeader(){
         hdr.classList.remove('mm-visible');
         hdr.setAttribute('aria-hidden','true');
@@ -53,32 +55,32 @@
         hdr.style.visibility = 'visible';
       }
 
-      // page padding control (kill padding on home; keep on others)
-      var pageEl = document.getElementById('page');
+      // control page top padding (no padding on home; padding elsewhere)
+      var page = document.getElementById('page');
       function applyPagePadding(){
-        if (!pageEl) return;
-        if (isHome){
-          pageEl.style.paddingTop = '0px';
+        if (!page) return;
+        if (isHome()){
+          page.style.paddingTop = '0px';
         } else {
-          // if you want space under the fixed header on non-home:
-          var hVar = getComputedStyle(document.documentElement).getPropertyValue('--mm-header-h');
-          var headerH = parseFloat(hVar) || 52; // px-ish fallback
-          pageEl.style.paddingTop = (headerH + STICKY) + 'px';
+          var h = parseFloat(getComputedStyle(hdr).height) || 52; // in px
+          page.style.paddingTop = (h + STICKY) + 'px';
         }
       }
 
+      // compute when to reveal on home (top of second section at viewport top)
+      var revealAt = 0;
       function computeThreshold(){
-        if (!isHome){ threshold = 0; return; }
+        if (!isHome()){ revealAt = 0; return; }
         var sections = selectSections();
-        if (sections.length < 2){ threshold = 0; return; }
+        if (sections.length < 2){ revealAt = 0; return; }
         var r2 = sections[1].getBoundingClientRect();
-        threshold = window.scrollY + r2.top - STICKY;
-        if (threshold < 0) threshold = 0;
+        revealAt = window.scrollY + r2.top - STICKY;
+        if (revealAt < 0) revealAt = 0;
       }
 
       function update(){
-        if (isHome){
-          if (window.scrollY >= threshold) showHeader();
+        if (isHome()){
+          if (window.scrollY >= revealAt) showHeader();
           else hideHeader();
         } else {
           showHeader();
@@ -90,19 +92,20 @@
       computeThreshold();
       update();
 
+      // listeners
       window.addEventListener('scroll', update, {passive:true});
-      window.addEventListener('resize', function(){ computeThreshold(); applyPagePadding(); update(); });
+      window.addEventListener('resize', function(){ applyPagePadding(); computeThreshold(); update(); });
 
-      // re-measure once for late DOM shifts
+      // re-measure once for late DOM shifts (lazy sections/announcement bar)
       var t=null, mo=new MutationObserver(function(){
         clearTimeout(t);
-        t=setTimeout(function(){ computeThreshold(); applyPagePadding(); update(); }, 100);
+        t = setTimeout(function(){ applyPagePadding(); computeThreshold(); update(); }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
       setTimeout(function(){ mo.disconnect(); }, 4000);
     });
   }
 
-  if (document.readyState!=='loading') setup();
+  if (document.readyState !== 'loading') setup();
   else document.addEventListener('DOMContentLoaded', setup, {once:true});
 })();

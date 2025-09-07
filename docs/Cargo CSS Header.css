@@ -1,48 +1,37 @@
 /*----------------------------------------------------------------------*/
-/* Mystic Munson — Glass Header (binds to your exact DOM)               */
+/* Mystic Munson — Glass Header (stable, no animations)                 */
+/* v2.0                                                                 */
 /*----------------------------------------------------------------------*/
-/*  v1.2 ... edge gaps */
-/* Fluid tokens */
+
+/* Fluid tokens (keep only what we use) */
 :root{
-  --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
-  --mm-header-top: clamp(.5rem, .2rem + 0.6vw, 1rem);
+  --mm-header-h:  clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
+  --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);   /* fixed center gap */
+  --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
 
-  --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
-  --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem); /* pill width floor */
+  --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);
+  --mm-btn-pad-y: clamp(.45rem, .4rem + .1vw, .6rem);
+  --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
 
-  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);
-  --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
-  --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
-
-  --mm-center-fudge: 0.9px;     /* positive = nudges pills downward */
   --mm-radius: .75rem;
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
-
-  --mm-pill-font: 2rem;       /* adjust if your pill links use a different size */
-  --mm-pill-line: 1;          /* we set line-height:1 on the links already */
-  --mm-pill-h: calc(var(--mm-pill-font) * var(--mm-pill-line) + (2 * var(--mm-btn-pad-y)));
-
-  /* Horizontal edge = the “air” above/below the pill inside the bar */
-  --mm-edge-pad: calc( (var(--mm-header-h) - var(--mm-pill-h)) / 2 );
-  --mm-start-shift: 12px;       /* initial downward visual offset */
-  --mm-sticky-top: 12px;        /* final stick position from top */
   --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
+
+  --mm-sticky-top: 12px; /* header’s parked offset from top */
 }
 
-/* ------------------------------------------------------------
-   Pin the Squarespace header node as our glass “bar”
-   (works for both desktop & mobile wrappers)
-------------------------------------------------------------- */
+/* The glass bar itself — fixed and already “parked” at the top offset */
 header#header[data-test="header"]{
   position: fixed;
   left: 50%;
-  top: calc(50vh - (var(--mm-header-h) / 2) + var(--mm-center-fudge));
-  transform: translate(-50%, var(--mm-start-shift));
-  z-index: 1000;
+  top: var(--mm-sticky-top);
+  transform: translate(-50%, 0);
+  z-index: 1200;
 
   height: var(--mm-header-h);
   width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
+  padding-inline: var(--mm-edge-pad);
   border-radius: var(--mm-radius);
   background: var(--mm-bg);
   -webkit-backdrop-filter: blur(var(--mm-blur));
@@ -51,27 +40,33 @@ header#header[data-test="header"]{
   box-shadow: var(--mm-shadow);
   box-sizing: border-box;
   overflow: visible;
-  padding: 0;
+
+  /* Visibility is toggled by JS via .mm-visible (no animation) */
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* Hide Squarespace background strips / borders for a clean glass slab */
+/* Visible state (no transitions) */
+header#header[data-test="header"].mm-visible{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hard-hide when not visible (no stray clicks) */
+header#header[data-test="header"]:not(.mm-visible){
+  visibility: hidden !important;
+}
+
+/* Remove Squarespace’s extra strips */
 header#header .header-background,
 header#header [data-test="header-border"],
-header#header [data-test="header-dropshadow"]{
-  display: none !important;
-}
+header#header [data-test="header-dropshadow"]{ display:none !important; }
 
-/* Keep the native burger & overlay menu available (mobile use). */
-header#header .header-burger{ position: absolute; inset: 0 auto 0 50%; } /* re-placed later for mobile */
-
-/* Trim what we don’t want inside the slim bar (desktop visual) */
+/* Hide things we don’t use inside the slim bar */
 header#header .header-actions,
-header#header .header-title{
-  display: none !important;
-}
+header#header .header-title{ display:none !important; }
 
-/* Neutralize Squarespace’s internal wrappers to make the <a> pills absolute-positioned
-   against the header box (prevents stray rel-position contexts). */
+/* Neutralize wrappers so our grid can span the bar */
 header#header .header-inner,
 header#header .header-display-desktop,
 header#header .header-display-mobile,
@@ -85,41 +80,39 @@ header#header .header-nav-list{
   min-height: 0 !important;
   width: 100% !important;
   height: 100% !important;
-  box-sizing: border-box !important;
+  max-width: none !important;
   line-height: normal !important;
+  box-sizing: border-box !important;
 }
 
-/* Reserve center lane for future decorative image (invisible spacer) */
-header#header::before{
-  content:"";
-  position: absolute; inset-block: 0;
-  left: 50%; width: var(--mm-gap-fixed);
-  transform: translateX(-50%);
-  pointer-events: none;
-}
+/* We don’t need the old fake spacer anymore */
+header#header::before{ content:none !important; }
 
-/* We only want FIRST and LAST nav items */
+/* Only keep FIRST and LAST nav items */
 header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
   display: none !important;
 }
 
-/* Use flexbox centering on the header bar itself */
-header#header[data-test="header"]{
+/* Turn the nav list into a 3-col grid: [left] [fixed gap] [right] */
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
+  align-items: center;          /* perfect vertical centering */
+  justify-items: stretch;
+  gap: 0;
+  height: 100% !important;
+}
+
+/* Pin the two items to the outer columns */
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   }
+
+/* Ensure each nav item centers its link vertically across the bar */
+header#header .header-nav-item{
   display: flex;
-  align-items: center;        /* vertical centering */
-  justify-content: space-between;
-  padding-inline: var(--mm-edge-pad);
-  box-sizing: border-box;
+  align-items: center;
+  height: 100%;
 }
-
-/* Reset the anchor positioning: no absolute, no translate */
-header#header .header-nav-list > .header-nav-item:first-child > a,
-header#header .header-nav-list > .header-nav-item:last-child > a{
-  position: static !important;
-  transform: none !important;
-  margin: 0;
-}
-
 
 /* Pill visuals */
 header#header .header-nav-list > .header-nav-item > a{
@@ -134,161 +127,19 @@ header#header .header-nav-list > .header-nav-item > a{
   line-height: 1;
   text-decoration: none;
   color: #fff;
-  background: rgba(255,155,255,.50);
+  background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.35);
-  transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
   margin: 0 !important;
-}
-header#header .header-nav-list > .header-nav-item > a:hover,
-header#header .header-nav-list > .header-nav-item > a:focus-visible{
-  background: rgba(255,255,255,.18);
-  border-color: rgba(255,255,255,.5);
-  outline: none;
-}
-
-/* ------------------------------------------------------------------
-   “Sticky” micro-animation
-   We’ll toggle .mm-stuck on the header with tiny JS (below).
-   When stuck: shrink to top edge & remove the start-shift.
-------------------------------------------------------------------- */
-header#header.mm-stuck{
-  top: var(--mm-sticky-top);
-  transform: translate(-50%, 0);
-}
-
-/* Optional: gentle scale for the bar as it parks */
-header#header{ transition: transform .36s cubic-bezier(.2,.7,.2,1), top .36s cubic-bezier(.2,.7,.2,1); }
-
-/* ------------------------------------------------------------------
-   Mobile adjustments
-   - Keep burger visible and move it to the *center lane* area
-   - Stack priority remains: pills at edges, burger sits centered.
-------------------------------------------------------------------- */
-@media (max-width: 768px){
-  /* reveal burger and position in the center gap */
-  header#header .header-burger{
-    position: absolute !important;
-    left: 50%; top: 50%;
-    transform: translate(-50%,-50%);
-    z-index: 3;
-    display: block !important;
-  }
-  /* slightly reduce pill min widths if space is tight */
-  :root{
-    --mm-btn-min: clamp(5.75rem, 5rem + 1.2vw, 7rem);
-  }
-}
-
-/* ------------------------------------------------------------------
-   Respect the overlay menu and body content
-------------------------------------------------------------------- */
-
-/* Keep the overlay menu (header-menu) working normally.
-   Our bar sits above page content but below the overlay menu. */
-.header-menu{ z-index: 2000; }       /* Sqsp overlay already handles this */
-header#header{ z-index: 1200; }
-
-/* Remove reserved padding on homepage only */
-body.sqs-homepage #page{
-  padding-top: 0 !important;
-}
-
-/* Keep reserved padding elsewhere (uncomment if you removed the global rule) */
-body:not(.sqs-edit-mode):not(.sqs-homepage) #page{
-  padding-top: calc(var(--mm-header-h, 3.25rem) + var(--mm-sticky-top, 12px));
-}
-
-
-/* Visibility control: header always parked at top; home reveals after section 2 */
-header#header[data-test="header"]{
-  opacity: 0;
-  pointer-events: none;
-  transition:
-    opacity .28s ease,
-    transform .36s cubic-bezier(.2,.7,.2,1);
-}
-header#header[data-test="header"].mm-visible{
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Hidden state: no hit testing, no visibility */
-header#header[data-test="header"]:not(.mm-visible){
-  opacity: 0;
-  pointer-events: none !important;
-  visibility: hidden !important;
-}
-
-/* Backup: ensure no top padding on homepage even if some theme rule fights back */
-body.sqs-homepage #page{
-  padding-top: 0 !important;
-}
-
-/* Kill the old absolute placement + fake spacer */
-header#header::before{ display:none !important; }
-header#header .header-nav-list > .header-nav-item > a{
-  position: static !important;
   transform: none !important;
 }
 
-/* The header bar: add a bit of horizontal padding; height stays var(--mm-header-h) */
-header#header[data-test="header"]{
-  padding-inline: var(--mm-edge-pad);
-  box-sizing: border-box;
-  /* keep your existing fixed/top styles */
-}
-
-/* Make the nav list a 3-col grid: [left] [center gap] [right] */
-header#header .header-nav,
-header#header .header-nav-wrapper,
-header#header .header-nav-list{
-  height: 100% !important;
-}
-
-header#header .header-nav-list{
-  display: grid !important;
-  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
-  align-items: center;        /* <-- vertical centering, no sub-pixel wobble */
-  justify-items: stretch;
-  gap: 0;
-}
-
-/* Only first/last remain (keep your existing hide-middles rule) */
-header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
-  display: none !important;
-}
-
-/* Place the two items into the outer columns */
-header#header .header-nav-list > .header-nav-item:first-child{ grid-column: 1; justify-self: start; }
-header#header .header-nav-list > .header-nav-item:last-child { grid-column: 3; justify-self: end; }
-
-/* Ensure each nav item centers its link vertically across the bar */
-header#header .header-nav-item{
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-/* Pill visuals stay the same; keep min width + padding */
-header#header .header-nav-list > .header-nav-item > a{
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  min-width: var(--mm-btn-min);
-  padding-block: var(--mm-btn-pad-y);
-  padding-inline: var(--mm-btn-pad-x);
-  border-radius: .5rem;
-  font-weight: 700;
-  line-height: 1;
-  text-decoration: none;
-  color: #fff;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.35);
-  transition: background-color .16s ease, border-color .16s ease;
-}
+/* Hover/focus (subtle; still no transitions) */
 header#header .header-nav-list > .header-nav-item > a:hover,
 header#header .header-nav-list > .header-nav-item > a:focus-visible{
   background: rgba(255,255,255,.18);
   border-color: rgba(255,255,255,.5);
   outline: none;
 }
+
+/* Keep the overlay menu above us if opened */
+.header-menu{ z-index: 2000; }
