@@ -1,17 +1,5 @@
 <script>
 (function () {
-  // Wait for a real Squarespace section to exist (editor + live)
-  function whenSection(cb) {
-    var sel = "section.page-section, section.sqs-section, main, .content-wrapper";
-    var s = document.querySelector(sel);
-    if (s) return cb(s);
-    var mo = new MutationObserver(function () {
-      var s2 = document.querySelector(sel);
-      if (s2) { mo.disconnect(); cb(s2); }
-    });
-    mo.observe(document.documentElement, { childList: true, subtree: true });
-  }
-
   // Tiny utility: wait for a selector to appear, then run once
   function whenSelector(selector, cb) {
     var el = document.querySelector(selector);
@@ -23,57 +11,46 @@
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  // Load a script and return a Promise (for ordering)
+  // Load a script and return a Promise (for ordering/debugging)
   function loadScript(src, opts) {
     return new Promise(function (resolve, reject) {
       var s = document.createElement("script");
-      if (opts && opts.type) s.type = opts.type;            // e.g., {type:"module"}
+      if (opts && opts.type) s.type = opts.type; // e.g., {type:"module"}
       s.src = src;
-      s.defer = !opts || !opts.type;                         // keep defer for classic scripts
+      s.defer = !opts || !opts.type;
       s.onload = function(){ resolve(src); };
       s.onerror = function(e){ reject(new Error("Failed to load " + src)); };
       document.body.appendChild(s);
     });
   }
 
-  whenSection(function (firstSection) {
-    // Global toggle some CSS keys off
-    document.body.classList.add("has-starfield");
-
-    // Ensure the starfield marker lives inside a real section (only if you use Starfield)
-    (function ensureStarfieldMarker() {
-      var marker = document.getElementById("starfield-enable");
-      if (!marker || !marker.closest("section.page-section, section.sqs-section")) {
-        marker = document.createElement("div");
-        marker.id = "starfield-enable";
-        marker.hidden = true;
-        marker.style.display = "none";
-        var content = firstSection.querySelector(":scope > .content-wrapper");
-        if (content) firstSection.insertBefore(marker, content);
-        else firstSection.prepend(marker);
-      }
-    })();
-
-    // Queue: load Starfield when its marker exists
-    whenSelector("#starfield-enable", function () {
-      loadScript("https://versaliart.github.io/Cargo%20JSS%20Starfield.js")
-        .then(function(){ console.log("[Loader] Starfield loaded"); })
-        .catch(function(e){ console.warn(e); });
-    });
-
-    // Queue: load Tags only when a .tag-pills host exists (so we don’t load it sitewide)
-    whenSelector(".tag-pills", function () {
-      loadScript("https://versaliart.github.io/Cargo%20JSS%20Tags.js")
-        .then(function(){ console.log("[Loader] Tags loaded"); })
-        .catch(function(e){ console.warn(e); });
-    });
-
-  // Load Topblock flip only when #flip-top exists
-whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
-  loadScript('https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js')
-    .then(()=>console.log('[Loader] Topblock loaded'))
-    .catch(console.warn);
-});
+  // === Starfield ===
+  whenSelector("#starfield-enable", function () {
+    loadScript("https://versaliart.github.io/Cargo%20JSS%20Starfield.js")
+      .then(()=>console.log("[Loader] Starfield loaded"))
+      .catch(console.warn);
   });
+
+  // === Tags ===
+  whenSelector(".tag-pills", function () {
+    loadScript("https://versaliart.github.io/Cargo%20JSS%20Tags.js")
+      .then(()=>console.log("[Loader] Tags loaded"))
+      .catch(console.warn);
+  });
+
+  // === Topblock flip ===
+  whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
+    loadScript("https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js")
+      .then(()=>console.log("[Loader] Topblock loaded"))
+      .catch(console.warn);
+  });
+
+  // === Header ===
+  whenSelector('header#header[data-test="header"]', function () {
+    loadScript("https://versaliart.github.io/Cargo%20JSS%20Header.js")
+      .then(()=>console.log("[Loader] Header loaded"))
+      .catch(console.warn);
+  });
+
 })();
 </script>

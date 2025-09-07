@@ -185,3 +185,24 @@ header#header{ z-index: 1200; }
 body:not(.sqs-edit-mode) #page{
   padding-top: calc(50vh + var(--mm-header-h));
 }
+
+
+/* --- Visibility states (default hidden, reveal when JS adds .mm-visible) --- */
+header#header[data-test="header"]{
+  /* Place it where it will live (stuck) but start hidden */
+  top: var(--mm-sticky-top);
+  transform: translate(-50%, -8px);   /* slight lift pre-reveal */
+  opacity: 0;
+  pointer-events: none;
+}
+
+header#header[data-test="header"].mm-visible{
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+  transition:
+    opacity .28s ease,
+    transform .36s cubic-bezier(.2,.7,.2,1);
+}
+
+/* Keep your existing .mm-stuck rule if present; it's harmless with this model */
