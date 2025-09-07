@@ -1,28 +1,27 @@
 /*----------------------------------------------------------------------*/
-/* Mystic Munson — Glass Header (stable, no animations)                 */
-/* v2.3                                                                 */
+/* Mystic Munson — Glass Header (absolute pills; no animation)          */
+/* v2.1 */
 /*----------------------------------------------------------------------*/
 
-/* Fluid tokens (only what we use) */
+/* Fluid tokens you actually use */
 :root{
   --mm-header-h:  clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
-  --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);     /* fixed center gap */
+  --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
   --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
+
+  --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);
   --mm-btn-pad-y: clamp(.45rem, .4rem + .1vw, .6rem);
-  --mm-btn-pad-x: clamp(.45rem,  .4rem + .1vw, .6rem);
-  --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);  /* L/R inset inside the bar */
+  --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
 
   --mm-radius: .75rem;
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
   --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
 
-  --mm-sticky-top: 12px;  /* parked offset from top */
+  --mm-sticky-top: 12px; /* parked offset (no animations) */
 }
 
-/* ------------------------------------------------------------------ */
-/* Glass bar: fixed, already parked (no transitions)                  */
-/* ------------------------------------------------------------------ */
+/* Glass bar: fixed, already parked; visibility toggled by JS */
 header#header[data-test="header"]{
   position: fixed;
   left: 50%;
@@ -32,7 +31,6 @@ header#header[data-test="header"]{
 
   height: var(--mm-header-h);
   width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
-  padding-inline: var(--mm-edge-pad);
   border-radius: var(--mm-radius);
   background: var(--mm-bg);
   -webkit-backdrop-filter: blur(var(--mm-blur));
@@ -42,7 +40,6 @@ header#header[data-test="header"]{
   box-sizing: border-box;
   overflow: visible;
 
-  /* visibility controlled by JS; no animation */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
@@ -53,15 +50,14 @@ header#header[data-test="header"].mm-visible{
   visibility: visible;
 }
 
-/* Remove Squarespace extras inside the slim bar */
+/* Strip Squarespace extras inside the bar */
 header#header .header-background,
 header#header [data-test="header-border"],
 header#header [data-test="header-dropshadow"]{ display:none !important; }
-
 header#header .header-actions,
 header#header .header-title{ display:none !important; }
 
-/* Neutralize wrappers so our grid spans the bar cleanly */
+/* Neutralize wrappers so they don't create positioning contexts */
 header#header .header-inner,
 header#header .header-display-desktop,
 header#header .header-display-mobile,
@@ -80,40 +76,49 @@ header#header .header-nav-list{
   box-sizing: border-box !important;
 }
 
-/* Drop the old pseudo spacer */
-header#header::before{ content: none !important; }
-
 /* Keep only FIRST and LAST nav items */
 header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
   display: none !important;
 }
 
-/* 3-column grid inside the bar: [left] [fixed gap] [right] */
-header#header .header-nav-list{
-  display: grid !important;
-  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
-  align-items: center;      /* vertical centering */
-  justify-items: stretch;
-  gap: 0;
-  height: 100% !important;
+/* Center spacer for your decorative image / gap */
+header#header::before{
+  content:"";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: var(--mm-gap-fixed);
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
-/* Pin the two items to the outer columns */
-header#header .header-nav-list > .header-nav-item:first-child{ grid-column: 1; justify-self: start; }
-header#header .header-nav-list > .header-nav-item:last-child { grid-column: 3; justify-self: end; }
-
-/* Make each item center its link vertically */
-header#header .header-nav-item{
-  display: flex;
-  align-items: center;
-  height: 100%;
-}
-
-/* Pill visuals */
-header#header .header-nav-list > .header-nav-item > a{
+/* === Place the two pills directly inside the bar edges =============== */
+/* Vertically center via top:0; bottom:0; margin-block:auto; */
+/* Left pill */
+header#header .header-nav-list > .header-nav-item:first-child > a{
+  position: absolute !important;
+  left: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0;              /* vertical centering without translate */
+  margin-block: auto;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  z-index: 2;
+}
+/* Right pill */
+header#header .header-nav-list > .header-nav-item:last-child > a{
+  position: absolute !important;
+  right: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0;              /* vertical centering without translate */
+  margin-block: auto;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 2;
+}
+
+/* Pill visuals (unchanged) */
+header#header .header-nav-list > .header-nav-item > a{
   min-width: var(--mm-btn-min);
   padding-block: var(--mm-btn-pad-y);
   padding-inline: var(--mm-btn-pad-x);
@@ -125,10 +130,7 @@ header#header .header-nav-list > .header-nav-item > a{
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.35);
   margin: 0 !important;
-  transform: none !important;
 }
-
-/* Hover/focus (no transitions) */
 header#header .header-nav-list > .header-nav-item > a:hover,
 header#header .header-nav-list > .header-nav-item > a:focus-visible{
   background: rgba(255,255,255,.18);
@@ -136,170 +138,5 @@ header#header .header-nav-list > .header-nav-item > a:focus-visible{
   outline: none;
 }
 
-/* Keep Sqsp overlay menu above */
+/* Keep overlay menu above */
 .header-menu{ z-index: 2000; }
-
-
-/* ===== Fix: make the header's layout box match the glass bar ===== */
-
-/* 1) Remove side padding on the bar itself so inner boxes can equal its width */
-header#header[data-test="header"]{
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-/* 2) Force the main wrapper to fill the bar exactly */
-header#header .header-title-nav-wrapper{
-  position: absolute !important;
-  inset: 0 !important;           /* fill the glass bar */
-  width: auto !important;
-  height: auto !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: none !important;
-  box-sizing: border-box !important;
-}
-
-/* 3) Nuke residual gutters on all header containers */
-header#header .container,
-header#header .container--fluid,
-header#header .header-inner,
-header#header .header-display-desktop,
-header#header .header-display-mobile,
-header#header .header-nav,
-header#header .header-nav-wrapper{
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  max-width: none !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* 4) The nav list becomes the ONLY place that applies left/right inset */
-:root{ --mm-edge-pad: clamp(.125rem, .1rem + .3vw, .5rem); }
-
-header#header .header-nav-list{
-  display: grid !important;
-  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
-  align-items: center;
-  justify-items: stretch;
-  height: 100% !important;
-  width: 100% !important;
-  padding-left: var(--mm-edge-pad) !important;
-  padding-right: var(--mm-edge-pad) !important;
-  margin: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* 5) Keep only first/last and pin them to the edges (unchanged) */
-header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
-header#header .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; display:flex; align-items:center; height:100%; }
-header#header .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   display:flex; align-items:center; height:100%; }
-
-/* 6) Links: no stray margins/offsets (unchanged) */
-header#header .header-nav-item > a{
-  position: static !important;
-  transform: none !important;
-  margin: 0 !important;
-}
-
-/* ===== Force the nav layout to match the glass bar width exactly ===== */
-
-/* 1) Make the title+nav wrapper fill the bar, honoring your edge pad */
-header#header[data-test="header"] .header-title-nav-wrapper{
-  position: absolute !important;
-  top: 0; bottom: 0;
-  left: var(--mm-edge-pad);    /* ← same side inset you want visually */
-  right: var(--mm-edge-pad);
-  width: auto !important;
-  height: auto !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  max-width: none !important;
-  box-sizing: border-box !important;
-}
-
-/* 2) Remove residual gutters/max-widths on intermediate wrappers */
-header#header[data-test="header"] .header-display-desktop,
-header#header[data-test="header"] .header-display-mobile,
-header#header[data-test="header"] .header-nav,
-header#header[data-test="header"] .header-nav-wrapper{
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  max-width: none !important;
-  box-sizing: border-box !important;
-}
-
-/* 3) Keep the full-width, full-height grid inside the wrapper */
-header#header[data-test="header"] .header-nav-list{
-  display: grid !important;
-  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
-  align-items: center;
-  justify-items: stretch;
-  width: 100% !important;
-  height: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* 4) First/last only + pin to outer columns (unchanged) */
-header#header[data-test="header"] .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
-header#header[data-test="header"] .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; display:flex; align-items:center; height:100%; }
-header#header[data-test="header"] .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   display:flex; align-items:center; height:100%; }
-
-/* === Force the nav to fill the glass bar and own the layout === */
-header#header[data-test="header"] .header-title-nav-wrapper,
-header#header[data-test="header"] .header-nav,
-header#header[data-test="header"] .header-nav-wrapper{
-  position: static !important;     /* don't create a containing block */
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: none !important;
-}
-
-/* Make the nav list the positioned element that fills the bar.
-   This sidesteps any Squarespace "container" gutters entirely. */
-header#header[data-test="header"] .header-nav-list{
-  position: absolute !important;
-  top: 0; 
-  bottom: 0;
-  left: var(--mm-edge-pad);
-  right: var(--mm-edge-pad);
-  margin: 0 !important;
-  padding: 0 !important;
-  width: auto !important;
-  height: auto !important;
-
-  display: grid !important;
-  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;  /* left | gap | right */
-  align-items: center;          /* perfect vertical centering */
-  justify-items: stretch;
-  box-sizing: border-box !important;
-}
-
-/* Keep only first & last items and pin them to the grid edges */
-header#header[data-test="header"] .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
-  display: none !important;
-}
-header#header[data-test="header"] .header-nav-list > .header-nav-item:first-child{ 
-  grid-column: 1; 
-  justify-self: start; 
-  display:flex; align-items:center; height:100%;
-}
-header#header[data-test="header"] .header-nav-list > .header-nav-item:last-child{  
-  grid-column: 3; 
-  justify-self: end;   
-  display:flex; align-items:center; height:100%;
-}
-
-/* Ensure the links don't reintroduce offsets */
-header#header[data-test="header"] .header-nav-item > a{
-  position: static !important;
-  transform: none !important;
-  margin: 0 !important;
-}
