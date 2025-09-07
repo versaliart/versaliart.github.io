@@ -10,8 +10,7 @@
   --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
   --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem); /* pill width floor */
 
-  --mm-edge-fudge: 0rem;                /* try .0625rem (1px-ish) if needed */
-  --mm-edge-pad: calc(var(--mm-btn-pad-y) + var(--mm-edge-fudge));
+  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);
   --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
 
@@ -20,6 +19,13 @@
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
 
+  --mm-pill-font: 1rem;       /* adjust if your pill links use a different size */
+  --mm-pill-line: 1;          /* we set line-height:1 on the links already */
+
+  --mm-pill-h: calc(var(--mm-pill-font) * var(--mm-pill-line) + (2 * var(--mm-btn-pad-y)));
+
+  /* Horizontal edge = the “air” above/below the pill inside the bar */
+  --mm-edge-pad: calc( (var(--mm-header-h) - var(--mm-pill-h)) / 2 );
   --mm-start-shift: 12px;       /* initial downward visual offset */
   --mm-sticky-top: 12px;        /* final stick position from top */
   --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
