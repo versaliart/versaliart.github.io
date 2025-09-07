@@ -19,7 +19,7 @@
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
 
-  --mm-pill-font: 2.5rem;       /* adjust if your pill links use a different size */
+  --mm-pill-font: 2rem;       /* adjust if your pill links use a different size */
   --mm-pill-line: 1;          /* we set line-height:1 on the links already */
   --mm-pill-h: calc(var(--mm-pill-font) * var(--mm-pill-line) + (2 * var(--mm-btn-pad-y)));
 
