@@ -360,3 +360,53 @@ header#header .header-nav-list > .header-nav-item > a{
 /* 4) Optional: reduce inner side buffer (0 = perfectly flush) */
 :root{ --mm-edge-pad: 0.25rem; }
 header#header[data-test="header"]{ padding-inline: var(--mm-edge-pad); }
+
+/* --- Zero all hidden gutters inside the header --- */
+header#header .header-inner.container--fluid,
+header#header .header-display-desktop,
+header#header .header-title-nav-wrapper,
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list{
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevent wrapper flex from re-centering content */
+header#header .header-title-nav-wrapper{
+  display: block !important;
+  justify-content: initial !important;
+  align-items: initial !important;
+}
+
+/* The bar itself provides the only side buffer */
+:root{ --mm-edge-pad: 0.25rem; }              /* set to 0 for perfectly flush */
+header#header[data-test="header"]{
+  padding-inline: var(--mm-edge-pad) !important;
+}
+
+/* Keep our full-width 3-col grid spanning the bar */
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) var(--mm-gap-fixed) minmax(0,1fr);
+  align-items: center;     /* vertical centering = no subpixel drift */
+  justify-items: stretch;
+  gap: 0;
+}
+
+/* Only first & last, pinned to edges */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display: none !important; }
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column: 1; justify-self: start; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column: 3; justify-self: end; }
+
+/* Links: no stray margins/positioning */
+header#header .header-nav-list > .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
+}
