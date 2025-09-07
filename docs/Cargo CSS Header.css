@@ -292,3 +292,10 @@ header#header .header-nav-list > .header-nav-item > a:focus-visible{
   border-color: rgba(255,255,255,.5);
   outline: none;
 }
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list,
+header#header .header-nav-item > a{
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
