@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (binds to your exact DOM)               */
 /*----------------------------------------------------------------------*/
-/*  v1.1 ... last update broke the header with vertical stack */
+/*  v1.2 ... last update failed to fix end padding */
 /* Fluid tokens */
 :root{
   --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
