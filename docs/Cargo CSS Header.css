@@ -1,27 +1,28 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (stable, no animations)                 */
-/* v2.0                                                                 */
+/* v2.1                                                                 */
 /*----------------------------------------------------------------------*/
 
-/* Fluid tokens (keep only what we use) */
+/* Fluid tokens (only what we use) */
 :root{
   --mm-header-h:  clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
-  --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);   /* fixed center gap */
+  --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);     /* fixed center gap */
   --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
-
-  --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);
   --mm-btn-pad-y: clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
+  --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);  /* L/R inset inside the bar */
 
   --mm-radius: .75rem;
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
   --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
 
-  --mm-sticky-top: 12px; /* header’s parked offset from top */
+  --mm-sticky-top: 12px;  /* parked offset from top */
 }
 
-/* The glass bar itself — fixed and already “parked” at the top offset */
+/* ------------------------------------------------------------------ */
+/* Glass bar: fixed, already parked (no transitions)                  */
+/* ------------------------------------------------------------------ */
 header#header[data-test="header"]{
   position: fixed;
   left: 50%;
@@ -41,32 +42,26 @@ header#header[data-test="header"]{
   box-sizing: border-box;
   overflow: visible;
 
-  /* Visibility is toggled by JS via .mm-visible (no animation) */
+  /* visibility controlled by JS; no animation */
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
 }
-
-/* Visible state (no transitions) */
 header#header[data-test="header"].mm-visible{
   opacity: 1;
   pointer-events: auto;
+  visibility: visible;
 }
 
-/* Hard-hide when not visible (no stray clicks) */
-header#header[data-test="header"]:not(.mm-visible){
-  visibility: hidden !important;
-}
-
-/* Remove Squarespace’s extra strips */
+/* Remove Squarespace extras inside the slim bar */
 header#header .header-background,
 header#header [data-test="header-border"],
 header#header [data-test="header-dropshadow"]{ display:none !important; }
 
-/* Hide things we don’t use inside the slim bar */
 header#header .header-actions,
 header#header .header-title{ display:none !important; }
 
-/* Neutralize wrappers so our grid can span the bar */
+/* Neutralize wrappers so our grid spans the bar cleanly */
 header#header .header-inner,
 header#header .header-display-desktop,
 header#header .header-display-mobile,
@@ -85,29 +80,29 @@ header#header .header-nav-list{
   box-sizing: border-box !important;
 }
 
-/* We don’t need the old fake spacer anymore */
-header#header::before{ content:none !important; }
+/* Drop the old pseudo spacer */
+header#header::before{ content: none !important; }
 
-/* Only keep FIRST and LAST nav items */
+/* Keep only FIRST and LAST nav items */
 header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
   display: none !important;
 }
 
-/* Turn the nav list into a 3-col grid: [left] [fixed gap] [right] */
+/* 3-column grid inside the bar: [left] [fixed gap] [right] */
 header#header .header-nav-list{
   display: grid !important;
   grid-template-columns: 1fr var(--mm-gap-fixed) 1fr;
-  align-items: center;          /* perfect vertical centering */
+  align-items: center;      /* vertical centering */
   justify-items: stretch;
   gap: 0;
   height: 100% !important;
 }
 
 /* Pin the two items to the outer columns */
-header#header .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; }
-header#header .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   }
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column: 1; justify-self: start; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column: 3; justify-self: end; }
 
-/* Ensure each nav item centers its link vertically across the bar */
+/* Make each item center its link vertically */
 header#header .header-nav-item{
   display: flex;
   align-items: center;
@@ -133,7 +128,7 @@ header#header .header-nav-list > .header-nav-item > a{
   transform: none !important;
 }
 
-/* Hover/focus (subtle; still no transitions) */
+/* Hover/focus (no transitions) */
 header#header .header-nav-list > .header-nav-item > a:hover,
 header#header .header-nav-list > .header-nav-item > a:focus-visible{
   background: rgba(255,255,255,.18);
@@ -141,5 +136,5 @@ header#header .header-nav-list > .header-nav-item > a:focus-visible{
   outline: none;
 }
 
-/* Keep the overlay menu above us if opened */
+/* Keep Sqsp overlay menu above */
 .header-menu{ z-index: 2000; }
