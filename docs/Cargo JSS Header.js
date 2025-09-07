@@ -1,5 +1,5 @@
 /* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) 
-v2.6 */
+v2.7 */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
   function isHome(){ return normalizePath(location.pathname) === '/'; }
@@ -88,20 +88,6 @@ v2.6 */
 
 // Make left/right AND top/bottom gap equal to --mm-uniform-gap
 function syncUniformGap(){
-  const g = parseFloat(
-    getComputedStyle(document.documentElement)
-      .getPropertyValue('--mm-uniform-gap')
-  );
-  if (!Number.isFinite(g)) return;
-
-  const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
-  if (!leftLink) return;
-
-  const ar = leftLink.getBoundingClientRect();   // pill height
-  // 1) set side gap
-  document.documentElement.style.setProperty('--mm-edge-pad', g + 'px');
-  // 2) set header height so vertical air = g
-  hdr.style.setProperty('--mm-header-h', (Math.round(ar.height) + 2 * g) + 'px');
 }
 
 

@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (absolute pills; no animation)          */
-/* v2.5 SUCCESS - announcement bar was the culprit in margin fucking    */
+/* v2.7 SUCCESS - announcement bar was the culprit in margin fucking    */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens you actually use */
@@ -28,7 +28,7 @@
 
   /* Make L/R inset equal the vertical “air” inside the bar */
   --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2));
-  --mm-uniform-gap: 12px;  /* try 10–16px to taste */
+  --mm-frame-gap: 4px;     
 }
 
 /* Glass bar: fixed, already parked; visibility toggled by JS */
@@ -210,3 +210,16 @@ header#header .header-nav-list > .header-nav-item > a{
   font-size: var(--mm-pill-font);
   line-height: var(--mm-pill-line);
 }
+
+/* Pill anchors: exact height so the top/bottom gap = --mm-frame-gap */
+header#header[data-test="header"] .header-nav-item > a{
+  height: calc(var(--mm-header-h) - 2 * var(--mm-frame-gap)) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1;
+}
+
+/* Use the same gap on the left/right edges of the bar */
+header#header[data-test="header"] .header-nav-item:first-child  > a{ left:  var(--mm-frame-gap) !important; }
+header#header[data-test="header"] .header-nav-item:last-child   > a{ right: var(--mm-frame-gap) !important; }
