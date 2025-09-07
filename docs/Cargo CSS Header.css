@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (binds to your exact DOM)               */
 /*----------------------------------------------------------------------*/
-
+/*  v1.0 */
 /* Fluid tokens */
 :root{
   --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
@@ -202,4 +202,16 @@ header#header[data-test="header"]{
 header#header[data-test="header"].mm-visible{
   opacity: 1;
   pointer-events: auto;
+}
+
+/* Hidden state: no hit testing, no visibility */
+header#header[data-test="header"]:not(.mm-visible){
+  opacity: 0;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+/* Backup: ensure no top padding on homepage even if some theme rule fights back */
+body.sqs-homepage #page{
+  padding-top: 0 !important;
 }
