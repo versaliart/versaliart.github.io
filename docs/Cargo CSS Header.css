@@ -1,125 +1,120 @@
-
 /*----------------------------------------------------------------------*/
-/* HEADER  */
+/* Mystic Munson — Glass Header (binds to your exact DOM)               */
 /*----------------------------------------------------------------------*/
-
-/* ------------------------------------------------------------
-   Mystic Munson — Glass Header (fluid via clamp())
-   - Two buttons only (first + last nav items)
-   - Buttons hug left/right edges of the glass bar
-   - Fixed center gap reserved for decorative image
-   - Blur / rounded / sticky-on-scroll
-   - Positive --mm-center-fudge nudges pills *downward*
-------------------------------------------------------------- */
 
 /* Fluid tokens */
 :root{
   --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
   --mm-header-top: clamp(.5rem, .2rem + 0.6vw, 1rem);
 
-  --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);    /* center gap */
-  --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem);  /* pill width floor */
+  --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
+  --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem); /* pill width floor */
 
-  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);  /* buffer from edges */
+  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);
   --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
 
-  --mm-center-fudge: 0.9px;   /* positive = nudge pills DOWN slightly */
-
+  --mm-center-fudge: 0.9px;     /* positive = nudges pills downward */
   --mm-radius: .75rem;
   --mm-bg: rgba(15,15,25,.52);
   --mm-blur: clamp(9px, 6px + .6vw, 12px);
 
-  --mm-start-shift: 24px;  /* try 16–32px; use -8px to go a bit higher */
+  --mm-start-shift: 24px;       /* initial downward visual offset */
+  --mm-sticky-top: 12px;        /* final stick position from top */
+  --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
 }
 
-/* Glass header container — FIXED overlay, JS animates top */
-header#header,
-[data-test="header"]{
+/* ------------------------------------------------------------
+   Pin the Squarespace header node as our glass “bar”
+   (works for both desktop & mobile wrappers)
+------------------------------------------------------------- */
+header#header[data-test="header"]{
   position: fixed;
   left: 50%;
-  /* start centered; no shift in 'top' */
   top: calc(50vh - (var(--mm-header-h) / 2) + var(--mm-center-fudge));
-  /* apply the start shift via translateY so it’s visible before sticking */
-  transform: translate(-50%, var(--mm-start-shift, 0px));
+  transform: translate(-50%, var(--mm-start-shift));
   z-index: 1000;
 
   height: var(--mm-header-h);
   width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
-  padding: 0;
   border-radius: var(--mm-radius);
   background: var(--mm-bg);
   -webkit-backdrop-filter: blur(var(--mm-blur));
   backdrop-filter: blur(var(--mm-blur));
   border: 1px solid rgba(255,255,255,.18);
-  box-shadow: 0 6px 24px rgba(0,0,0,.18);
+  box-shadow: var(--mm-shadow);
   box-sizing: border-box;
   overflow: visible;
+  padding: 0;
 }
 
-/* Hide header bits we don’t want in the skinny bar */
-[data-test="header"] .header-title,
-[data-test="header"] [data-test*="SiteTitle"],
-[data-test="header"] .header-actions,
-[data-test="header"] [data-test*="social"],
-[data-test="header"] [data-test*="Cart"],
-[data-test="header"] [data-test*="Account"]{
+/* Hide Squarespace background strips / borders for a clean glass slab */
+header#header .header-background,
+header#header [data-test="header-border"],
+header#header [data-test="header-dropshadow"]{
   display: none !important;
 }
 
-/* Neutralize wrappers so anchors position against the header box */
-[data-test="header"] .header,
-[data-test="header"] .header-inner,
-[data-test="header"] .header-display,
-[data-test="header"] .header-display-desktop,
-[data-test="header"] nav,
-[data-test="header"] .header-nav,
-[data-test="header"] .header-nav-list{
-  position: static !important;      /* no new containing block */
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  min-height: 0 !important;
+/* Keep the native burger & overlay menu available (mobile use). */
+header#header .header-burger{ position: absolute; inset: 0 auto 0 50%; } /* re-placed later for mobile */
+
+/* Trim what we don’t want inside the slim bar (desktop visual) */
+header#header .header-actions,
+header#header .header-title{
+  display: none !important;
+}
+
+/* Neutralize Squarespace’s internal wrappers to make the <a> pills absolute-positioned
+   against the header box (prevents stray rel-position contexts). */
+header#header .header-inner,
+header#header .header-display-desktop,
+header#header .header-display-mobile,
+header#header .header-title-nav-wrapper,
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list{
+  position: static !important;
+  padding: 0 !important;
   margin: 0 !important;
+  min-height: 0 !important;
   width: 100% !important;
-  height: 100% !important;          /* match the bar’s height */
-  line-height: normal !important;
+  height: 100% !important;
   box-sizing: border-box !important;
+  line-height: normal !important;
 }
 
-/* Keep only first and last nav items (works for li or .header-nav-item) */
-[data-test="header"] :is(.header-nav-list > li, .header-nav-item)
-  :not(:first-child):not(:last-child){
-  display: none !important;
-}
-
-/* Fixed center spacer for your decorative image (invisible) */
-header#header::before,
-[data-test="header"]::before{
-  content: "";
+/* Reserve center lane for future decorative image (invisible spacer) */
+header#header::before{
+  content:"";
   position: absolute; inset-block: 0;
   left: 50%; width: var(--mm-gap-fixed);
   transform: translateX(-50%);
   pointer-events: none;
 }
 
-/* --------- Place the two pills (absolute, edge-hugging, vertically centered) --------- */
-[data-test="header"] :is(.header-nav-item:first-of-type, nav li:first-child) > a{
+/* We only want FIRST and LAST nav items */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
+  display: none !important;
+}
+
+/* Place the two pills at the edges and vertically center them */
+header#header .header-nav-list > .header-nav-item:first-child > a{
   position: absolute !important;
   left: var(--mm-edge-pad) !important;
-  top: calc(50% + var(--mm-center-fudge)) !important;     /* ↓ down a bit */
+  top: calc(50% + var(--mm-center-fudge)) !important;
   transform: translateY(-50%) !important;
   z-index: 2;
 }
-[data-test="header"] :is(.header-nav-item:last-of-type,  nav li:last-child)  > a{
+header#header .header-nav-list > .header-nav-item:last-child > a{
   position: absolute !important;
   right: var(--mm-edge-pad) !important;
-  top: calc(50% + var(--mm-center-fudge)) !important;     /* ↓ down a bit */
+  top: calc(50% + var(--mm-center-fudge)) !important;
   transform: translateY(-50%) !important;
   z-index: 2;
 }
 
-/* Visual pill styling (uses fluid padding + min width) */
-[data-test="header"] a{
+/* Pill visuals */
+header#header .header-nav-list > .header-nav-item > a{
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -128,19 +123,65 @@ header#header::before,
   padding-inline: var(--mm-btn-pad-x);
   border-radius: .5rem;
   font-weight: 700;
-  line-height: 1;                           /* no baseline drift */
+  line-height: 1;
   text-decoration: none;
-  color: #ffffff;
+  color: #fff;
   background: rgba(255,255,255,.10);
   border: 1px solid rgba(255,255,255,.35);
-  transition: background-color .16s ease, border-color .16s ease;
+  transition: background-color .16s ease, border-color .16s ease, transform .16s ease;
   margin: 0 !important;
 }
-
-/* Hover: keep baseline stable */
-[data-test="header"] a:hover{
+header#header .header-nav-list > .header-nav-item > a:hover,
+header#header .header-nav-list > .header-nav-item > a:focus-visible{
   background: rgba(255,255,255,.18);
   border-color: rgba(255,255,255,.5);
+  outline: none;
 }
 
+/* ------------------------------------------------------------------
+   “Sticky” micro-animation
+   We’ll toggle .mm-stuck on the header with tiny JS (below).
+   When stuck: shrink to top edge & remove the start-shift.
+------------------------------------------------------------------- */
+header#header.mm-stuck{
+  top: var(--mm-sticky-top);
+  transform: translate(-50%, 0);
+}
 
+/* Optional: gentle scale for the bar as it parks */
+header#header{ transition: transform .36s cubic-bezier(.2,.7,.2,1), top .36s cubic-bezier(.2,.7,.2,1); }
+
+/* ------------------------------------------------------------------
+   Mobile adjustments
+   - Keep burger visible and move it to the *center lane* area
+   - Stack priority remains: pills at edges, burger sits centered.
+------------------------------------------------------------------- */
+@media (max-width: 768px){
+  /* reveal burger and position in the center gap */
+  header#header .header-burger{
+    position: absolute !important;
+    left: 50%; top: 50%;
+    transform: translate(-50%,-50%);
+    z-index: 3;
+    display: block !important;
+  }
+  /* slightly reduce pill min widths if space is tight */
+  :root{
+    --mm-btn-min: clamp(5.75rem, 5rem + 1.2vw, 7rem);
+  }
+}
+
+/* ------------------------------------------------------------------
+   Respect the overlay menu and body content
+------------------------------------------------------------------- */
+
+/* Keep the overlay menu (header-menu) working normally.
+   Our bar sits above page content but below the overlay menu. */
+.header-menu{ z-index: 2000; }       /* Sqsp overlay already handles this */
+header#header{ z-index: 1200; }
+
+/* Ensure page content starts beneath the centered bar on load.
+   If you already have top padding on the first section, you can remove this. */
+body:not(.sqs-edit-mode) #page{
+  padding-top: calc(50vh + var(--mm-header-h));
+}
