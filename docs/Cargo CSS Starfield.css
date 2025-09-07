@@ -34,7 +34,7 @@ body.has-starfield{
 
   /* 0 = no avoidance, 1 = strongest avoidance */
   --avoid-vert-strength: 1;
-  --avoid-vert-width-deg: 35;
+  --avoid-vert-width-deg: 45;
 
   /* Soft glow */
   --max-blur: 0.12rem;
