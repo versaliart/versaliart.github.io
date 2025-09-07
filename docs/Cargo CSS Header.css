@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /* Mystic Munson — Glass Header (binds to your exact DOM)               */
 /*----------------------------------------------------------------------*/
-/*  v1.1 ... edge gaps */
+/*  v1.2 ... edge gaps */
 /* Fluid tokens */
 :root{
   --mm-header-h:   clamp(3rem, 2.6rem + 0.6vw, 3.25rem);
@@ -10,7 +10,7 @@
   --mm-gap-fixed:  clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
   --mm-btn-min:    clamp(6.5rem, 5rem + 2vw, 8rem); /* pill width floor */
 
-  --mm-edge-pad:   clamp(.125rem, .1rem + .3vw, .5rem);
+  --mm-edge-pad:  /* clamp(.125rem, .1rem + .3vw, .5rem);*/ 0;
   --mm-btn-pad-y:  clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x:  clamp(.9rem, .8rem + .6vw, 1.4rem);
 
@@ -298,4 +298,59 @@ header#header .header-nav-list,
 header#header .header-nav-item > a{
   margin-left: 0 !important;
   margin-right: 0 !important;
+}
+
+/* LET'S SEE */
+/* 0) The bar itself: not a flex container (we'll layout inside) */
+header#header[data-test="header"]{
+  display: block !important;
+}
+
+/* 1) Make the dotted wrapper fill the bar exactly */
+header#header .header-title-nav-wrapper{
+  position: absolute !important;
+  inset: 0 !important;                 /* fill the glass bar */
+  width: auto !important;
+  height: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+/* 2) Remove hidden gutters on the inner wrappers and let them fill, too */
+header#header .header-nav,
+header#header .header-nav-wrapper{
+  width: 100% !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* 3) Turn the nav list into a full-width, full-height grid 
+      [left pill] [fixed center gap] [right pill]
+   Edge padding is controlled only by --mm-edge-pad. */
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: minmax(0,1fr) var(--mm-gap-fixed) minmax(0,1fr);
+  align-items: center;                 /* perfect vertical centering */
+  justify-items: stretch;
+  height: 100% !important;
+  width: 100% !important;
+  padding-inline: var(--mm-edge-pad);  /* ← this is the ONLY side inset */
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* keep only first & last items and pin them to outer columns */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){ display:none !important; }
+header#header .header-nav-list > .header-nav-item:first-child{ grid-column:1; justify-self:start; display:flex; align-items:center; height:100%; }
+header#header .header-nav-list > .header-nav-item:last-child { grid-column:3; justify-self:end;   display:flex; align-items:center; height:100%; }
+
+/* links: no stray offsets */
+header#header .header-nav-item > a{
+  position: static !important;
+  transform: none !important;
+  margin: 0 !important;
 }
