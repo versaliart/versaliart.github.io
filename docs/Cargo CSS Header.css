@@ -97,21 +97,23 @@ header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-ch
   display: none !important;
 }
 
-/* Place the two pills at the edges and vertically center them */
-header#header .header-nav-list > .header-nav-item:first-child > a{
-  position: absolute !important;
-  left: var(--mm-edge-pad) !important;
-  top: calc(50% + var(--mm-center-fudge)) !important;
-  transform: translateY(-50%) !important;
-  z-index: 2;
+/* Use flexbox centering on the header bar itself */
+header#header[data-test="header"]{
+  display: flex;
+  align-items: center;        /* vertical centering */
+  justify-content: space-between;
+  padding-inline: var(--mm-edge-pad);
+  box-sizing: border-box;
 }
+
+/* Reset the anchor positioning: no absolute, no translate */
+header#header .header-nav-list > .header-nav-item:first-child > a,
 header#header .header-nav-list > .header-nav-item:last-child > a{
-  position: absolute !important;
-  right: var(--mm-edge-pad) !important;
-  top: calc(50% + var(--mm-center-fudge)) !important;
-  transform: translateY(-50%) !important;
-  z-index: 2;
+  position: static !important;
+  transform: none !important;
+  margin: 0;
 }
+
 
 /* Pill visuals */
 header#header .header-nav-list > .header-nav-item > a{
