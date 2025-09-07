@@ -9,7 +9,6 @@
   --mm-gap-fixed: clamp(5rem, 3rem + 6vw, 8rem);   /* center gap */
   --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
 
-  --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);
   --mm-btn-pad-y: clamp(.45rem, .4rem + .1vw, .6rem);
   --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
 
@@ -29,6 +28,7 @@
 
   /* Make L/R inset equal the vertical “air” inside the bar */
   --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2));
+  --mm-edge-fudge: 4px;   /* try 8–14px; tweak to taste */
 }
 
 /* Glass bar: fixed, already parked; visibility toggled by JS */
