@@ -1,0 +1,7 @@
+/* ===== Custom Cursor ===== */
+/* Applies sitewide; you can also scope it with .flip-top or .page-section */
+body {
+  cursor:
+    url("https://www.mysticmunson.design/s/planchette.svg") 16 1,
+    auto;
+}
