@@ -1,4 +1,4 @@
-// v3.0
+// v3.1 — Balanced Large distribution (min 1/4, max 1/3; 50/50 left/right; even spacing)
 
 (function(){
   const TARGETS = [
@@ -111,15 +111,39 @@
     };
   }
 
-  function chooseSizesPlan(N, sizeRems){
-    const minL = Math.floor(N/6);
-    const maxL = Math.floor(N/3);
-    const wantL = Math.max(minL, Math.min(maxL, minL + Math.floor(Math.random() * (Math.max(0, maxL-minL) + 1))));
-    const rest = N - wantL;
-    const planRest = new Array(rest).fill(0).map(()=> (Math.random()<0.5?'M':'S'));
-    for (let k = planRest.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [planRest[k], planRest[j]] = [planRest[j], planRest[k]]; }
-    return { Lcount: wantL, restPlan: planRest, sizeOf: k => ({L:sizeRems.L,M:sizeRems.M,S:sizeRems.S})[k] };
+  /* -------------------- NEW balanced size plan helpers -------------------- */
+  function clampInt(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
+
+  function pickEvenlySpacedIndices(len, k){
+    // return up to k distinct indices in [0..len-1], spaced as evenly as possible
+    if (k <= 0 || len <= 0) return [];
+    const out = [];
+    const step = len / k;
+    for (let i = 0; i < k; i++){
+      const idx = Math.floor(i*step + step/2);
+      out.push(Math.min(idx, len-1));
+    }
+    // de-dup pass for very small len/k
+    const uniq = [];
+    const seen = new Set();
+    for (const i of out){ if (!seen.has(i)){ seen.add(i); uniq.push(i); } }
+    return uniq;
   }
+
+  function chooseSizesPlanBalanced(N){
+    // Lcount: bounded to [ceil(N/4), floor(N/3)], target ~30%
+    const minL = Math.ceil(N * 0.25);
+    const maxL = Math.floor(N * (1/3));
+    const target = Math.floor(N * 0.30);
+    const Lcount = clampInt(target, minL, maxL);
+    // Non-Large tiers (M/S) plan; keep roughly 60/40 by simple alternation
+    const rest = N - Lcount;
+    const restPlan = new Array(rest);
+    let flip = 0; // 3/5 M, 2/5 S
+    for (let i = 0; i < rest; i++){ restPlan[i] = (flip++ % 5 < 3) ? 'M' : 'S'; }
+    return { Lcount, restPlan };
+  }
+  /* ----------------------------------------------------------------------- */
 
   function makeParamList(count, phase){
     const N = Math.max(0, count|0);
@@ -306,13 +330,64 @@
         return (mode === 'svg') ? tryPlaceAtT_SVG(t, sizeRem) : tryPlaceAtT_BOX(t, sizeRem);
       }
 
+      /* -------------------- NEW: side-aware Large selection -------------------- */
       const T_all = makeParamList(count, phase);
-      const sizePlan = chooseSizesPlan(count, { L:sizeLrem, M:sizeMrem, S:sizeSrem });
+      const { Lcount, restPlan } = chooseSizesPlanBalanced(count);
 
+      // classify each param t to LEFT / RIGHT buckets by x vs center
+      const leftIdx = [];
+      const rightIdx = [];
+
+      for (let i = 0; i < T_all.length; i++){
+        const t = T_all[i];
+        if (mode === 'svg'){
+          const total = path.getTotalLength();
+          const d = (t % 1) * total;
+          const p  = path.getPointAtLength(d);
+          // svgCenter is in SVG coords; p.x also in SVG coords — compare directly
+          const isLeft = svgCenter ? (p.x < svgCenter.x) : (i < T_all.length/2);
+          (isLeft ? leftIdx : rightIdx).push(i);
+        } else {
+          const hit = (target.fallback || 'ellipse') === 'rect'
+            ? sampleRectPerimeter(rectForBox, t)
+            : sampleEllipsePerimeter(rectForBox, t);
+          const isLeft = hit.x < hit.cx;
+          (isLeft ? leftIdx : rightIdx).push(i);
+        }
+      }
+
+      const LleftTarget  = Math.floor(Lcount / 2);
+      const LrightTarget = Lcount - LleftTarget;
+
+      let pickLeft  = pickEvenlySpacedIndices(leftIdx.length,  LleftTarget).map(j => leftIdx[j]);
+      let pickRight = pickEvenlySpacedIndices(rightIdx.length, LrightTarget).map(j => rightIdx[j]);
+
+      // If one side is short, borrow the remainder from the other side
+      const deficitLeft  = LleftTarget  - pickLeft.length;
+      const deficitRight = LrightTarget - pickRight.length;
+      if (deficitLeft > 0 && rightIdx.length > pickRight.length){
+        const extra = pickEvenlySpacedIndices(rightIdx.length, pickRight.length + deficitLeft).slice(pickRight.length);
+        pickRight = pickRight.concat(extra.map(j => rightIdx[j]));
+      }
+      if (deficitRight > 0 && leftIdx.length > pickLeft.length){
+        const extra = pickEvenlySpacedIndices(leftIdx.length, pickLeft.length + deficitRight).slice(pickLeft.length);
+        pickLeft = pickLeft.concat(extra.map(j => leftIdx[j]));
+      }
+
+      const largeIndices = new Set([...pickLeft, ...pickRight]);
+
+      /* -------------------- place Large first, spaced w/ jitter -------------------- */
       const usedIdx = new Set();
-      if (sizePlan.Lcount > 0){
-        for (let k=0; k<sizePlan.Lcount; k++){
-          const idx = Math.floor( (k + 0.5) * T_all.length / sizePlan.Lcount ) % T_all.length;
+      if (largeIndices.size > 0){
+        // place in an order that alternates sides to keep visual balance as we go
+        const seq = [];
+        const Larr = [...pickLeft], Rarr = [...pickRight];
+        const maxLen = Math.max(Larr.length, Rarr.length);
+        for (let i = 0; i < maxLen; i++){
+          if (i < Larr.length) seq.push(Larr[i]);
+          if (i < Rarr.length) seq.push(Rarr[i]);
+        }
+        for (const idx of seq){
           usedIdx.add(idx);
           const baseT = T_all[idx];
           let ok = false, tries = 0;
@@ -325,13 +400,14 @@
         }
       }
 
+      /* -------------------- place the rest (M/S) as before -------------------- */
       const restTs = [];
       for (let i=0;i<T_all.length;i++){ if (!usedIdx.has(i)) restTs.push(T_all[i]); }
       for (let k = restTs.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [restTs[k], restTs[j]] = [restTs[j], restTs[k]]; }
 
       let ti = 0;
-      for (let i = 0; i < sizePlan.restPlan.length && ti < restTs.length; i++){
-        const tier = sizePlan.restPlan[i];
+      for (let i = 0; i < restPlan.length && ti < restTs.length; i++){
+        const tier = restPlan[i];
         const sizeRem = (tier === 'M') ? sizeMrem : sizeSrem;
         let ok = false, tries = 0;
         while (!ok && tries < 40 && ti < restTs.length){
@@ -340,6 +416,7 @@
           ok = placeAtT(t, sizeRem) || placeAtT((t + 0.5) % 1, sizeRem);
         }
       }
+      /* ----------------------------------------------------------------------- */
     });
   }
 

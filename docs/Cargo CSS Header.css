@@ -210,3 +210,6 @@ header#header .header-nav-list > .header-nav-item > a{
   font-size: var(--mm-pill-font);
   line-height: var(--mm-pill-line);
 }
+
+/* Remove the injected "Skip to Content" link inside the header */
+header#header .header-skip-link{ display:none !important; }
