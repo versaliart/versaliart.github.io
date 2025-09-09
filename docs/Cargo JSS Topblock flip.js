@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.464 — FULL JS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.47 — FULL JS ===== */
 (function(){
   // ---------- Build DOM for the doors ----------
   function buildDoors(url){
@@ -94,86 +94,52 @@
     paint(rightBack,  (W / 2) - seam);
   }
 
-  function isOpen(block){
-  return block.matches(':hover') || block.classList.contains('is-flipped');
-}
-
-function getPoint(e){
-  if ('clientX' in e) return { x: e.clientX, y: e.clientY };
-  const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-  return t ? { x: t.clientX, y: t.clientY } : null;
-}
-
-function findClickableUnder(block, x, y){
-  if (!document.elementsFromPoint) return null;
-  const stack = document.elementsFromPoint(x, y);
-  const CLICKABLE_SEL = 'a,button,[role="button"],[role="link"],label,input,textarea,select,summary';
-  // scan the whole stack and pick the first clickable outside Topflip
-  for (let i = 0; i < stack.length; i++){
-    const el = stack[i];
-    if (block.contains(el)) continue;
-    if (
-      el.matches?.(CLICKABLE_SEL) ||
-      el.closest?.(CLICKABLE_SEL)    // covers nested anchors inside SQS containers
-    ){
-      const chosen = el.matches?.(CLICKABLE_SEL) ? el : el.closest(CLICKABLE_SEL);
-      if (chosen && !block.contains(chosen)) return chosen;
-    }
+  // ---------- Utilities ----------
+  function isCoarse(){ return matchMedia('(hover: none), (pointer: coarse)').matches; }
+  function isFine(){   return matchMedia('(hover: hover) and (pointer: fine)').matches; }
+  function getPoint(e){
+    if ('clientX' in e) return { x: e.clientX, y: e.clientY };
+    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+    return t ? { x: t.clientX, y: t.clientY } : null;
   }
-  // fallback: first element outside block
-  for (let i = 0; i < stack.length; i++){
-    const el = stack[i];
-    if (!block.contains(el)) return el;
-  }
-  return null;
-}
-
-
-  // ---------- Utility: is block "open"? ----------
-  function isOpen(block){
-    return block.matches(':hover') || block.classList.contains('is-flipped');
+  function pointOutsideRect(pt, r){
+    return !pt || pt.x < r.left || pt.x > r.right || pt.y < r.top || pt.y > r.bottom;
   }
 
-function forwardEventIfOpen(e, block){
-  if (!isOpen(block)) return;
+  // ---------- Open/close (desktop) with real pass-through ----------
+  function openBlock(block){
+    if (block.__open) return;
+    block.__open = true;
+    block.classList.add('is-open', 'pe-through');  // pe-through = pointer-events:none on the block
 
-  const pt = getPoint(e);
-  if (!pt) return;
+    // While open, watch the pointer; when it leaves the block rect, close.
+    const onMove = (ev) => {
+      const pt = getPoint(ev);
+      const rect = block.getBoundingClientRect();
+      if (pointOutsideRect(pt, rect)) closeBlock(block);
+    };
+    const onWheel = () => { /* scrolling can move the rect under cursor */ 
+      // Close if cursor no longer over rect
+      const rect = block.getBoundingClientRect();
+      // We need last known pointer; approximate with current mouse position via elementFromPoint
+      const el = document.elementFromPoint?.(window.event?.clientX ?? 0, window.event?.clientY ?? 0);
+      if (el && !block.contains(el)) closeBlock(block);
+    };
 
-  const target = findClickableUnder(block, pt.x, pt.y);
-  if (!target) return;
-
-  // Stop the original on Topflip
-  try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
-
-  // Re-dispatch a similar event on the element underneath
-  const type = e.type;
-  const commonInit = {
-    bubbles: true, cancelable: true, view: window,
-    clientX: pt.x, clientY: pt.y,
-    ctrlKey: !!e.ctrlKey, shiftKey: !!e.shiftKey, altKey: !!e.altKey, metaKey: !!e.metaKey,
-    button: e.button || 0, buttons: e.buttons || 0
-  };
-
-  try {
-    if (window.PointerEvent && (type.startsWith('pointer') || type === 'click')){
-      target.dispatchEvent(new PointerEvent(type, commonInit));
-    } else if (window.MouseEvent){
-      target.dispatchEvent(new MouseEvent(type, commonInit));
-    } else {
-      target.click?.(); // ultimate fallback
-    }
-  } catch(_){
-    try { target.click?.(); } catch(__){}
+    document.addEventListener('pointermove', onMove, true);
+    window.addEventListener('scroll', onWheel, true);
+    block.__cleanupOpen = () => {
+      document.removeEventListener('pointermove', onMove, true);
+      window.removeEventListener('scroll', onWheel, true);
+    };
   }
 
-  // Extra nudge for anchors & SQS buttons
-  if (type === 'click' && target.tagName === 'A'){
-    // Many SQS buttons are anchors; .click() above usually handles it.
-    // Nothing else needed unless your theme cancels it.
+  function closeBlock(block){
+    if (!block.__open) return;
+    block.__open = false;
+    block.classList.remove('is-open', 'pe-through');
+    if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
   }
-}
-
 
   // ---------- Initialize one block ----------
   function initOne(block){
@@ -192,20 +158,42 @@ function forwardEventIfOpen(e, block){
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // 2) Disable the marker link only while open (CSS also covers this)
+    // 2) Disable the marker link only while open or flipped (CSS also covers this)
     const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
     if (marker){
       marker.addEventListener('click', (e) => {
-        if (isOpen(block)) { e.preventDefault(); e.stopPropagation(); }
+        if (block.classList.contains('is-open') || block.classList.contains('is-flipped')) {
+          e.preventDefault(); e.stopPropagation();
+        }
       }, true);
     }
 
-    // 3) True click-through while open
-    ['pointerdown','pointerup','mousedown','mouseup','click','touchend'].forEach(type=>{
-      block.addEventListener(type, function(ev){ forwardEventIfOpen(ev, block); }, true);
-    });
+    // 3) Desktop hover → open with pass-through; close when cursor leaves rect
+    if (isFine()){
+      block.addEventListener('mouseenter', () => openBlock(block));
+      // NOTE: we don't rely on mouseleave; we close when pointer leaves rect (see openBlock)
+    }
 
-    // 4) Initial layout + reactive relayouts
+    // 4) Mobile tap to toggle .is-flipped + pass-through
+    block.addEventListener('click', function(e){
+      if (!isCoarse()) return;
+      if (!block.classList.contains('is-flipped')){
+        e.preventDefault(); e.stopPropagation();
+        block.classList.add('is-flipped', 'pe-through');
+      }
+    }, true);
+
+    // Tap blank space to unflip (mobile)
+    document.addEventListener('click', function(e){
+      if (!isCoarse()) return;
+      if (block.classList.contains('is-flipped')){
+        const insideAction = e.target.closest &&
+          e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
+        if (!insideAction){ block.classList.remove('is-flipped', 'pe-through'); }
+      }
+    }, true);
+
+    // 5) Initial layout + reactive relayouts
     const relayout = () => layout(block);
     relayout();
 
@@ -217,9 +205,20 @@ function forwardEventIfOpen(e, block){
 
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
 
-    block.addEventListener('mouseenter', relayout);
-    block.addEventListener('mouseleave', relayout);
     window.addEventListener('resize', relayout);
+
+    // 6) Safety: if block leaves viewport, close & reset
+    if ('IntersectionObserver' in window){
+      const io = new IntersectionObserver((entries)=>{
+        entries.forEach((entry)=>{
+          if (!entry.isIntersecting){
+            closeBlock(block);
+            block.classList.remove('is-flipped', 'pe-through');
+          }
+        });
+      }, { threshold: 0.05 });
+      io.observe(block);
+    }
   }
 
   // ---------- Initialize all eligible blocks ----------

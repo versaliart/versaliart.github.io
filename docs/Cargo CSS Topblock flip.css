@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.464 — FULL CSS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.47 — FULL CSS ===== */
 
 :root{
   /* Timing */
@@ -49,7 +49,7 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transition-property: transform;
-  /* default to CLOSE timing; overridden on :hover below */
+  /* default to CLOSE timing; overridden when open */
   transition-duration: var(--flip-close-duration);
   transition-timing-function: var(--flip-close-ease);
 }
@@ -78,29 +78,31 @@
 
 /* ----- States ----- */
 
-/* Closed = image visible */
+/* Closed = image visible (doors closed) */
 .sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
 .sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-/* OPEN (hover): slower duration + slow-start easing */
-.sqs-block.image-block.flip-top:hover .flip-door{
+/* OPEN state (class-driven) */
+.sqs-block.image-block.flip-top.is-open .flip-door{
   transition-duration: var(--flip-open-duration);
   transition-timing-function: var(--flip-open-ease);
 }
+.sqs-block.image-block.flip-top.is-open .flip-door.left  { transform: rotateY(-180deg); }
+.sqs-block.image-block.flip-top.is-open .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
 
-/* Rotate the halves on hover */
-.sqs-block.image-block.flip-top:hover .flip-door.left  { transform: rotateY(-180deg); }
-.sqs-block.image-block.flip-top:hover .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
+/* Make the entire block pass pointer events while open so underlying :hover/cursor work */
+.sqs-block.image-block.flip-top.pe-through{
+  pointer-events: none !important; /* critical for true CSS :hover on elements beneath */
+}
 
-/* Ensure the block itself can receive hover while clicks still pass through */
-.sqs-block.image-block.flip-top{ pointer-events: auto; }
+/* Doors host stays non-interactive at all times */
 .sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
 
 /* === Click behavior for the marker link ===
    - Clickable when closed (native behavior)
-   - Disabled while open (hover) or tapped-open (.is-flipped)
+   - Disabled while open (.is-open) or tapped-open (.is-flipped)
 */
-.sqs-block.image-block.flip-top:hover a.sqs-block-image-link[href="#flip-top"],
+.sqs-block.image-block.flip-top.is-open a.sqs-block-image-link[href="#flip-top"],
 .sqs-block.image-block.flip-top.is-flipped a.sqs-block-image-link[href="#flip-top"]{
   pointer-events: none !important;
   cursor: default !important;
