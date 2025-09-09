@@ -96,3 +96,9 @@
 /* Ensure the block itself can receive hover while clicks still pass through */
 .sqs-block.image-block.flip-top{ pointer-events: auto; }
 .sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
+
+/* Disable only while the doors are open (hover state) */
+.sqs-block.image-block.flip-top:hover a.sqs-block-image-link[href="#flip-top"]{
+  pointer-events: none !important;
+  cursor: default !important;
+}

@@ -107,6 +107,13 @@
     if (!url) return;
 
     block.classList.add('flip-top');           // mark as processed
+    // Neutralize the marker link (opt-in flag only; never navigates)
+const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
+if (marker){
+  marker.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); }, true);
+  marker.setAttribute('aria-hidden','true');
+  marker.setAttribute('tabindex','-1');
+}
     const doors = buildDoors(url);
     container.appendChild(doors);
 
