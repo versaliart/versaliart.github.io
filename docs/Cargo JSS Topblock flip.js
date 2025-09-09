@@ -1,10 +1,11 @@
-/* ===== Topblock Split-Flip (Doors) v2.46 — FULL JS ===== */
-
+/* ===== Topblock Split-Flip (Doors) v2.464 — FULL JS ===== */
 (function(){
   // ---------- Build DOM for the doors ----------
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
+    doors.dataset.image = url;
+
     const makeDoor = side => {
       const d = document.createElement('div');
       d.className = 'flip-door ' + side;
@@ -13,9 +14,9 @@
       d.appendChild(front); d.appendChild(back);
       return d;
     };
+
     doors.appendChild(makeDoor('left'));
     doors.appendChild(makeDoor('right'));
-    doors.dataset.image = url; // used by layout()
     return doors;
   }
 
@@ -31,13 +32,13 @@
     const W = Math.max(1, rect.width);
     const H = Math.max(1, rect.height);
 
-    // Natural image dimensions (Squarespace often adds data-image-dimensions="WxH")
+    // Natural image dimensions
     let iw = imgEl.naturalWidth  || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
     if (dims && dims.includes('x')) {
-      const parts = dims.split('x');
-      const dw = parseFloat(parts[0]); const dh = parseFloat(parts[1]);
+      const [dwStr, dhStr] = dims.split('x');
+      const dw = parseFloat(dwStr), dh = parseFloat(dhStr);
       if (dw > 0 && dh > 0) { iw = dw; ih = dh; }
     }
 
@@ -45,27 +46,26 @@
     let fx = 0.5, fy = 0.5;
     const fp = imgEl.getAttribute('data-image-focal-point');
     if (fp && fp.includes(',')) {
-      const parts = fp.split(',');
-      const sx = parseFloat(parts[0]); const sy = parseFloat(parts[1]);
+      const [sxStr, syStr] = fp.split(',');
+      const sx = parseFloat(sxStr), sy = parseFloat(syStr);
       if (!Number.isNaN(sx)) fx = sx;
       if (!Number.isNaN(sy)) fy = sy;
     }
 
-    // object-fit: cover (NO rounding — keep sub-pixel precision)
+    // object-fit: cover (no rounding)
     const scale = Math.max(W / iw, H / ih);
     const bgW = iw * scale;
     const bgH = ih * scale;
 
-    // Top-left background position so focal maps correctly
+    // Top-left background origin to respect focal point
     const posX = (W * fx) - (bgW * fx);
     const posY = (H * fy) - (bgH * fy);
 
-    // Constant seam overlap (in px) from CSS var on .flip-doors
-    const seam = parseFloat(getComputedStyle(doors).getPropertyValue('--flip-seam')) || 0;
+    // seam/bleed from CSS custom props
+    const cs = getComputedStyle(doors);
+    const seam  = parseFloat(cs.getPropertyValue('--flip-seam'))  || 0;
+    const bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
 
-   const bleed = parseFloat(getComputedStyle(doors).getPropertyValue('--edge-bleed')) || 0;
-
-    
     // Faces
     const leftFront  = doors.querySelector('.flip-door.left  .face.front');
     const rightFront = doors.querySelector('.flip-door.right .face.front');
@@ -75,24 +75,70 @@
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
     // Apply background with sub-pixel values
-  const paint = (el, dx) => {
-  if (!el) return;
-  el.style.backgroundImage    = `url("${url}")`;
-  el.style.backgroundSize     = `${bgW}px ${bgH}px`;
-  // +bleed on X and Y because the face grew outward by that amount
-  el.style.backgroundPosition = `${(posX - dx + bleed)}px ${(posY + bleed)}px`;
-  el.style.backgroundRepeat   = 'no-repeat';
-  el.style.transform          = 'translateZ(0)';
-  el.style.backfaceVisibility = 'hidden';
-  el.style.webkitBackfaceVisibility = 'hidden';
-};
-
+    const paint = (el, dx) => {
+      if (!el) return;
+      el.style.backgroundImage    = `url("${url}")`;
+      el.style.backgroundSize     = `${bgW}px ${bgH}px`;
+      // +bleed on both axes because the painted face extends outward
+      el.style.backgroundPosition = `${(posX - dx + bleed)}px ${(posY + bleed)}px`;
+      el.style.backgroundRepeat   = 'no-repeat';
+      el.style.transform          = 'translateZ(0)';
+      el.style.backfaceVisibility = 'hidden';
+      el.style.webkitBackfaceVisibility = 'hidden';
+    };
 
     // Left uses container origin; right uses center minus overlap
     paint(leftFront, 0);
     paint(leftBack,  0);
     paint(rightFront, (W / 2) - seam);
     paint(rightBack,  (W / 2) - seam);
+  }
+
+  // ---------- Utility: is block "open"? ----------
+  function isOpen(block){
+    return block.matches(':hover') || block.classList.contains('is-flipped');
+  }
+
+  // ---------- Click-through while open ----------
+  function forwardEventIfOpen(e, block){
+    if (!isOpen(block)) return;                       // only while doors are open
+    const pt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
+              : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
+              : null;
+    if (!pt || !document.elementsFromPoint) return;
+
+    const stack = document.elementsFromPoint(pt.x, pt.y);
+    let under = null;
+    for (let i=0; i<stack.length; i++){
+      if (!block.contains(stack[i])) { under = stack[i]; break; }
+    }
+    if (!under) return;
+
+    // Prefer a clickable ancestor
+    const clickable = under.closest && under.closest('a,button,[role="button"],[role="link"],label,summary,input,textarea,select');
+
+    // Stop the event on the Topflip
+    try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+
+    if (clickable){
+      // Native click is best if allowed
+      try { clickable.focus && clickable.focus(); clickable.click(); return; } catch(_){}
+    }
+
+    // Otherwise synthesize a similar mouse event on the element under the Topflip
+    const ctor = (window.MouseEvent || window.Event);
+    try {
+      const clone = new ctor(e.type, {
+        bubbles: true, cancelable: true, view: window,
+        clientX: pt.x, clientY: pt.y,
+        ctrlKey: !!e.ctrlKey, shiftKey: !!e.shiftKey, altKey: !!e.altKey, metaKey: !!e.metaKey,
+        button: e.button || 0, buttons: e.buttons || 0
+      });
+      under.dispatchEvent(clone);
+    } catch(_) {
+      // Fallback: just call .click()
+      try { under.click && under.click(); } catch(__){}
+    }
   }
 
   // ---------- Initialize one block ----------
@@ -107,35 +153,38 @@
     if (!url) return;
 
     block.classList.add('flip-top');           // mark as processed
-    // Neutralize the marker link (opt-in flag only; never navigates)
-const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
-if (marker){
-  marker.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); }, true);
-  marker.setAttribute('aria-hidden','true');
-  marker.setAttribute('tabindex','-1');
-}
+
+    // 1) Build & insert doors overlay
     const doors = buildDoors(url);
     container.appendChild(doors);
 
+    // 2) Disable the marker link only while open (CSS also covers this)
+    const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
+    if (marker){
+      marker.addEventListener('click', (e) => {
+        if (isOpen(block)) { e.preventDefault(); e.stopPropagation(); }
+      }, true);
+    }
+
+    // 3) True click-through while open
+    ['pointerdown','pointerup','mousedown','mouseup','click','touchend'].forEach(type=>{
+      block.addEventListener(type, function(ev){ forwardEventIfOpen(ev, block); }, true);
+    });
+
+    // 4) Initial layout + reactive relayouts
     const relayout = () => layout(block);
     relayout();
 
-    // Relayout on container resize
     const ro = new ResizeObserver(relayout);
     ro.observe(container);
 
-    // Relayout on image src/srcset change (Squarespace lazy/responsive)
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
 
-    // Ensure layout once image fully loads
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
 
-    // Relayout on hover enter/leave (rare, but keeps offsets perfect mid-flip)
     block.addEventListener('mouseenter', relayout);
     block.addEventListener('mouseleave', relayout);
-
-    // Also on window resize (some themes resize outside container RO)
     window.addEventListener('resize', relayout);
   }
 

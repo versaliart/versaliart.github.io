@@ -4,12 +4,12 @@
   /* Timing */
   --flip-open-duration: 480ms;                 /* slower first flip */
   --flip-close-duration: 480ms;                /* snappier return */
-  --flip-open-ease: cubic-bezier(.55,.055,.675,.19); /* strong ease-in (slow start) */
+  --flip-open-ease: cubic-bezier(.55,.055,.675,.19); /* strong ease-in */
   --flip-close-ease: cubic-bezier(.2,.7,.2,1);       /* brisk ease-out */
 
   /* 3D + geometry */
   --flip-perspective: 1000px;
-  --flip-seam: 1px;        /* physical overlap to kill center split (0.75–1.5px) */
+  --flip-seam: 1px;        /* overlap to hide center split (0.75–1.5px) */
   --edge-bleed: 1px;       /* extend paint a hair to hide edge hairlines */
 }
 
@@ -34,7 +34,7 @@
   overflow: hidden;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  pointer-events: none;     /* clicks pass through to the underlying link */
+  pointer-events: none;     /* IMPORTANT: doors never block clicks */
   contain: layout paint;
 }
 
@@ -53,7 +53,6 @@
   transition-duration: var(--flip-close-duration);
   transition-timing-function: var(--flip-close-ease);
 }
-
 .sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
 .sqs-block.image-block.flip-top .flip-door.right { right: 0; transform-origin: center right; }
 
@@ -97,8 +96,12 @@
 .sqs-block.image-block.flip-top{ pointer-events: auto; }
 .sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
 
-/* Disable only while the doors are open (hover state) */
-.sqs-block.image-block.flip-top:hover a.sqs-block-image-link[href="#flip-top"]{
+/* === Click behavior for the marker link ===
+   - Clickable when closed (native behavior)
+   - Disabled while open (hover) or tapped-open (.is-flipped)
+*/
+.sqs-block.image-block.flip-top:hover a.sqs-block-image-link[href="#flip-top"],
+.sqs-block.image-block.flip-top.is-flipped a.sqs-block-image-link[href="#flip-top"]{
   pointer-events: none !important;
   cursor: default !important;
 }
