@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.5 — FULL JS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.48 — FULL JS ===== */
 (function(){
   // ---------- Build DOM for the doors ----------
   function buildDoors(url){
@@ -79,7 +79,6 @@
       if (!el) return;
       el.style.backgroundImage    = `url("${url}")`;
       el.style.backgroundSize     = `${bgW}px ${bgH}px`;
-      // +bleed on both axes because the painted face extends outward
       el.style.backgroundPosition = `${(posX - dx + bleed)}px ${(posY + bleed)}px`;
       el.style.backgroundRepeat   = 'no-repeat';
       el.style.transform          = 'translateZ(0)';
@@ -110,27 +109,25 @@
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
-    block.classList.add('is-open', 'pe-through');  // pe-through = pointer-events:none on the block
+    block.classList.add('is-open', 'pe-through');  // pe-through => full subtree pointer-events:none
 
-    // While open, watch the pointer; when it leaves the block rect, close.
+    // Track pointer; when it leaves the block rect, close.
     const onMove = (ev) => {
       const pt = getPoint(ev);
       const rect = block.getBoundingClientRect();
       if (pointOutsideRect(pt, rect)) closeBlock(block);
     };
-    const onWheel = () => { /* scrolling can move the rect under cursor */ 
-      // Close if cursor no longer over rect
-      const rect = block.getBoundingClientRect();
-      // We need last known pointer; approximate with current mouse position via elementFromPoint
+    const onScroll = () => {
+      // if scrolled so pointer no longer over rect, close
       const el = document.elementFromPoint?.(window.event?.clientX ?? 0, window.event?.clientY ?? 0);
       if (el && !block.contains(el)) closeBlock(block);
     };
 
     document.addEventListener('pointermove', onMove, true);
-    window.addEventListener('scroll', onWheel, true);
+    window.addEventListener('scroll', onScroll, true);
     block.__cleanupOpen = () => {
       document.removeEventListener('pointermove', onMove, true);
-      window.removeEventListener('scroll', onWheel, true);
+      window.removeEventListener('scroll', onScroll, true);
     };
   }
 
@@ -171,7 +168,7 @@
     // 3) Desktop hover → open with pass-through; close when cursor leaves rect
     if (isFine()){
       block.addEventListener('mouseenter', () => openBlock(block));
-      // NOTE: we don't rely on mouseleave; we close when pointer leaves rect (see openBlock)
+      // We close in openBlock's pointer tracker; no reliance on mouseleave.
     }
 
     // 4) Mobile tap to toggle .is-flipped + pass-through

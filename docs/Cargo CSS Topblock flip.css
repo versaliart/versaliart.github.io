@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.5 — FULL CSS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.48 — FULL CSS ===== */
 
 :root{
   /* Timing */
@@ -34,7 +34,7 @@
   overflow: hidden;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  pointer-events: none;     /* IMPORTANT: doors never block clicks */
+  pointer-events: none;     /* doors never block clicks */
   contain: layout paint;
 }
 
@@ -82,7 +82,7 @@
 .sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
 .sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-/* OPEN state (class-driven) */
+/* OPEN (class-driven) */
 .sqs-block.image-block.flip-top.is-open .flip-door{
   transition-duration: var(--flip-open-duration);
   transition-timing-function: var(--flip-open-ease);
@@ -90,18 +90,14 @@
 .sqs-block.image-block.flip-top.is-open .flip-door.left  { transform: rotateY(-180deg); }
 .sqs-block.image-block.flip-top.is-open .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
 
-/* Make the entire block pass pointer events while open so underlying :hover/cursor work */
-.sqs-block.image-block.flip-top.pe-through{
-  pointer-events: none !important; /* critical for true CSS :hover on elements beneath */
+/* TRUE pass-through while open:
+   make the ENTIRE Topflip tree transparent to hit-testing */
+.sqs-block.image-block.flip-top.pe-through,
+.sqs-block.image-block.flip-top.pe-through *{
+  pointer-events: none !important;
 }
 
-/* Doors host stays non-interactive at all times */
-.sqs-block.image-block.flip-top .flip-doors{ pointer-events: none; }
-
-/* === Click behavior for the marker link ===
-   - Clickable when closed (native behavior)
-   - Disabled while open (.is-open) or tapped-open (.is-flipped)
-*/
+/* Marker link: clickable when closed; disabled while open or tapped-open */
 .sqs-block.image-block.flip-top.is-open a.sqs-block-image-link[href="#flip-top"],
 .sqs-block.image-block.flip-top.is-flipped a.sqs-block-image-link[href="#flip-top"]{
   pointer-events: none !important;
