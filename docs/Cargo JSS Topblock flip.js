@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.48 — FULL JS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.49 — FULL JS (bare) ===== */
 (function(){
   // ---------- Build DOM for the doors ----------
   function buildDoors(url){
@@ -61,7 +61,6 @@
     const posX = (W * fx) - (bgW * fx);
     const posY = (H * fy) - (bgH * fy);
 
-    // seam/bleed from CSS custom props
     const cs = getComputedStyle(doors);
     const seam  = parseFloat(cs.getPropertyValue('--flip-seam'))  || 0;
     const bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
@@ -74,7 +73,6 @@
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
-    // Apply background with sub-pixel values
     const paint = (el, dx) => {
       if (!el) return;
       el.style.backgroundImage    = `url("${url}")`;
@@ -96,30 +94,42 @@
   // ---------- Utilities ----------
   function isCoarse(){ return matchMedia('(hover: none), (pointer: coarse)').matches; }
   function isFine(){   return matchMedia('(hover: hover) and (pointer: fine)').matches; }
-  function getPoint(e){
-    if ('clientX' in e) return { x: e.clientX, y: e.clientY };
-    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-    return t ? { x: t.clientX, y: t.clientY } : null;
-  }
-  function pointOutsideRect(pt, r){
-    return !pt || pt.x < r.left || pt.x > r.right || pt.y < r.top || pt.y > r.bottom;
+
+  function closestFeBlock(el){
+    return el.closest('.fe-block') || null;
   }
 
-  // ---------- Open/close (desktop) with real pass-through ----------
+  // Apply/remove pass-through on both the flip-top and its fe-block wrapper
+  function setPassThrough(block, on){
+    const outer = closestFeBlock(block);
+    if (on){
+      block.classList.add('pe-through');
+      outer && outer.classList.add('pe-through');
+    } else {
+      block.classList.remove('pe-through');
+      outer && outer.classList.remove('pe-through');
+    }
+  }
+
+  // ---------- Open/close (desktop) ----------
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
-    block.classList.add('is-open', 'pe-through');  // pe-through => full subtree pointer-events:none
+    block.classList.add('is-open');
+    setPassThrough(block, true);
 
-    // Track pointer; when it leaves the block rect, close.
+    // Close when pointer leaves the block rect (track at document level)
     const onMove = (ev) => {
-      const pt = getPoint(ev);
-      const rect = block.getBoundingClientRect();
-      if (pointOutsideRect(pt, rect)) closeBlock(block);
+      const r = block.getBoundingClientRect();
+      const x = ev.clientX, y = ev.clientY;
+      if (x < r.left || x > r.right || y < r.top || y > r.bottom){
+        closeBlock(block);
+      }
     };
     const onScroll = () => {
-      // if scrolled so pointer no longer over rect, close
-      const el = document.elementFromPoint?.(window.event?.clientX ?? 0, window.event?.clientY ?? 0);
+      // If the pointer is no longer over the block's rect after scroll, close
+      const r = block.getBoundingClientRect();
+      const el = document.elementFromPoint?.(r.left + 1, r.top + 1);
       if (el && !block.contains(el)) closeBlock(block);
     };
 
@@ -134,7 +144,8 @@
   function closeBlock(block){
     if (!block.__open) return;
     block.__open = false;
-    block.classList.remove('is-open', 'pe-through');
+    block.classList.remove('is-open');
+    setPassThrough(block, false);
     if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
   }
 
@@ -155,7 +166,7 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // 2) Disable the marker link only while open or flipped (CSS also covers this)
+    // 2) Disable the marker link only while open or tapped-open (CSS also covers this)
     const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
     if (marker){
       marker.addEventListener('click', (e) => {
@@ -165,28 +176,32 @@
       }, true);
     }
 
-    // 3) Desktop hover → open with pass-through; close when cursor leaves rect
+    // 3) Desktop hover → open with true pass-through; close on pointer leave
     if (isFine()){
       block.addEventListener('mouseenter', () => openBlock(block));
-      // We close in openBlock's pointer tracker; no reliance on mouseleave.
+      // We close via document pointer tracker in openBlock()
     }
 
-    // 4) Mobile tap to toggle .is-flipped + pass-through
+    // 4) Mobile tap to toggle persistent open (and pass-through)
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
         e.preventDefault(); e.stopPropagation();
-        block.classList.add('is-flipped', 'pe-through');
+        block.classList.add('is-flipped');
+        setPassThrough(block, true);
       }
     }, true);
 
-    // Tap blank space to unflip (mobile)
+    // Tap blank space to close on mobile
     document.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (block.classList.contains('is-flipped')){
-        const insideAction = e.target.closest &&
+        const actionable = e.target.closest &&
           e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
-        if (!insideAction){ block.classList.remove('is-flipped', 'pe-through'); }
+        if (!actionable){
+          block.classList.remove('is-flipped');
+          setPassThrough(block, false);
+        }
       }
     }, true);
 
@@ -204,13 +219,14 @@
 
     window.addEventListener('resize', relayout);
 
-    // 6) Safety: if block leaves viewport, close & reset
+    // 6) Safety: close when off-screen
     if ('IntersectionObserver' in window){
       const io = new IntersectionObserver((entries)=>{
         entries.forEach((entry)=>{
           if (!entry.isIntersecting){
             closeBlock(block);
-            block.classList.remove('is-flipped', 'pe-through');
+            block.classList.remove('is-flipped');
+            setPassThrough(block, false);
           }
         });
       }, { threshold: 0.05 });
@@ -226,7 +242,6 @@
     });
   }
 
-  // Boot + watch DOM for dynamically added blocks (Squarespace editor/lazy)
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAll);
   } else {
