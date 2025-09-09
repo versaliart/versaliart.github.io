@@ -335,21 +335,16 @@ button.sqs-add-to-cart-button{
 }
 
 /* Apply only when the block contains ONLY p.sqsrte-large paragraphs */
-.sqs-block.html-block .sqs-html-content:
-  has(> p.sqsrte-large)
-  :not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large))))
-{
+.sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
   display: grid;
-  row-gap: .55rem;                 /* your base gap */
+  row-gap: .55rem;
   padding-block: var(--tb-pad-y, 0);
   padding-inline: var(--tb-pad-x, .5rem);
 }
-.sqs-block.html-block .sqs-html-content:
-  has(> p.sqsrte-large)
-  :not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large))))
-  > *{
-  margin: 0 !important;            /* prevent margin-based reflow */
+.sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))) > *{
+  margin: 0 !important;
 }
+
 
 /* Bigger gap between display lines and paragraph sizes */
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + *,
@@ -363,3 +358,26 @@ button.sqs-add-to-cart-button{
 /* Safe variant: hide only if the *last* paragraph is just a <br> */
 .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){ display:none !important; }
 
+/* --- SAFEGUARD: only hide “truly-empty” paragraphs on the public site, not in editor --- */
+body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
+  display: none !important;
+}
+
+/* :blank is conservative, but still avoid in editor just in case */
+@supports selector(p:blank){
+  body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:blank{
+    display: none !important;
+  }
+}
+
+/* Be strict: only hide a trailing paragraph that is literally JUST a <br>, on the public site */
+body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){
+  display: none !important;
+}
+
+/* If you still see flicker while typing, disable the trailing-<br> rule entirely: */
+/*
+body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){
+  display: revert !important;
+}
+*/
