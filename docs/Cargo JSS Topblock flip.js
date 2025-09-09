@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.47 — FULL JS ===== */
+/* ===== Topblock Split-Flip (Doors) v2.5 — FULL JS ===== */
 (function(){
   // ---------- Build DOM for the doors ----------
   function buildDoors(url){
