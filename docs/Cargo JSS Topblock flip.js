@@ -94,52 +94,86 @@
     paint(rightBack,  (W / 2) - seam);
   }
 
+  function isOpen(block){
+  return block.matches(':hover') || block.classList.contains('is-flipped');
+}
+
+function getPoint(e){
+  if ('clientX' in e) return { x: e.clientX, y: e.clientY };
+  const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
+  return t ? { x: t.clientX, y: t.clientY } : null;
+}
+
+function findClickableUnder(block, x, y){
+  if (!document.elementsFromPoint) return null;
+  const stack = document.elementsFromPoint(x, y);
+  const CLICKABLE_SEL = 'a,button,[role="button"],[role="link"],label,input,textarea,select,summary';
+  // scan the whole stack and pick the first clickable outside Topflip
+  for (let i = 0; i < stack.length; i++){
+    const el = stack[i];
+    if (block.contains(el)) continue;
+    if (
+      el.matches?.(CLICKABLE_SEL) ||
+      el.closest?.(CLICKABLE_SEL)    // covers nested anchors inside SQS containers
+    ){
+      const chosen = el.matches?.(CLICKABLE_SEL) ? el : el.closest(CLICKABLE_SEL);
+      if (chosen && !block.contains(chosen)) return chosen;
+    }
+  }
+  // fallback: first element outside block
+  for (let i = 0; i < stack.length; i++){
+    const el = stack[i];
+    if (!block.contains(el)) return el;
+  }
+  return null;
+}
+
+
   // ---------- Utility: is block "open"? ----------
   function isOpen(block){
     return block.matches(':hover') || block.classList.contains('is-flipped');
   }
 
-  // ---------- Click-through while open ----------
-  function forwardEventIfOpen(e, block){
-    if (!isOpen(block)) return;                       // only while doors are open
-    const pt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
-              : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
-              : null;
-    if (!pt || !document.elementsFromPoint) return;
+function forwardEventIfOpen(e, block){
+  if (!isOpen(block)) return;
 
-    const stack = document.elementsFromPoint(pt.x, pt.y);
-    let under = null;
-    for (let i=0; i<stack.length; i++){
-      if (!block.contains(stack[i])) { under = stack[i]; break; }
+  const pt = getPoint(e);
+  if (!pt) return;
+
+  const target = findClickableUnder(block, pt.x, pt.y);
+  if (!target) return;
+
+  // Stop the original on Topflip
+  try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
+
+  // Re-dispatch a similar event on the element underneath
+  const type = e.type;
+  const commonInit = {
+    bubbles: true, cancelable: true, view: window,
+    clientX: pt.x, clientY: pt.y,
+    ctrlKey: !!e.ctrlKey, shiftKey: !!e.shiftKey, altKey: !!e.altKey, metaKey: !!e.metaKey,
+    button: e.button || 0, buttons: e.buttons || 0
+  };
+
+  try {
+    if (window.PointerEvent && (type.startsWith('pointer') || type === 'click')){
+      target.dispatchEvent(new PointerEvent(type, commonInit));
+    } else if (window.MouseEvent){
+      target.dispatchEvent(new MouseEvent(type, commonInit));
+    } else {
+      target.click?.(); // ultimate fallback
     }
-    if (!under) return;
-
-    // Prefer a clickable ancestor
-    const clickable = under.closest && under.closest('a,button,[role="button"],[role="link"],label,summary,input,textarea,select');
-
-    // Stop the event on the Topflip
-    try { e.preventDefault(); e.stopPropagation(); } catch(_) {}
-
-    if (clickable){
-      // Native click is best if allowed
-      try { clickable.focus && clickable.focus(); clickable.click(); return; } catch(_){}
-    }
-
-    // Otherwise synthesize a similar mouse event on the element under the Topflip
-    const ctor = (window.MouseEvent || window.Event);
-    try {
-      const clone = new ctor(e.type, {
-        bubbles: true, cancelable: true, view: window,
-        clientX: pt.x, clientY: pt.y,
-        ctrlKey: !!e.ctrlKey, shiftKey: !!e.shiftKey, altKey: !!e.altKey, metaKey: !!e.metaKey,
-        button: e.button || 0, buttons: e.buttons || 0
-      });
-      under.dispatchEvent(clone);
-    } catch(_) {
-      // Fallback: just call .click()
-      try { under.click && under.click(); } catch(__){}
-    }
+  } catch(_){
+    try { target.click?.(); } catch(__){}
   }
+
+  // Extra nudge for anchors & SQS buttons
+  if (type === 'click' && target.tagName === 'A'){
+    // Many SQS buttons are anchors; .click() above usually handles it.
+    // Nothing else needed unless your theme cancels it.
+  }
+}
+
 
   // ---------- Initialize one block ----------
   function initOne(block){
