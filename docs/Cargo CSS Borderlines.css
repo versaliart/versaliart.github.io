@@ -37,7 +37,7 @@ body.has-motifs{
   --motif-min-seg-length: 4rem;         /* don't shrink below this */
   --motif-min-gap: 12px;                /* minimum gap between segments */
   --motif-center-gap-pad: 0.25rem;
-  --motif-bottom-cap-gap: .25rem;
+  --motif-bottom-cap-gap: .5rem;
 }
 
 /* Segments: scale the line art to the requested width, keep centered */
