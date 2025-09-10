@@ -146,6 +146,8 @@ function build(reason){
   }
 
   const { topY, bottomY } = findBounds();
+  // …(keep the rest of your build as-is, using clientW)…
+}
 
 
 // Viewport width that EXCLUDES the vertical scrollbar
