@@ -1,4 +1,4 @@
-/* ===== Motif Rails v2.6 (CSS) — clean drop-in ===== */
+/* ===== Motif Rails v2.7 (CSS)===== */
 
 body.has-motifs{
   /* Artwork */
@@ -98,4 +98,8 @@ body.has-motifs{
   background-repeat:no-repeat;
   background-position:center;
   background-size:100% 100%;
+}
+
+@media (max-width: 60rem) {        /* 60rem ≈ 960px */
+  body.has-motifs .motif-rails { display: none !important; }
 }

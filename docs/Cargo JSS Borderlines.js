@@ -1,4 +1,4 @@
-/* Motif Rails v2.7 — widest-column gutters + capped placement + per-section gap */
+/* Motif Rails v2.8 WORKING */
 (function(){
   // ----- single-instance guard -----
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
