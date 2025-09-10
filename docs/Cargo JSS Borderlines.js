@@ -184,77 +184,80 @@
     });
     body.appendChild(railsEl);
 
-    // ---- per-range renderer: 2 line parts + center gap with caps above/below
-    function makeRailRange(x, rTop, rBot){
-      let gapH = centerH + 2*capH + 2*pad;
 
-// now: include the extra space taken by the bottom cap above the center
-      let gapH = centerH + 2*capH + 2*pad + capGap;
-      const h = Math.max(0, rBot - rTop);
-      if (h < 4) return;
+ function makeRailRange(x, rTop, rBot){
+  const h = Math.max(0, rBot - rTop);
+  if (h < 4) return;
 
-      const rail = doc.createElement('div');
-      rail.className = 'motif-rail';
-      Object.assign(rail.style, {
-        position:'absolute',
-        left:`${x}px`,
-        top:`${rTop - cTop}px`,
-        height:`${h}px`,
-        width:'var(--motif-rail-width)'
-      });
-      railsEl.appendChild(rail);
+  const rail = doc.createElement('div');
+  rail.className = 'motif-rail';
+  Object.assign(rail.style, {
+    position:'absolute',
+    left:`${x}px`,
+    top:`${rTop - cTop}px`,
+    height:`${h}px`,
+    width:'var(--motif-rail-width)'
+  });
+  railsEl.appendChild(rail);
 
-      // keep top/bottom caps inside the range
-      const insetTop = capH, insetBot = capH;
-      const usable = h - insetTop - insetBot;
-      if (usable <= 0) return;
+  // keep top/bottom caps inside the range
+  const insetTop = capH;
+  const insetBot = capH;           // keep the end cap visually lower (gap comes from CSS)
+  // If you want the very bottom cap to stay flush with the rail bottom instead,
+  // change the line above to: const insetBot = capH + capGap;
 
-      // total gap between the two line portions so that:
-      //   [cap above gap] + [center] + [cap below gap] + 2*pad fits
-      let gapH = centerH + 2*capH + 2*pad;
-      if (gapH > usable){
-        // squish pad first, but never overlap caps/center
-        const spare = Math.max(0, usable - centerH);
-        pad = Math.max(0, spare/2 - capH);
-        gapH = centerH + 2*capH + 2*pad;
-      }
+  const usable = h - insetTop - insetBot;
+  if (usable <= 0) return;
 
-      const topH = Math.max(0, Math.floor((usable - gapH)/2));
-      const botH = Math.max(0, usable - gapH - topH); // exact remainder
+  // total clearance around the center:
+  //   [cap above gap] + [center] + [cap below gap] + 2*pad + the extra bottom-cap gap that sits above the center
+  let padLocal = pad; // don't mutate outer pad
+  let gapH = centerH + 2*capH + 2*padLocal + capGap;
 
-      // helper to append a line box
-      function addLine(atTopPx, heightPx){
-        const seg = doc.createElement('div');
-        seg.className = 'motif-seg';
-        Object.assign(seg.style, {
-          position:'absolute', left:'0',
-          top:`${atTopPx}px`,
-          width:'100%',
-          height:`${heightPx}px`
-        });
-        const line = doc.createElement('div');
-        line.className = 'motif-line';
-        if (DBG){
-          line.style.background =
-            'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
-        }
-        seg.appendChild(line);
-        rail.appendChild(seg);
-      }
+  // if too tight, reduce pad symmetrically (but keep the extra bottom-cap gap reserved)
+  if (gapH > usable){
+    const spare = Math.max(0, usable - centerH - capGap);
+    padLocal = Math.max(0, spare/2 - capH);
+    gapH = centerH + 2*capH + 2*padLocal + capGap;
+  }
 
-      // TOP line (has top cap + cap above the gap)
-      addLine(insetTop, topH);
+  const topH = Math.max(0, Math.floor((usable - gapH)/2));
+  const botH = Math.max(0, usable - gapH - topH); // exact remainder
 
-      // BOTTOM line (has cap below the gap + bottom cap)
-      const bottomTop = insetTop + topH + gapH;
-      addLine(bottomTop, botH);
-
-      // CENTERPIECE at true middle of the whole range
-      const ctr = doc.createElement('div');
-      ctr.className = 'motif-center';
-      ctr.style.top = `${insetTop + topH + gapH/2}px`;
-      rail.appendChild(ctr);
+  // helper to append a line box
+  function addLine(atTopPx, heightPx){
+    const seg = doc.createElement('div');
+    seg.className = 'motif-seg';
+    Object.assign(seg.style, {
+      position:'absolute', left:'0',
+      top:`${atTopPx}px`,
+      width:'100%',
+      height:`${heightPx}px`
+    });
+    const line = doc.createElement('div');
+    line.className = 'motif-line';
+    if (DBG){
+      line.style.background =
+        'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
     }
+    seg.appendChild(line);
+    rail.appendChild(seg);
+  }
+
+  // TOP line (has top cap + cap above the gap)
+  addLine(insetTop, topH);
+
+  // BOTTOM line (has cap below the gap + bottom cap)
+  const bottomTop = insetTop + topH + gapH;
+  addLine(bottomTop, botH);
+
+  // CENTERPIECE at the true middle of the range
+  const ctr = doc.createElement('div');
+  ctr.className = 'motif-center';
+  ctr.style.top = `${insetTop + topH + gapH/2}px`;
+  rail.appendChild(ctr);
+}
+
 
     for (const rg of ranges){
       makeRailRange(leftX,  rg.top, rg.bottom);
