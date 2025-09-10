@@ -79,6 +79,9 @@ body.has-motifs{
 }
 .motif-line::before{ top:    calc(-1 * var(--motif-cap-height)); }
 .motif-line::after { bottom: calc(-1 * var(--motif-cap-height)); }
+.motif-line::after{
+  transform: translateX(-50%) scaleY(-1);
+}
 
 /* Centerpiece stays centered inside the same wrapper */
 .motif-center{
