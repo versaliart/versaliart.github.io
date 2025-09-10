@@ -11,7 +11,7 @@
 
   --mm-edge-pad:  0px; /*clamp(.125rem, .1rem + .3vw, .5rem);*/
   --mm-btn-pad-y: 0px; /*clamp(.225rem, .2rem + .1vw, .3rem); */
-  --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
+  --mm-btn-pad-x: 0px; /*clamp(.9rem,  .8rem + .6vw, 1.4rem);*/
 
   --mm-radius: .75rem;
   --mm-bg: rgba(32,19,67,.52);
