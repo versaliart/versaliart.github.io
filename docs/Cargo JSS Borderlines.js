@@ -11,8 +11,9 @@
   const DBG = Q.has('motifdebug');
   const MODE_LOCK = Q.get('motifmode'); // "edge" | "gutter" | null
 
+  // public API
   const API = window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, {
-    version: '2.1-center-gap',
+    version: '2.2-center-gap',
     __installed: true,
     ping: () => '[motif] ok',
     rebuild: () => schedule('api')
@@ -50,31 +51,21 @@
     return sec.classList.contains('motifs-off') ||
            !!sec.querySelector('.motifs-off,[data-motifs="off"],#motifs-disable-section');
   }
-// ----- sections -> individual ranges (no merging) -----
-function enabledRangesWithin(boundsTop, boundsBottom){
-  const secs = getSections();
-  if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
-
-  const ranges = [];
-
-  for (const s of secs){
-    // skip any section that opts out
-    if (sectionIsOff(s)) continue;
-
-    const r = s.getBoundingClientRect();
-    const t = Math.max(boundsTop, r.top + scrollY);
-    const b = Math.min(boundsBottom, r.bottom + scrollY);
-
-    // ignore collapsed/invisible slices
-    if (b <= t + 2) continue;
-
-    // push one range per eligible section
-    ranges.push({ top: t, bottom: b });
+  // one range per eligible section (no merging)
+  function enabledRangesWithin(boundsTop, boundsBottom){
+    const secs = getSections();
+    if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
+    const ranges = [];
+    for (const s of secs){
+      if (sectionIsOff(s)) continue;
+      const r = s.getBoundingClientRect();
+      const t = Math.max(boundsTop, r.top + scrollY);
+      const b = Math.min(boundsBottom, r.bottom + scrollY);
+      if (b <= t + 2) continue;
+      ranges.push({ top: t, bottom: b });
+    }
+    return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
   }
-
-  // fall back to whole page if nothing qualified
-  return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
-}
 
   // ----- bounds & column -----
   function findBounds(){
@@ -91,7 +82,7 @@ function enabledRangesWithin(boundsTop, boundsBottom){
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0) return r;
     }
-const vw = document.documentElement.clientWidth || innerWidth; // instead of innerWidth
+    const vw = document.documentElement.clientWidth || window.innerWidth; // scrollbar-safe
     const colW = Math.min(1200, vw * 0.92);
     const left = (vw - colW)/2;
     return { left, right: left + colW };
@@ -108,182 +99,170 @@ const vw = document.documentElement.clientWidth || innerWidth; // instead of inn
     railsEl = null;
   }
 
-function makeSignature(ctx){
-  const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
-  return [
-    ctx.vw, window.innerHeight,     // <-- pass vw in from build()
-    ctx.cTop|0, ctx.cH|0,
-    ctx.leftX|0, ctx.rightX|0,
-    rangeSig
-  ].join('|');
-}
-
-
-function build(reason){
-  if (isBuilding) return;
-  isBuilding = true;
-
-  applyMotifsPageToggle();
-  if (!body.classList.contains('has-motifs')) {
-    clearRails(); lastSig = 'hidden:off'; isBuilding = false; return;
+  function makeSignature(ctx){
+    const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
+    return [
+      ctx.vw, window.innerHeight,
+      ctx.cTop|0, ctx.cH|0,
+      ctx.leftX|0, ctx.rightX|0,
+      rangeSig
+    ].join('|');
   }
 
-  // Viewport width that EXCLUDES the vertical scrollbar
-  const clientW = document.documentElement.clientWidth || window.innerWidth;
-  const sbw = Math.max(0, window.innerWidth - clientW);
-  if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw);
+  function build(reason){
+    if (isBuilding) return;
+    isBuilding = true;
 
-  // Hide under a breakpoint — and CLEAR existing rails
-  const hideBp  = cssPx('--motif-hide-bp', 960);
-  if (clientW < hideBp) { clearRails(); lastSig = 'hidden:bp'; isBuilding = false; return; }
+    applyMotifsPageToggle();
+    if (!body.classList.contains('has-motifs')) {
+      clearRails(); lastSig = 'hidden:off'; isBuilding = false; return;
+    }
 
-  const { topY, bottomY } = findBounds();
+    // viewport width EXCLUDING scrollbar
+    const clientW = document.documentElement.clientWidth || window.innerWidth;
+    const sbw = Math.max(0, window.innerWidth - clientW);
+    if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw);
 
-  // offsets & geometry (all from your CSS custom properties)
-  const topOffset    = cssPx('--motif-top-offset', 0);
-  const bottomOffset = cssPx('--motif-bottom-offset', 0);
-  const capGap = cssPx('--motif-bottom-cap-gap', 0);
+    // breakpoint hide (and clear)
+    const hideBp  = cssPx('--motif-hide-bp', 960);
+    if (clientW < hideBp) { clearRails(); lastSig = 'hidden:bp'; isBuilding = false; return; }
 
-  const railW  = cssPx('--motif-rail-width', 32);
-  const railIn = cssPx('--motif-rail-inset', 12);
-  const edgeIn = cssPx('--motif-edge-inset', 24);
-  const capH   = cssPx('--motif-cap-height', 24);
-  const centerH= cssPx('--motif-center-height', 36);
-  let   pad    = cssPx('--motif-center-gap-pad', 0);
+    const { topY, bottomY } = findBounds();
 
-  const minG   = cssPx('--motif-min-gutter', 160);
-  const zVar   = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
-  const zIndex = zVar || '0';
-  const opacity= (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '.55';
+    // geometry from CSS
+    const topOffset    = cssPx('--motif-top-offset', 0);
+    const bottomOffset = cssPx('--motif-bottom-offset', 0);
+    const capGap = cssPx('--motif-bottom-cap-gap', 0);
 
-  const colRect = findContentColumn();
-  const leftG   = Math.max(0, colRect.left);
-  const rightG  = Math.max(0, clientW - colRect.right);
+    const railW  = cssPx('--motif-rail-width', 32);
+    const railIn = cssPx('--motif-rail-inset', 12);
+    const edgeIn = cssPx('--motif-edge-inset', 24);
+    const capH   = cssPx('--motif-cap-height', 24);
+    const centerH= cssPx('--motif-center-height', 36);
+    let   pad    = cssPx('--motif-center-gap-pad', 0);
 
-  // Optional: hide rails if gutters get too small on either side
-  const hideGutter = cssPx('--motif-hide-gutter', 0); // 0 = disabled
-  if (hideGutter > 0 && (leftG < hideGutter || rightG < hideGutter)) {
-    clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return;
-  }
+    const minG   = cssPx('--motif-min-gutter', 160);
+    const zVar   = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
+    const zIndex = zVar || '0';
+    const opacity= (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '.55';
 
-  let tight = (leftG < minG) || (rightG < minG);
-  if (MODE_LOCK === 'edge')   tight = true;
-  if (MODE_LOCK === 'gutter') tight = false;
+    const colRect = findContentColumn();
+    const leftG   = Math.max(0, colRect.left);
+    const rightG  = Math.max(0, clientW - colRect.right);
 
-  let leftX, rightX;
-  if (tight){
-    leftX  = Math.max(0, Math.round(edgeIn));
-    rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
-  }else{
-    leftX  = Math.round((leftG * 0.5) - (railW * 0.5) + railIn);
-    rightX = Math.round(clientW - (rightG * 0.5) - (railW * 0.5) - railIn);
-  }
+    // optional: hide when gutters are tight
+    const hideGutter = cssPx('--motif-hide-gutter', 0); // 0 = disabled
+    if (hideGutter > 0 && (leftG < hideGutter || rightG < hideGutter)) {
+      clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return;
+    }
 
-  const cTop = topY + topOffset;
-  const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
-  const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
+    let tight = (leftG < minG) || (rightG < minG);
+    if (MODE_LOCK === 'edge')   tight = true;
+    if (MODE_LOCK === 'gutter') tight = false;
 
-  // dedupe
-  const sig = makeSignature({ vw: clientW, cTop, cH, leftX, rightX, ranges });
-  if (sig === lastSig) { isBuilding = false; return; }
-  lastSig = sig;
+    let leftX, rightX;
+    if (tight){
+      leftX  = Math.max(0, Math.round(edgeIn));
+      rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+    }else{
+      leftX  = Math.round((leftG * 0.5) - (railW * 0.5) + railIn);
+      rightX = Math.round(clientW - (rightG * 0.5) - (railW * 0.5) - railIn);
+    }
 
-  // (re)build
-  clearRails();
+    const cTop = topY + topOffset;
+    const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
+    const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
 
-  railsEl = doc.createElement('div');
-  railsEl.className = 'motif-rails';
-  Object.assign(railsEl.style, {
-    position:'absolute', left:'0', right:'0',
-    top: `${cTop}px`, height: `${cH}px`,
-    pointerEvents:'none',
-    zIndex, opacity
-  });
-  body.appendChild(railsEl);
+    // dedupe
+    const sig = makeSignature({ vw: clientW, cTop, cH, leftX, rightX, ranges });
+    if (sig === lastSig) { isBuilding = false; return; }
+    lastSig = sig;
 
-  // ---- per-range renderer: top/bottom segments + centered gap with caps above/below
-  function makeRailRange(x, rTop, rBot){
-    const h = Math.max(0, rBot - rTop);
-    if (h < 4) return;
+    // (re)build
+    clearRails();
 
-    const rail = doc.createElement('div');
-    rail.className = 'motif-rail';
-    Object.assign(rail.style, {
-      position:'absolute',
-      left:`${x}px`,
-      top:`${rTop - cTop}px`,
-      height:`${h}px`,
-      width:'var(--motif-rail-width)'
+    railsEl = doc.createElement('div');
+    railsEl.className = 'motif-rails';
+    Object.assign(railsEl.style, {
+      position:'absolute', left:'0', right:'0',
+      top: `${cTop}px`, height: `${cH}px`,
+      pointerEvents:'none',
+      zIndex, opacity
     });
-    railsEl.appendChild(rail);
+    body.appendChild(railsEl);
 
-    // keep top/bottom caps inside the range
-    const insetTop = capH;
-    const insetBot = capH; // (CSS adds the visual bottom-cap gap)
-    const usable = h - insetTop - insetBot;
-    if (usable <= 0) return;
+    // ---- per-range renderer: 2 line parts + centered gap with caps above/below
+    function makeRailRange(x, rTop, rBot){
+      const h = Math.max(0, rBot - rTop);
+      if (h < 4) return;
 
-    // clearance: [cap] + pad + [center] + pad + [cap] + extra bottom-cap gap
-    let padLocal = pad; // do not mutate outer pad
-    let gapH = centerH + 2*capH + 2*padLocal + capGap;
+      const rail = doc.createElement('div');
+      rail.className = 'motif-rail';
+      Object.assign(rail.style, {
+        position:'absolute',
+        left:`${x}px`,
+        top:`${rTop - cTop}px`,
+        height:`${h}px`,
+        width:'var(--motif-rail-width)'
+      });
+      railsEl.appendChild(rail);
 
-    // tighten if needed (reserve capGap, shrink pad first)
-    if (gapH > usable){
-      const spare = Math.max(0, usable - centerH - capGap);
-      padLocal = Math.max(0, spare/2 - capH);
-      gapH = centerH + 2*capH + 2*padLocal + capGap;
-    }
+      const insetTop = capH;
+      const insetBot = capH; // CSS supplies the bottom-cap visual gap
+      const usable = h - insetTop - insetBot;
+      if (usable <= 0) return;
 
-    const topH = Math.max(0, Math.floor((usable - gapH)/2));
-    const botH = Math.max(0, usable - gapH - topH);
+      // clearance: cap + pad + center + pad + cap + extra bottom-cap gap
+      let padLocal = pad;
+      let gapH = centerH + 2*capH + 2*padLocal + capGap;
 
-    // helper to append a line box
-    function addLine(atTopPx, heightPx){
-      const seg = doc.createElement('div');
-      seg.className = 'motif-seg';
-      Object.assign(seg.style, { position:'absolute', left:'0', top:`${atTopPx}px`, width:'100%', height:`${heightPx}px` });
-      const line = doc.createElement('div');
-      line.className = 'motif-line';
-      if (DBG){
-        line.style.background =
-          'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
+      if (gapH > usable){
+        const spare = Math.max(0, usable - centerH - capGap);
+        padLocal = Math.max(0, spare/2 - capH);
+        gapH = centerH + 2*capH + 2*padLocal + capGap;
       }
-      seg.appendChild(line);
-      rail.appendChild(seg);
+
+      const topH = Math.max(0, Math.floor((usable - gapH)/2));
+      const botH = Math.max(0, usable - gapH - topH);
+
+      function addLine(atTopPx, heightPx){
+        const seg = doc.createElement('div');
+        seg.className = 'motif-seg';
+        Object.assign(seg.style, { position:'absolute', left:'0', top:`${atTopPx}px`, width:'100%', height:`${heightPx}px` });
+        const line = doc.createElement('div');
+        line.className = 'motif-line';
+        if (DBG){
+          line.style.background =
+            'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
+        }
+        seg.appendChild(line);
+        rail.appendChild(seg);
+      }
+
+      addLine(insetTop, topH);
+      addLine(insetTop + topH + gapH, botH);
+
+      // place centerpiece with equal pad to both caps
+      const ctr = document.createElement('div');
+      ctr.className = 'motif-center';
+      ctr.style.top = `${insetTop + topH + capH + capGap + padLocal}px`; // CSS-only gap mode
+      rail.appendChild(ctr);
     }
 
-    // TOP line (has top cap + cap above the gap)
-    addLine(insetTop, topH);
+    for (const rg of ranges){
+      makeRailRange(leftX,  rg.top, rg.bottom);
+      makeRailRange(rightX, rg.top, rg.bottom);
+    }
 
-    // BOTTOM line (has cap below the gap + bottom cap)
-    const bottomTop = insetTop + topH + gapH;
-    addLine(bottomTop, botH);
-
-    // CENTERPIECE positioned so spacing to both caps = padLocal
-    const ctr = document.createElement('div');
-    ctr.className = 'motif-center';
-    const centerTopPx = insetTop + topH + capH + capGap + padLocal; // CSS-only gap mode
-    ctr.style.top = `${centerTopPx}px`;
-    rail.appendChild(ctr);
+    if (DBG) console.log('[motif] built', { leftX, rightX, ranges: ranges.length, reason });
+    isBuilding = false;
   }
 
-  for (const rg of ranges){
-    makeRailRange(leftX,  rg.top, rg.bottom);
-    makeRailRange(rightX, rg.top, rg.bottom);
-  }
-
-  if (DBG) console.log('[motif] built', { leftX, rightX, ranges: ranges.length, reason });
-  isBuilding = false;
-}
-
-  // ----- scheduling & observers (loop-proof) -----
+  // ----- scheduling & observers -----
   function schedule(reason){
     if (scheduled || isBuilding) return;
     scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      build(reason);
-    });
+    requestAnimationFrame(() => { scheduled = false; build(reason); });
   }
 
   const ro = new ResizeObserver(() => schedule('resize'));
@@ -300,7 +279,6 @@ function build(reason){
   });
   mo.observe(doc.documentElement, { childList:true, subtree:true, attributes:true });
 
-  // initial
   window.addEventListener('load', () => schedule('load'), { once:true, passive:true });
   onReady(() => schedule('domready'));
 })();
