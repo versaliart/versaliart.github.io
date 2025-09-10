@@ -28,6 +28,7 @@ body.has-motifs{
   --motif-bottom-cap-gap: .25rem;     /* extra space between line & bottom cap */
   --motif-opacity: 1;
   --motif-z: 10;
+  --motif-fallback-col-pct: .92;
 }
 
 /* Container (JS also sets these inline; keep here as a safety net) */

@@ -100,7 +100,7 @@
     if (best) return best;
 
     // Fallback: centered 88%/max-1200px (≈6% gutters each side)
-    const pctVar = parseFloat(getComputedStyle(body).getPropertyValue('--motif-fallback-col-pct')) || 0.88;
+    const pctVar = parseFloat(getComputedStyle(body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
     const colW = Math.min(1200, clientW * pctVar);
     const left = (clientW - colW)/2;
     return { left, right: left + colW };
