@@ -1,4 +1,4 @@
-/* Motif Rails v2.5 — robust gutters + inline line art */
+/* Motif Rails v2.6 — robust gutters + inline line art */
 (function(){
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
     console.warn('[motif] rails already installed, skipping');
@@ -123,7 +123,7 @@
 
     applyMotifsPageToggle();
     body.classList.add('has-motifs'); // ensure CSS vars exist
-
+    const contentClear = cssPx('--motif-content-clear', cssPx('--motif-rail-inset', 12));
     const clientW = document.documentElement.clientWidth || window.innerWidth;
     const sbw = Math.max(0, window.innerWidth - clientW);
     if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw, 'reason=', reason);
@@ -179,13 +179,35 @@
     if (MODE_LOCK === 'gutter') tight = false;
 
     let leftX, rightX;
-    if (tight){
-      leftX  = Math.max(0, Math.round(edgeIn));
-      rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
-    }else{
-      leftX  = Math.round((leftG * 0.5) - (railW * 0.5) + railIn);
-      rightX = Math.round(clientW - (rightG * 0.5) - (railW * 0.5) - railIn);
-    }
+const placeFromContent = () => {
+  // Never overlap content: sit just OUTSIDE the narrowest inner column
+  leftX  = Math.round(colRect.left  - contentClear - railW);
+  rightX = Math.round(colRect.right + contentClear);
+
+  // Clamp to viewport so we don’t go negative or off-screen
+  leftX  = Math.max(0, leftX);
+  rightX = Math.min(clientW - railW, rightX);
+};
+
+// Force-edge lock still respected via URL (?motifmode=edge)
+if (MODE_LOCK === 'edge') {
+  leftX  = Math.max(0, Math.round(edgeIn));
+  rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+} else {
+  placeFromContent();
+
+  // If BOTH gutters are truly too small to fit the rail with clearance,
+  // fall back to edge placement (or your hide logic will kick in).
+  const needL = railW + contentClear;
+  const needR = railW + contentClear;
+  if ((leftG < needL) && (rightG < needR)) {
+    leftX  = Math.max(0, Math.round(edgeIn));
+    rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+  }
+}
+
+if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentClear, railW });
+
 
     const cTop = topY + topOffset;
     const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);

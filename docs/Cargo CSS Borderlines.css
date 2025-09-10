@@ -1,4 +1,4 @@
-/* ===== Motif Rails v2.3 (CSS) — clean drop-in ===== */
+/* ===== Motif Rails v2.6 (CSS) — clean drop-in ===== */
 
 body.has-motifs{
   /* Artwork */
@@ -29,6 +29,7 @@ body.has-motifs{
   --motif-opacity: 1;
   --motif-z: 10;
   --motif-fallback-col-pct: .92;
+  --motif-content-clear: 12px;
 }
 
 /* Container (JS also sets these inline; keep here as a safety net) */
