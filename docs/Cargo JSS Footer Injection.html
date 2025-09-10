@@ -1,63 +1,66 @@
 <script>
 (function () {
-  // Tiny utility: wait for a selector to appear, then run once
-  function whenSelector(selector, cb) {
-    var el = document.querySelector(selector);
+  // tiny loader that appends to <head> (safer than body)
+  function loadScript(src){
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = function(){ resolve(src); };
+      s.onerror = function(e){ reject(new Error('Failed to load ' + src)); };
+      (document.head || document.documentElement).appendChild(s);
+    });
+  }
+
+  // Always load Borderlines (rails) after DOM is parsed — no selector gate
+  var domReady = (document.readyState !== 'loading')
+    ? Promise.resolve()
+    : new Promise(function(r){ document.addEventListener('DOMContentLoaded', r, {once:true}); });
+
+  domReady
+    .then(function(){ return loadScript('https://versaliart.github.io/Cargo%20JSS%20Borderlines.js'); })
+    .then(function(){
+      console.log('[Loader] Borderlines loaded');
+      // prove the file executed (v1.37+ exposes this)
+      console.log(window.MOTIF_RAILS && window.MOTIF_RAILS.ping ? window.MOTIF_RAILS.ping() : '[motif] ping missing');
+    })
+    .catch(function(err){ console.warn('[Loader] Borderlines failed', err); });
+
+  // keep your other loaders as-is (just fix the duplicate log label below)
+  function whenSelector(sel, cb){
+    var el = document.querySelector(sel);
     if (el) return cb(el);
     var mo = new MutationObserver(function () {
-      el = document.querySelector(selector);
+      el = document.querySelector(sel);
       if (el) { mo.disconnect(); cb(el); }
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  // Load a script and return a Promise (for ordering/debugging)
-  function loadScript(src, opts) {
-    return new Promise(function (resolve, reject) {
-      var s = document.createElement("script");
-      if (opts && opts.type) s.type = opts.type; // e.g., {type:"module"}
-      s.src = src;
-      s.defer = !opts || !opts.type;
-      s.onload = function(){ resolve(src); };
-      s.onerror = function(e){ reject(new Error("Failed to load " + src)); };
-      document.body.appendChild(s);
-    });
-  }
-
-  // === Starfield ===
   whenSelector("#starfield-enable", function () {
     loadScript("https://versaliart.github.io/Cargo%20JSS%20Starfield.js")
       .then(()=>console.log("[Loader] Starfield loaded"))
       .catch(console.warn);
   });
 
-  // === Tags ===
   whenSelector(".tag-pills", function () {
     loadScript("https://versaliart.github.io/Cargo%20JSS%20Tags.js")
       .then(()=>console.log("[Loader] Tags loaded"))
       .catch(console.warn);
   });
 
-  // === Topblock flip ===
   whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
     loadScript("https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js")
       .then(()=>console.log("[Loader] Topblock loaded"))
       .catch(console.warn);
   });
 
-  // === Header ===
   whenSelector('header#header[data-test="header"]', function () {
     loadScript("https://versaliart.github.io/Cargo%20JSS%20Header.js")
       .then(()=>console.log("[Loader] Header loaded"))
       .catch(console.warn);
   });
 
-    // === Border art ===
-  whenSelector('header#header[data-test="header"]', function () {
-    loadScript("https://versaliart.github.io/Cargo%20JSS%20Borderlines.js")
-      .then(()=>console.log("[Loader] Header loaded"))
-      .catch(console.warn);
-  });
-
+  // (Removed the second header-gated block that was supposed to load Borderlines)
 })();
 </script>
