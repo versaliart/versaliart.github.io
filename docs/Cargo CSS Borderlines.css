@@ -31,7 +31,7 @@ body.has-motifs{
 
   --motif-seg-length: 32rem;     /* slightly taller segments */
   --motif-seg-gap: 2.25rem;      /* a hair more breathing room */
-  --motif-z: 1;                  /* behind hero art; raise only if needed */
+  --motif-z: 10;                  /* behind hero art; raise only if needed */
 }
 
 /* Segments: scale the line art to the requested width, keep centered */
