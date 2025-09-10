@@ -99,3 +99,10 @@ body.has-motifs{
 
 /* v2.1: JS sets exact top in px — keep only horizontal centering */
 .motif-rail .motif-center{ transform: translateX(-50%); }
+/* v2.2: make the painted line fill the segment box */
+.motif-rail .motif-seg{ position:absolute; left:0; width:100%; } /* already implied by JS */
+.motif-rail .motif-line{
+  position: relative;        /* so ::before / ::after are placed correctly */
+  width: 100%;
+  height: 100%;              /* <-- crucial: stretch to segment height */
+}
