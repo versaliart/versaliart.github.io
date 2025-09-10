@@ -175,7 +175,8 @@ function build(reason){
   let   pad    = cssPx('--motif-center-gap-pad', 0);
 
   const minG   = cssPx('--motif-min-gutter', 160);
-  const zVar   = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim() || '0';
+  const zVar   = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim(); // may be ""
+  const zIndex = DBG ? 99999 : (parseInt(zVar, 10) || 9999); // default to 9999 if unset/0
   const opacity= (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '.55';
 
   const colRect = findContentColumn();
