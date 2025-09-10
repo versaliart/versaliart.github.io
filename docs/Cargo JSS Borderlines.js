@@ -162,10 +162,10 @@
   document.addEventListener('DOMContentLoaded', buildRails);
   buildRails();
 
-  // --- Toggle body.has-motifs when #motifs-enable is present ---
+  // --- Toggle body.has-motifs with opt-OUT marker ---
 function applyMotifs() {
-  const hasMarker = !!document.getElementById('motifs-enable');
-  document.body.classList.toggle('has-motifs', hasMarker);
+  const hasOptOut = !!document.getElementById('motifs-disable');
+  document.body.classList.toggle('has-motifs', !hasOptOut);
 }
 
 // Run once on load
