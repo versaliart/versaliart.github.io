@@ -196,19 +196,24 @@
 
       let y = 0;
       for (let i=0; i<count; i++){
-        const seg = doc.createElement('div');
-        seg.className = 'motif-seg';
-        Object.assign(seg.style, {
-          position:'absolute', left:'0',
-          top:`${y + capH}px`,
-          width:'100%', height:`${segLen}px`,
-          ...(DBG ? { background:'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)' } : {})
-        });
-        const ctr = doc.createElement('div');
-        ctr.className = 'motif-center';
-        if (DBG) Object.assign(ctr.style, { outline:'1px dashed rgba(180,120,0,.85)', width:'var(--motif-center-size,24px)', height:'var(--motif-center-size,24px)' });
-        seg.appendChild(ctr);
-        rail.appendChild(seg);
+       // NEW: centered inner wrapper so line, caps, center share the same origin
+const seg = document.createElement('div');
+seg.className = 'motif-seg';
+Object.assign(seg.style, { position:'absolute', top:`${y + capH}px`, left:'0', width:'100%', height:`${segLen}px` });
+
+const line = document.createElement('div');
+line.className = 'motif-line';
+seg.appendChild(line);
+
+const center = document.createElement('div');
+center.className = 'motif-center';
+line.appendChild(center);
+
+rail.appendChild(seg);
+
+// (optional) debug paint: apply to the inner wrapper now
+if (DBG) line.style.background = 'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
+
         y += segLen + gap;
       }
     }
