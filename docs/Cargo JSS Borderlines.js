@@ -141,8 +141,8 @@ function enabledRangesWithin(boundsTop, boundsBottom){
     const railW  = cssPx('--motif-rail-width', 32);
     const railIn = cssPx('--motif-rail-inset', 12);
     const edgeIn = cssPx('--motif-edge-inset', 24);
-    const segLen = cssPx('--motif-seg-length', 200);
-    const segGap = cssPx('--motif-seg-gap', 24);
+    const segLenBase = cssPx('--motif-seg-length', 200);
+    const segGapBase = cssPx('--motif-seg-gap', 24);
     const capH   = cssPx('--motif-cap-height', 24);
     const minG   = cssPx('--motif-min-gutter', 160);
     const zVar   = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
@@ -188,6 +188,8 @@ function enabledRangesWithin(boundsTop, boundsBottom){
     body.appendChild(railsEl);
 
 function makeRailRange(x, rTop, rBot){
+  let  segLen = segLenBase;   // local, adjustable copy
+  const segGap = segGapBase;  // local alias
   const h = Math.max(0, rBot - rTop);
   if (h < 4) return;
 
