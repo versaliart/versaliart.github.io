@@ -9,12 +9,12 @@ body.has-motifs{
   --motif-center-url:url("https://www.mysticmunson.design/s/linedecor.svg");
 
   /* Rail geometry */
-  --motif-rail-width: 2rem;      /* visual width of each rail */
-  --motif-rail-inset: 1rem;      /* nudge inward from the gutter edge */
-  --motif-line-width: .25rem;      
-  --motif-cap-width: 1.5rem;
-  --motif-center-width:  3rem;     /* NEW: center width */
-  --motif-center-height: 18rem;   /* NEW: center height (defaults square) */
+  --motif-rail-width: 1rem;      /* visual width of each rail */
+  --motif-rail-inset: .5rem;      /* nudge inward from the gutter edge */
+  --motif-line-width: .125rem;      
+  --motif-cap-width: .75rem;
+  --motif-center-width:  1.5rem;     /* NEW: center width */
+  --motif-center-height: 9rem;   /* NEW: center height (defaults square) */
 
   --motif-seg-length: 14rem;     /* height of the line portion per segment */
   --motif-seg-gap: 2rem;         /* gap between segments */
