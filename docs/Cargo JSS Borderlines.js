@@ -221,6 +221,10 @@
     if (DBG) console.log('[motif] built', { leftX, rightX, ranges: ranges.length, reason });
     isBuilding = false;
   }
+  
+document.body.style.setProperty('--motif-z','2147483000');  // or just '10' if you prefer
+document.body.style.setProperty('--motif-opacity','.55');   // ensure not too faint
+window.MOTIF_RAILS?.rebuild();
 
   // ----- scheduling & observers (loop-proof) -----
   function schedule(reason){

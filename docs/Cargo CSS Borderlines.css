@@ -30,7 +30,7 @@ body.has-motifs{
   --motif-bottom-offset: 2rem;   /* keep away from footer edge */
   --motif-seg-length: 16rem;     /* slightly taller segments */
   --motif-seg-gap: 2.25rem;      /* a hair more breathing room */
-  --motif-z: 0;                  /* behind hero art; raise only if needed */
+  --motif-z: 1000;                  /* behind hero art; raise only if needed */
   --motif-hide-bp: 70rem;        /* hard-hide on narrower layouts */
   --motif-min-gutter: 12rem;     /* forces “edge mode” unless gutters are generous */
 }
