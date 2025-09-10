@@ -27,7 +27,7 @@ body.has-motifs{
 
   --motif-edge-inset: 36px;      /* if it’s using edge fallback */
   --motif-top-offset: 0rem;      /* push start below your hero title */
-  --motif-bottom-offset: 2rem;   /* keep away from footer edge */
+  --motif-bottom-offset: 0rem;   /* keep away from footer edge */
 
   --motif-seg-length: 32rem;     /* slightly taller segments */
   --motif-seg-gap: 2.25rem;      /* a hair more breathing room */
@@ -96,6 +96,9 @@ body.has-motifs{
   background-position: center;
   background-size: 100% 100%;
 }
+
+/* v2.1: JS sets exact top in px — keep only horizontal centering */
+.motif-rail .motif-center{ transform: translateX(-50%); }
 
 /* IMPORTANT: delete/disable any older rules you had like:
    .motif-seg{ background:... }
