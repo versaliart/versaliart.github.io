@@ -1,61 +1,53 @@
-/* ===== Motif Rails v2.2 (CSS) ===== */
+/* ===== Motif Rails v2.2 (CSS) — clean drop-in ===== */
 
 body.has-motifs{
-  --motif-line-url: url("https://www.mysticmunson.design/s/linerail.svg");
-  --motif-cap-url:  url("https://www.mysticmunson.design/s/linecap.svg");
-  --motif-center-url:url("https://www.mysticmunson.design/s/linedecor.svg");
+  /* Artwork */
+  --motif-line-url:   url("https://www.mysticmunson.design/s/linerail.svg");
+  --motif-cap-url:    url("https://www.mysticmunson.design/s/linecap.svg");
+  --motif-center-url: url("https://www.mysticmunson.design/s/linedecor.svg");
 
-  /* Rail geometry */
-  --motif-rail-width: 1rem;      /* visual width of each rail */
-  --motif-rail-inset: .5rem;      /* nudge inward from the gutter edge */
-  --motif-line-width: .125rem;      
-  --motif-cap-width: .75rem;
-  --motif-center-width:  1.5rem;     /* NEW: center width */
-  --motif-center-height: 9rem;   /* NEW: center height (defaults square) */
+  /* Geometry */
+  --motif-rail-width: 1rem;          /* visual width of each rail */
+  --motif-rail-inset: .5rem;         /* nudge inward from the gutter edge */
+  --motif-line-width: .125rem;       /* painted line thickness */
+  --motif-cap-width:  .75rem;
+  --motif-cap-height: 1.8rem;
+  --motif-center-width:  1.5rem;
+  --motif-center-height: 9rem;
 
-  --motif-seg-length: 7rem;     /* height of the line portion per segment */
-  --motif-seg-gap: 10rem;         /* gap between segments */
+  /* Placement + visibility */
+  --motif-min-gutter: 10rem;         /* determines “tight” mode (≈160px) */
+  --motif-edge-inset: 2.25rem;       /* fallback distance from page edge */
+  --motif-hide-gutter: 3.75rem;      /* hide if either gutter < this (≈60px) */
+  --motif-hide-bp: 60rem;            /* hide if viewport < this (≈960px) */
+  --motif-top-offset: 0rem;          /* page-level top trim */
+  --motif-bottom-offset: 0rem;       /* page-level bottom trim */
 
-  /* Visibility thresholds */
-  --motif-hide-gutter: 60px;
-  --motif-hide-bp: 60rem;        /* hide if viewport < this (≈960px) */
-
-  /* Rendering tweaks */
-  --motif-cap-height: 1.8rem;    /* endcap graphic height */
-  --motif-center-size: 2.2rem;   /* centerpiece square size */
-  --motif-opacity: 1;         /* overall transparency */
-
-  --motif-edge-inset: 36px;      /* if it’s using edge fallback */
-  --motif-top-offset: 0rem;      /* push start below your hero title */
-  --motif-bottom-offset: 0rem;   /* keep away from footer edge */
-
-  --motif-seg-length: 32rem;     /* slightly taller segments */
-  --motif-seg-gap: 2.25rem;      /* a hair more breathing room */
-  --motif-z: 10;                  /* behind hero art; raise only if needed */
-
-  --motif-min-segments: 2;              /* try to show at least this many */
-  --motif-min-seg-length: 4rem;         /* don't shrink below this */
-  --motif-min-gap: 12px;                /* minimum gap between segments */
-  --motif-center-gap-pad: 0.25rem;
-  --motif-bottom-cap-gap: .5rem;
+  /* Rendering */
+  --motif-center-gap-pad: .25rem;    /* breathing room above/below center */
+  --motif-bottom-cap-gap: .5rem;     /* extra space between line & bottom cap */
+  --motif-opacity: 1;
+  --motif-z: 10;
 }
 
-/* Segments: scale the line art to the requested width, keep centered */
+/* Container (JS also sets these inline; keep here as a safety net) */
+.motif-rails{ pointer-events:none; position:absolute; left:0; right:0; }
 
-/* SEGMENT = full rail box (no backgrounds or caps here anymore) */
-.motif-seg{
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: var(--motif-seg-length);
+/* One rail per side per section */
+.motif-rail{ width: var(--motif-rail-width); position:absolute; }
+
+/* Segment wrapper (height is set inline by JS) */
+.motif-rail .motif-seg{
+  position:absolute;
+  left:0;
+  width:100%;
 }
 
-/* INNER centered wrapper: line art lives here */
-.motif-line{
-  position: absolute;
-  top: 0;
+/* Painted vertical line fills the segment’s height */
+.motif-rail .motif-line{
+  position: relative;            /* anchors caps */
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%);   /* horizontal centering only */
   width: var(--motif-line-width);
   height: 100%;
   background-image: var(--motif-line-url);
@@ -64,45 +56,41 @@ body.has-motifs{
   background-size: var(--motif-line-width) auto;
 }
 
-/* CAPS live on the SAME centered wrapper — actually centered */
-.motif-line::before,
-.motif-line::after{
-  content: "";
-  position: absolute;
-  left: 50%;
+/* End caps (top/bottom) live on the same centered wrapper */
+.motif-rail .motif-line::before,
+.motif-rail .motif-line::after{
+  content:"";
+  position:absolute;
+  left:50%;
   transform: translateX(-50%);
-  width: var(--motif-cap-width);
+  width:  var(--motif-cap-width);
   height: var(--motif-cap-height);
   background-image: var(--motif-cap-url);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%; /* use 'auto 100%' if you want to preserve cap aspect */
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:100% 100%;
 }
-.motif-line::before{ top:    calc(-1 * var(--motif-cap-height)); }
-.motif-line::after{ 
+
+/* Top cap sits just above the line */
+.motif-rail .motif-line::before{
+  top: calc(-1 * var(--motif-cap-height));
+}
+
+/* Bottom cap is flipped and can sit a little farther down */
+.motif-rail .motif-line::after{
   bottom: calc(-1 * var(--motif-cap-height) - var(--motif-bottom-cap-gap, 0));
   transform: translateX(-50%) scaleY(-1);
 }
 
-/* Centerpiece stays centered inside the same wrapper */
+/* Centerpiece: JS sets exact top (px); keep only horizontal centering */
 .motif-center{
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%);
   width:  var(--motif-center-width);
   height: var(--motif-center-height);
   background-image: var(--motif-center-url);
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-}
-
-/* v2.1: JS sets exact top in px — keep only horizontal centering */
-.motif-rail .motif-center{ transform: translateX(-50%); }
-/* v2.2: make the painted line fill the segment box */
-.motif-rail .motif-seg{ position:absolute; left:0; width:100%; } /* already implied by JS */
-.motif-rail .motif-line{
-  position: relative;        /* so ::before / ::after are placed correctly */
-  width: 100%;
-  height: 100%;              /* <-- crucial: stretch to segment height */
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:100% 100%;
 }
