@@ -264,7 +264,7 @@ const centerTopPx = insetTop + topH + capH + capGap + padLocal;
 ctr.style.top = `${centerTopPx}px`;
 rail.appendChild(ctr);
 
-
+ }
 
     for (const rg of ranges){
       makeRailRange(leftX,  rg.top, rg.bottom);
