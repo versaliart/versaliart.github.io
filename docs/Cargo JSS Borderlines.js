@@ -244,19 +244,26 @@ function enabledRangesWithin(boundsTop, boundsBottom){
     rail.appendChild(seg);
   }
 
-  // TOP line (has top cap + cap above the gap)
-  addLine(insetTop, topH);
+// TOP line (has top cap + cap above the gap)
+addLine(insetTop, topH);
 
-  // BOTTOM line (has cap below the gap + bottom cap)
-  const bottomTop = insetTop + topH + gapH;
-  addLine(bottomTop, botH);
+// BOTTOM line (has cap below the gap + bottom cap)
+const bottomTop = insetTop + topH + gapH;
+addLine(bottomTop, botH);
 
-  // CENTERPIECE at the true middle of the range
-  const ctr = doc.createElement('div');
-  ctr.className = 'motif-center';
-  ctr.style.top = `${insetTop + topH + gapH/2}px`;
-  rail.appendChild(ctr);
-}
+// CENTERPIECE positioned so spacing to both caps = padLocal
+const ctr = document.createElement('div');
+ctr.className = 'motif-center';
+
+// If you're using the CSS-only gap on the bottom cap:
+const centerTopPx = insetTop + topH + capH + capGap + padLocal;
+
+// If you're using the "flush-cap" mode (no CSS gap; line shortened):
+// const centerTopPx = insetTop + topH + capH + padLocal;
+
+ctr.style.top = `${centerTopPx}px`;
+rail.appendChild(ctr);
+
 
 
     for (const rg of ranges){
