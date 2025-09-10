@@ -1,9 +1,12 @@
-/* Motif Rails v1.3 — tolerant selectors + debug mode */
+/* Motif Rails v1.31 — diagnostics + force flags */
 (function(){
-  if (!('ResizeObserver' in window)) return;
+  if (!('ResizeObserver' in window)) { console.warn('[motif] no ResizeObserver'); return; }
   const root = document.documentElement, body = document.body;
+  const Q = new URLSearchParams(location.search);
+  const FORCE = Q.has('motifforce');   // force on regardless of breakpoints/gutters
+  const DBG   = Q.has('motifdebug');   // paint debug backgrounds + logs
 
-  const DBG = new URLSearchParams(location.search).has('motifdebug');
+  const log = (...a)=>{ if (DBG) console.log('[motif]', ...a); };
 
   function onReady(fn){
     if (document.readyState !== 'loading') fn();
@@ -11,23 +14,26 @@
   }
   function remPx(){ return parseFloat(getComputedStyle(root).fontSize) || 16; }
   function cssPx(name, fallback){
-    const v = getComputedStyle(body).getPropertyValue(name).trim();
-    if (!v) return fallback;
-    const n = parseFloat(v); if (isNaN(n)) return fallback;
-    if (v.endsWith('rem')) return n * remPx();
-    if (v.endsWith('em'))  return n * (parseFloat(getComputedStyle(body).fontSize) || 16);
-    return n;
+    try{
+      const v = getComputedStyle(body).getPropertyValue(name).trim();
+      if (!v) return fallback;
+      const n = parseFloat(v); if (isNaN(n)) return fallback;
+      if (v.endsWith('rem')) return n * remPx();
+      if (v.endsWith('em'))  return n * (parseFloat(getComputedStyle(body).fontSize)||16);
+      return n;
+    }catch(e){ return fallback; }
   }
 
   // Default ON; page-level opt-out
   function applyMotifsPageToggle(){
     const hasOptOut = !!document.getElementById('motifs-disable');
-    body.classList.toggle('has-motifs', !hasOptOut);
+    body.classList.toggle('has-motifs', FORCE || !hasOptOut);
+    log('page toggle → has-motifs:', body.classList.contains('has-motifs'), '(optOut:', hasOptOut, 'force:', FORCE, ')');
   }
+
   const pageToggleMO = new MutationObserver(applyMotifsPageToggle);
   pageToggleMO.observe(document.documentElement, { childList:true, subtree:true });
 
-  // Sections (wide net for Squarespace 7.1 + fallbacks)
   function getSections(){
     const list = Array.from(document.querySelectorAll(
       [
@@ -46,10 +52,10 @@
            !!sec.querySelector('.motifs-off, [data-motifs="off"], #motifs-disable-section');
   }
   function enabledRangesWithin(boundsTop, boundsBottom){
-    const ranges = [];
     const secs = getSections();
-    // Fallback: if we somehow found none, allow the whole bounds
+    const ranges = [];
     if (!secs.length){
+      log('no sections found; falling back to full range');
       ranges.push({ top: boundsTop, bottom: boundsBottom });
       return ranges;
     }
@@ -63,7 +69,6 @@
     return ranges;
   }
 
-  // Layout bounds
   function findBounds(){
     const secs = getSections();
     const first = secs[0] || document.querySelector('main') || document.body;
@@ -92,20 +97,29 @@
 
   function buildRails(){
     clearRails();
-    if (!body.classList.contains('has-motifs')) return;
 
-    // More permissive defaults
-    const hideBp    = cssPx('--motif-hide-bp', 820);   // ~51.25rem
-    const minGutter = cssPx('--motif-min-gutter', 96); // ~6rem
+    if (!body.classList.contains('has-motifs') && !FORCE){
+      log('bail: has-motifs missing and not forced');
+      return;
+    }
 
-    if (!DBG && window.innerWidth < hideBp) return;
+    const hideBp    = cssPx('--motif-hide-bp', 820);
+    const minGutter = cssPx('--motif-min-gutter', 96);
+
+    if (!FORCE && window.innerWidth < hideBp){
+      log('bail: below breakpoint', window.innerWidth, '<', hideBp);
+      return;
+    }
 
     const { topY, bottomY } = findBounds();
     const contentRect = findContentColumn();
 
     const leftGutter  = Math.max(0, contentRect.left);
     const rightGutter = Math.max(0, window.innerWidth - contentRect.right);
-    if (!DBG && (leftGutter < minGutter || rightGutter < minGutter)) return;
+    if (!FORCE && (leftGutter < minGutter || rightGutter < minGutter)){
+      log('bail: gutters too small', { leftGutter, rightGutter, minGutter });
+      return;
+    }
 
     const railW  = cssPx('--motif-rail-width', 32);
     const railIn = cssPx('--motif-rail-inset', 12);
@@ -125,18 +139,20 @@
       top: `${topY}px`,
       height: `${Math.max(0, bottomY - topY)}px`,
       pointerEvents: 'none',
-      zIndex: '1', // slightly above default stacking backgrounds
+      zIndex: '1',
       opacity: getComputedStyle(body).getPropertyValue('--motif-opacity') || (DBG ? '1' : '0.55')
     });
     document.body.appendChild(railsEl);
 
     const ranges = enabledRangesWithin(topY, bottomY);
-    if (!ranges.length) return;
+    if (!ranges.length){
+      log('bail: no enabled ranges (every section opted out?)');
+      return;
+    }
 
     function makeRailRange(x, rangeTop, rangeBot){
       const h = Math.max(0, rangeBot - rangeTop);
       if (h < 4) return;
-
       const rail = document.createElement('div');
       rail.className = 'motif-rail';
       Object.assign(rail.style, {
@@ -164,10 +180,8 @@
           left: '0',
           width: '100%',
           height: `${segLen}px`,
-          // Debug fallback paint so you SEE something even if SVG URLs missing:
           background: DBG ? 'repeating-linear-gradient(0deg, rgba(255,200,0,.25), rgba(255,200,0,.25) 8px, transparent 8px, transparent 16px)' : ''
         });
-
         const center = document.createElement('div');
         center.className = 'motif-center';
         if (DBG){
@@ -177,7 +191,6 @@
             height: 'var(--motif-center-size, 24px)'
           });
         }
-
         seg.appendChild(center);
         rail.appendChild(seg);
         cursor += segLen + gap;
@@ -188,17 +201,20 @@
       makeRailRange(leftX,  rg.top, rg.bottom);
       makeRailRange(rightX, rg.top, rg.bottom);
     }
+
+    log('built rails:', { topY, bottomY, leftGutter, rightGutter, leftX, rightX, ranges: ranges.length });
   }
 
-  const ro = new ResizeObserver(() => buildRails());
+  const ro = new ResizeObserver(buildRails);
   ro.observe(document.documentElement);
-  const mo = new MutationObserver(() => buildRails());
+  const mo = new MutationObserver(buildRails);
   mo.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class'] });
-  window.addEventListener('resize', () => buildRails(), { passive:true });
-  window.addEventListener('load',   () => buildRails(), { once:true, passive:true });
+  window.addEventListener('resize', buildRails, { passive:true });
+  window.addEventListener('load',   buildRails, { once:true, passive:true });
 
   onReady(() => {
     applyMotifsPageToggle();
-    buildRails();
+    // give the DOM a tick to settle if script loads very early
+    requestAnimationFrame(()=>requestAnimationFrame(buildRails));
   });
 })();
