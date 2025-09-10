@@ -9,7 +9,7 @@ body.has-motifs{
   --motif-center-url:url("https://www.mysticmunson.design/s/linedecor.svg");
 
   /* Rail geometry */
-  --motif-rail-width: .25rem;      /* visual width of each rail */
+  --motif-rail-width: 2rem;      /* visual width of each rail */
   --motif-rail-inset: 1rem;      /* nudge inward from the gutter edge */
 
   /* Segment geometry (each “panel” between two caps) */

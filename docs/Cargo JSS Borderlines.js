@@ -1,18 +1,31 @@
-/* Motif Rails v1.38 — offsets + z-index var + mode lock */
+/* Motif Rails v1.39 — stable observers, dedupe, single-instance */
 (function(){
+  // ----- single-instance guard -----
+  if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
+    console.warn('[motif] rails already installed, skipping');
+    return;
+  }
+
   const doc = document, body = doc.body, root = doc.documentElement;
-  const Q = new URLSearchParams(location.search);
+  const Q   = new URLSearchParams(location.search);
   const DBG = Q.has('motifdebug');
   const MODE_LOCK = Q.get('motifmode'); // "edge" | "gutter" | null
 
-  // prove file loaded + give you rebuild/ping hooks
-  const api = { version:'1.38', ping: ()=>'[motif] ok', rebuild: () => rebuild() };
-  window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, api);
-  console.log('[motif] rails loaded', api.version);
+  // public API (exposed once)
+  const API = window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, {
+    version: '1.39',
+    __installed: true,
+    ping: () => '[motif] ok',
+    rebuild: () => schedule('api')
+  });
+  console.log('[motif] rails loaded', API.version);
 
-  // utils
+  // ----- utils -----
   const log = (...a)=>{ if (DBG) console.log('[motif]', ...a); };
-  const onReady = fn => (doc.readyState !== 'loading') ? fn() : doc.addEventListener('DOMContentLoaded', fn, {once:true});
+  const onReady = fn => (doc.readyState !== 'loading')
+    ? fn()
+    : doc.addEventListener('DOMContentLoaded', fn, { once:true });
+
   const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
   function cssPx(name, fallback){
     const v = getComputedStyle(body).getPropertyValue(name).trim();
@@ -23,14 +36,13 @@
     return n;
   }
 
-  // default ON; page opt-out with #motifs-disable
+  // ----- page toggle (default ON; opt out with #motifs-disable) -----
   function applyMotifsPageToggle(){
     const off = !!doc.getElementById('motifs-disable');
     body.classList.toggle('has-motifs', !off);
   }
-  new MutationObserver(applyMotifsPageToggle).observe(doc.documentElement, { childList:true, subtree:true });
 
-  // sections & ranges (honor .motifs-off markers)
+  // ----- sections & ranges -----
   function getSections(){
     return Array.from(doc.querySelectorAll(
       '.page-section, section[data-section-id], section.sqs-section, .Index-page-content section, main section, #content section'
@@ -54,7 +66,7 @@
     return out.length ? out : [{ top: boundsTop, bottom: boundsBottom }];
   }
 
-  // vertical bounds (first section → top of footer)
+  // ----- bounds & column -----
   function findBounds(){
     const secs = getSections();
     const first = secs[0] || doc.querySelector('main') || body;
@@ -63,8 +75,6 @@
     const bottomY = footer ? footer.getBoundingClientRect().top + scrollY : doc.body.scrollHeight;
     return { topY, bottomY };
   }
-
-  // content column; fallback to centered 92vw (max 1200px)
   function findContentColumn(){
     const candidates = doc.querySelectorAll('.sqs-layout, .Index-page-content, .content, .site-content, main, #content');
     for (const el of candidates){
@@ -77,24 +87,41 @@
     return { left, right: left + colW };
   }
 
+  // ----- build state -----
   let railsEl = null;
+  let isBuilding = false;
+  let scheduled = false;
+  let lastSig = '';
+
   function clearRails(){
-    doc.querySelectorAll('.motif-rails').forEach(n => n.remove());
+    if (railsEl && railsEl.parentNode) railsEl.remove();
     railsEl = null;
   }
 
-  function build(){
-    clearRails();
-    applyMotifsPageToggle();
-    if (!body.classList.contains('has-motifs')) { log('bail: page opt-out'); return; }
+  function makeSignature(ctx){
+    // minimal signature of what would change DOM layout
+    const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
+    return [
+      innerWidth, innerHeight,
+      ctx.cTop|0, ctx.cH|0,
+      ctx.leftX|0, ctx.rightX|0,
+      rangeSig
+    ].join('|');
+  }
 
-    // geometry / thresholds (CSS-driven)
+  function build(reason){
+    if (isBuilding) return;
+    isBuilding = true;
+
+    applyMotifsPageToggle();
+    if (!body.classList.contains('has-motifs')) { isBuilding = false; return; }
+
     const hideBp  = cssPx('--motif-hide-bp', 960);
-    if (innerWidth < hideBp) { log('bail: below breakpoint'); return; }
+    if (innerWidth < hideBp) { isBuilding = false; return; }
 
     const { topY, bottomY } = findBounds();
 
-    // NEW: offsets to keep the hero clean or lift above footer overlap
+    // offsets & geometry
     const topOffset    = cssPx('--motif-top-offset', 0);
     const bottomOffset = cssPx('--motif-bottom-offset', 0);
 
@@ -106,32 +133,36 @@
     const capH   = cssPx('--motif-cap-height', 24);
     const minG   = cssPx('--motif-min-gutter', 160);
     const zVar   = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
-    const zIndex = zVar || '0'; // default behind most content unless overridden by CSS
+    const zIndex = zVar || '0';
     const opacity= (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '.55';
 
     const colRect = findContentColumn();
     const leftG   = Math.max(0, colRect.left);
     const rightG  = Math.max(0, innerWidth - colRect.right);
-
-    let leftX, rightX, mode;
     let tight = (leftG < minG) || (rightG < minG);
     if (MODE_LOCK === 'edge') tight = true;
     if (MODE_LOCK === 'gutter') tight = false;
 
+    let leftX, rightX;
     if (tight){
-      mode = 'edge';
       leftX  = Math.max(0, Math.round(edgeIn));
       rightX = Math.max(0, Math.round(innerWidth - edgeIn - railW));
     }else{
-      mode = 'gutter';
       leftX  = Math.round((leftG * 0.5) - (railW * 0.5) + railIn);
       rightX = Math.round(innerWidth - (rightG * 0.5) - (railW * 0.5) - railIn);
     }
-    log('mode:', mode, 'x:', leftX, rightX, 'gutters:', {leftG, rightG, minG});
 
-    // container
     const cTop = topY + topOffset;
     const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
+    const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
+
+    // dedupe: if nothing relevant changed, do nothing
+    const sig = makeSignature({ cTop, cH, leftX, rightX, ranges });
+    if (sig === lastSig) { isBuilding = false; return; }
+    lastSig = sig;
+
+    // (re)build
+    clearRails();
 
     railsEl = doc.createElement('div');
     railsEl.className = 'motif-rails';
@@ -142,10 +173,6 @@
       zIndex, opacity
     });
     body.appendChild(railsEl);
-
-    // ranges (respect section opt-outs)
-    const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
-    log('ranges:', ranges.length);
 
     function makeRailRange(x, rTop, rBot){
       const h = Math.max(0, rBot - rTop);
@@ -191,13 +218,35 @@
       makeRailRange(rightX, rg.top, rg.bottom);
     }
 
-    console.log('[motif] built', {mode, leftX, rightX, ranges: ranges.length});
+    if (DBG) console.log('[motif] built', { leftX, rightX, ranges: ranges.length, reason });
+    isBuilding = false;
   }
 
-  const rebuild = () => requestAnimationFrame(() => requestAnimationFrame(build));
-  new ResizeObserver(rebuild).observe(doc.documentElement);
-  new MutationObserver(rebuild).observe(doc.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class'] });
-  window.addEventListener('resize', rebuild, { passive:true });
-  window.addEventListener('load',   rebuild, { once:true, passive:true });
-  onReady(rebuild);
+  // ----- scheduling & observers (loop-proof) -----
+  function schedule(reason){
+    if (scheduled || isBuilding) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      build(reason);
+    });
+  }
+
+  const ro = new ResizeObserver(() => schedule('resize'));
+  ro.observe(doc.documentElement);
+
+  const mo = new MutationObserver((records) => {
+    // ignore our own changes
+    for (const rec of records){
+      if (railsEl && (rec.target === railsEl || railsEl.contains(rec.target))) {
+        return; // our own DOM; do nothing
+      }
+    }
+    schedule('mutation');
+  });
+  mo.observe(doc.documentElement, { childList:true, subtree:true });
+
+  // initial
+  window.addEventListener('load', () => schedule('load'), { once:true, passive:true });
+  onReady(() => schedule('domready'));
 })();
