@@ -11,19 +11,20 @@ body.has-motifs{
   /* Rail geometry */
   --motif-rail-width: 2rem;      /* visual width of each rail */
   --motif-rail-inset: 1rem;      /* nudge inward from the gutter edge */
+  --motif-line-width: var(--motif-rail-width); /* default = fill the rail */
+  --motif-cap-width: var(--motif-line-width);  /* Segment geometry (each “panel” between two caps) */
 
-  /* Segment geometry (each “panel” between two caps) */
   --motif-seg-length: 14rem;     /* height of the line portion per segment */
   --motif-seg-gap: 2rem;         /* gap between segments */
 
   /* Visibility thresholds */
-  --motif-min-gutter: 10rem;     /* hide if either gutter < this */
+  --motif-min-gutter: 16rem;     /* hide if either gutter < this */
   --motif-hide-bp: 60rem;        /* hide if viewport < this (≈960px) */
 
   /* Rendering tweaks */
   --motif-cap-height: 1.8rem;    /* endcap graphic height */
   --motif-center-size: 2.2rem;   /* centerpiece square size */
-  --motif-opacity: 0.55;         /* overall transparency */
+  --motif-opacity: 1;         /* overall transparency */
 
   --motif-edge-inset: 36px;      /* if it’s using edge fallback */
   --motif-top-offset: 6rem;      /* push start below your hero title */
@@ -33,6 +34,47 @@ body.has-motifs{
   --motif-z: 1000;                  /* behind hero art; raise only if needed */
   --motif-hide-bp: 70rem;        /* hard-hide on narrower layouts */
   --motif-min-gutter: 12rem;     /* forces “edge mode” unless gutters are generous */
+}
+
+/* Segments: scale the line art to the requested width, keep centered */
+.motif-seg{
+  position: relative;
+  width: 100%;
+  height: var(--motif-seg-length);
+  background-image: var(--motif-line-url);
+  background-repeat: repeat-y;
+  background-position: center;
+  background-size: var(--motif-line-width) auto; /* <- was 100% auto */
+}
+
+/* End-caps: match the chosen cap width and center them */
+.motif-seg::before,
+.motif-seg::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: var(--motif-cap-width);
+  height: var(--motif-cap-height);
+  transform: translateX(-50%);           /* center within the rail */
+  background-image: var(--motif-cap-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;            /* or 'auto 100%' to keep aspect ratio */
+}
+.motif-seg::before{ top: calc(-1 * var(--motif-cap-height)); }
+.motif-seg::after { bottom: calc(-1 * var(--motif-cap-height)); }
+
+/* Centerpiece: stays independent (you already control with --motif-center-size) */
+.motif-center{
+  position: absolute;
+  left: 50%; top: 50%;
+  width: var(--motif-center-size);
+  height: var(--motif-center-size);
+  transform: translate(-50%, -50%);
+  background-image: var(--motif-center-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
 }
 
 /* Container spanning from first to last section (positions via JS) */
