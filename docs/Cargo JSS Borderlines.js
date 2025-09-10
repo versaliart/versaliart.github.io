@@ -1,4 +1,4 @@
-/* Motif Rails v1.41 — stable observers, dedupe, single-instance, centered inner wrapper */
+/* Motif Rails v2.0 */
 (function(){
   // ----- single-instance guard -----
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
