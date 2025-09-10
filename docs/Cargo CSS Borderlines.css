@@ -26,7 +26,7 @@ body.has-motifs{
   --motif-opacity: 1;         /* overall transparency */
 
   --motif-edge-inset: 36px;      /* if it’s using edge fallback */
-  --motif-top-offset: 6rem;      /* push start below your hero title */
+  --motif-top-offset: 8rem;      /* push start below your hero title */
   --motif-bottom-offset: 2rem;   /* keep away from footer edge */
 
   --motif-seg-length: 32rem;     /* slightly taller segments */
