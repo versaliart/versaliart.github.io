@@ -375,10 +375,5 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   display: none !important;
 }
 
-/* If you still see flicker while typing, disable the trailing-<br> rule entirely: */
-/*
-body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){
-  display: revert !important;
-}
-*/
+
 

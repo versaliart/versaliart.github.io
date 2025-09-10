@@ -264,26 +264,42 @@ function build(reason){
     const topH = Math.max(0, Math.floor((usable - gapH)/2));
     const botH = Math.max(0, usable - gapH - topH);
 
-    function addLine(atTopPx, heightPx){
-      const seg = doc.createElement('div');
-      seg.className = 'motif-seg';
-      Object.assign(seg.style, { position:'absolute', left:'0', top:`${atTopPx}px`, width:'100%', height:`${heightPx}px` });
+function addLine(atTopPx, heightPx){
+  const seg = doc.createElement('div');
+  seg.className = 'motif-seg';
+  Object.assign(seg.style, {
+    position:'absolute', left:'0', top:`${atTopPx}px`, width:'100%', height:`${heightPx}px`
+  });
 
-      const line = doc.createElement('div');
-      line.className = 'motif-line';
+  const line = doc.createElement('div');
+  line.className = 'motif-line';
 
-      // always give a visible fallback when debugging
-      if (DBG){
-        line.style.background =
-          'repeating-linear-gradient(0deg, rgba(255,210,0,.30), rgba(255,210,0,.30) 10px, transparent 10px, transparent 20px)';
-        line.style.width = 'var(--motif-line-width)';
-        line.style.left = '50%';
-        line.style.transform = 'translateX(-50%)';
-      }
+  // Always apply the line art from the CSS var as an inline style.
+  // This avoids cases where the var fails to cascade or gets stripped/minified.
+  const lineImg = getComputedStyle(body).getPropertyValue('--motif-line-url').trim();
+  if (lineImg) {
+    line.style.backgroundImage  = lineImg;        // e.g. url(".../linerail.svg")
+    line.style.backgroundRepeat = 'repeat-y';
+    line.style.backgroundPosition = '50% 0';
+    line.style.backgroundSize   = 'var(--motif-line-width) auto';
+    line.style.left = '50%';
+    line.style.transform = 'translateX(-50%)';
+    line.style.width = 'var(--motif-line-width)';
+    line.style.height = '100%';
+  } else if (DBG) {
+    // Visible fallback when the URL var is missing (debug only)
+    line.style.background =
+      'repeating-linear-gradient(0deg, rgba(255,210,0,.30), rgba(255,210,0,.30) 10px, transparent 10px, transparent 20px)';
+    line.style.left = '50%';
+    line.style.transform = 'translateX(-50%)';
+    line.style.width = 'var(--motif-line-width)';
+    line.style.height = '100%';
+  }
 
-      seg.appendChild(line);
-      rail.appendChild(seg);
-    }
+  seg.appendChild(line);
+  rail.appendChild(seg);
+}
+
 
     addLine(insetTop, topH);
     addLine(insetTop + topH + gapH, botH);
