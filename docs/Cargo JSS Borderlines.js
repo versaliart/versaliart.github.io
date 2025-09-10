@@ -168,7 +168,7 @@
 
     // gutter anchor (0=edge side .. 0.5=middle of gutter). Default near edge.
     const anchorVar = parseFloat(getComputedStyle(body).getPropertyValue('--motif-gutter-anchor'));
-    const gutterAnchor = isNaN(anchorVar) ? 0.25 : Math.max(0, Math.min(1, anchorVar));
+    const gutterAnchor = isNaN(anchorVar) ? 0.5 : Math.max(0, Math.min(1, anchorVar));
 
     // gutters from the WIDEST centered column
     const colRect = findWidestCenteredColumn();
