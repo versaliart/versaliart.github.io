@@ -10,7 +10,7 @@
   --mm-btn-min:   clamp(6.5rem, 5rem + 2vw, 8rem);
 
   --mm-edge-pad:  clamp(.125rem, .1rem + .3vw, .5rem);
-  --mm-btn-pad-y: clamp(.45rem, .4rem + .1vw, .6rem);
+  --mm-btn-pad-y: clamp(.225rem, .2rem + .1vw, .3rem);
   --mm-btn-pad-x: clamp(.9rem,  .8rem + .6vw, 1.4rem);
 
   --mm-radius: .75rem;
