@@ -36,6 +36,7 @@ body.has-motifs{
   --motif-min-segments: 2;              /* try to show at least this many */
   --motif-min-seg-length: 4rem;         /* don't shrink below this */
   --motif-min-gap: 12px;                /* minimum gap between segments */
+  --motif-center-gap-pad: 0.25rem;
 }
 
 /* Segments: scale the line art to the requested width, keep centered */
