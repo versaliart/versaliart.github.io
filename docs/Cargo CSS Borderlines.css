@@ -82,7 +82,7 @@ body.has-motifs{
 .motif-center{
   position: absolute;
   left: 50%;
-  transform: translate(-50%, -50%); /* horizontal + vertical centering around its top */
+  transform: translate(-50%, -50%);
   width:  var(--motif-center-width);
   height: var(--motif-center-height);
   background-image: var(--motif-center-url);

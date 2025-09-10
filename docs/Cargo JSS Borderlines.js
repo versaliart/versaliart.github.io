@@ -1,4 +1,4 @@
-/* Motif Rails v1.40 — stable observers, dedupe, single-instance, centered inner wrapper */
+/* Motif Rails v1.41 — stable observers, dedupe, single-instance, centered inner wrapper */
 (function(){
   // ----- single-instance guard -----
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
@@ -52,19 +52,33 @@
     return sec.classList.contains('motifs-off') ||
            !!sec.querySelector('.motifs-off,[data-motifs="off"],#motifs-disable-section');
   }
-  function enabledRangesWithin(boundsTop, boundsBottom){
-    const secs = getSections();
-    if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
-    const out = [];
-    for (const s of secs){
-      if (sectionIsOff(s)) continue;
-      const r = s.getBoundingClientRect();
-      const t = Math.max(boundsTop, r.top + scrollY);
-      const b = Math.min(boundsBottom, r.bottom + scrollY);
-      if (b > t + 2) out.push({ top: t, bottom: b });
+function enabledRangesWithin(boundsTop, boundsBottom){
+  const secs = getSections();
+  if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
+
+  const ranges = [];
+  let current = null;
+
+  for (const s of secs){
+    const r = s.getBoundingClientRect();
+    const t = Math.max(boundsTop, r.top + scrollY);
+    const b = Math.min(boundsBottom, r.bottom + scrollY);
+    if (b <= t + 2) continue; // invisible / collapsed
+
+    if (sectionIsOff(s)) {
+      if (current) { ranges.push(current); current = null; }
+      continue; // break the run
     }
-    return out.length ? out : [{ top: boundsTop, bottom: boundsBottom }];
+
+    // enabled: merge into the current run
+    if (!current) current = { top: t, bottom: b };
+    else current.bottom = Math.max(current.bottom, b);
   }
+
+  if (current) ranges.push(current);
+  return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
+}
+
 
   // ----- bounds & column -----
   function findBounds(){
