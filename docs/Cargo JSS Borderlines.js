@@ -50,31 +50,31 @@
     return sec.classList.contains('motifs-off') ||
            !!sec.querySelector('.motifs-off,[data-motifs="off"],#motifs-disable-section');
   }
-  function enabledRangesWithin(boundsTop, boundsBottom){
-    const secs = getSections();
-    if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
+// ----- sections -> individual ranges (no merging) -----
+function enabledRangesWithin(boundsTop, boundsBottom){
+  const secs = getSections();
+  if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
 
-    const ranges = [];
-    let current = null;
+  const ranges = [];
 
-    for (const s of secs){
-      const r = s.getBoundingClientRect();
-      const t = Math.max(boundsTop, r.top + scrollY);
-      const b = Math.min(boundsBottom, r.bottom + scrollY);
-      if (b <= t + 2) continue; // invisible / collapsed
+  for (const s of secs){
+    // skip any section that opts out
+    if (sectionIsOff(s)) continue;
 
-      if (sectionIsOff(s)) {
-        if (current) { ranges.push(current); current = null; }
-        continue; // break the run
-      }
+    const r = s.getBoundingClientRect();
+    const t = Math.max(boundsTop, r.top + scrollY);
+    const b = Math.min(boundsBottom, r.bottom + scrollY);
 
-      if (!current) current = { top: t, bottom: b };
-      else current.bottom = Math.max(current.bottom, b);
-    }
+    // ignore collapsed/invisible slices
+    if (b <= t + 2) continue;
 
-    if (current) ranges.push(current);
-    return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
+    // push one range per eligible section
+    ranges.push({ top: t, bottom: b });
   }
+
+  // fall back to whole page if nothing qualified
+  return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
+}
 
   // ----- bounds & column -----
   function findBounds(){
