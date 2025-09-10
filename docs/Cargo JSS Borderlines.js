@@ -246,7 +246,7 @@
       railsEl.appendChild(rail);
 
       const insetTop = capH;
-      const insetBot = capH;
+      const insetBot = capH + capGap; 
       const usable = h - insetTop - insetBot;
       if (usable <= 0) return;
 
