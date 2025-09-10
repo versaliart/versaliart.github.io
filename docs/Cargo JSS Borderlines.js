@@ -1,69 +1,82 @@
-/* ===== Motif Rails v1.0 (JS) =====
-   Builds two decorative vertical rails that:
-   - start at first content section and end at last content section
-   - never enter the footer
-   - auto-hide on narrow viewports or tiny gutters
-
-   Activate by adding `has-motifs` to <body> and setting the CSS vars.
-*/
+/* =========================================================
+   Motif Rails v1.2 — universal ON, opt-out markers supported
+   - Draws two decorative vertical rails (left/right gutters)
+   - Spans from first content section to top of footer
+   - Hides automatically on narrow viewports or tight gutters
+   - PAGE opt-out: <div id="motifs-disable"></div>
+   - SECTION opt-out (any one of):
+       • Section class:   motifs-off
+       • Marker in block: <div class="motifs-off"></div>
+                          <div data-motifs="off"></div>
+                          <div id="motifs-disable-section"></div>
+   - Sizes/thresholds come from CSS variables on body.has-motifs:
+       --motif-rail-width, --motif-rail-inset, --motif-seg-length,
+       --motif-seg-gap, --motif-cap-height, --motif-center-size,
+       --motif-min-gutter, --motif-hide-bp
+   ========================================================= */
 
 (function(){
   if (!('ResizeObserver' in window)) return;
 
-  // ---------- config (tweak via CSS vars; these are only fallbacks) ----------
-  const F = {
-    hideBpPx: 960,        // fallback for --motif-hide-bp
-    minGutterPx: 160,     // fallback for --motif-min-gutter
-    segGapPx: 32,         // fallback for --motif-seg-gap
-    railInsetPx: 16,      // fallback for --motif-rail-inset
-  };
+  // ---------- tiny utilities ----------
+  const root = document.documentElement;
+  const body = document.body;
 
-  function rem(n){
-    const fs = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    return n * fs;
+  function onReady(fn){
+    if (document.readyState !== 'loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn, { once:true });
+  }
+  function remPx(){
+    return parseFloat(getComputedStyle(root).fontSize) || 16;
+  }
+  function cssPx(varName, fallbackPx){
+    const v = getComputedStyle(body).getPropertyValue(varName).trim();
+    if (!v) return fallbackPx;
+    const n = parseFloat(v);
+    if (isNaN(n)) return fallbackPx;
+    if (v.endsWith('rem')) return n * remPx();
+    if (v.endsWith('em'))  return n * (parseFloat(getComputedStyle(body).fontSize) || 16);
+    return n; // px or unitless
   }
 
-  function cssPx(name, fallback){
-    const v = getComputedStyle(document.body).getPropertyValue(name).trim();
-    if (!v) return fallback;
-    if (v.endsWith('rem')) return rem(parseFloat(v));
-    if (v.endsWith('px'))  return parseFloat(v);
-    if (v.endsWith('em'))  return parseFloat(v) * parseFloat(getComputedStyle(document.body).fontSize || 16);
-    if (!isNaN(parseFloat(v))) return parseFloat(v);
-    return fallback;
+  // ---------- page-wide opt-out (default ON) ----------
+  function applyMotifsPageToggle(){
+    const hasOptOut = !!document.getElementById('motifs-disable');
+    body.classList.toggle('has-motifs', !hasOptOut);
   }
 
-  // Find the content stack (first and last section) and the footer
-  function findBounds(){
-    const allSections = Array.from(document.querySelectorAll(
-      // Squarespace 7.1 + Cargo-friendly guesses:
+  // Observe DOM changes so editor/page updates re-apply the toggle
+  const pageToggleMO = new MutationObserver(applyMotifsPageToggle);
+  pageToggleMO.observe(document.documentElement, { childList:true, subtree:true });
+
+  // ---------- section helpers ----------
+  function getSections(){
+    // Squarespace 7.1 + generic fallbacks; filter hidden
+    return Array.from(document.querySelectorAll(
       '.page-section, section[data-section-id], section[data-section-type], main section, #content section'
     )).filter(s => s.offsetParent !== null);
-
-    const first = allSections[0] || document.querySelector('main') || document.body;
-    const footer = document.querySelector('footer');
-
-    // If the theme wraps sections, prefer their parent as a stable bounding node
-    const topY = (first.getBoundingClientRect().top + window.scrollY);
-    const bottomY = (footer ? footer.getBoundingClientRect().top + window.scrollY : document.body.scrollHeight);
-
-    return { topY, bottomY, firstEl: first };
   }
-
-  // Get the main content column box to compute gutters
-  function findContentColumn(){
-    // Try common containers; fall back to first section rect
-    const candidates = document.querySelectorAll(
-      '.sqs-layout, .Index-page-content, .content, .site-content, main, #content'
+  function sectionIsOff(sec){
+    return (
+      sec.classList.contains('motifs-off') ||
+      !!sec.querySelector('.motifs-off, [data-motifs="off"], #motifs-disable-section')
     );
-    for (const el of candidates){
-      const r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0) return r;
-    }
-    const first = document.querySelector('.page-section, main section');
-    return first ? first.getBoundingClientRect() : document.body.getBoundingClientRect();
   }
 
+  // Given global rails bounds, return allowed vertical ranges only where sections are NOT opted-out.
+  function enabledRangesWithin(boundsTop, boundsBottom){
+    const ranges = [];
+    for (const sec of getSections()){
+      if (sectionIsOff(sec)) continue;
+      const r = sec.getBoundingClientRect();
+      const top = Math.max(boundsTop, r.top + scrollY);
+      const bot = Math.min(boundsBottom, r.bottom + scrollY);
+      if (bot > top + 2) ranges.push({ top, bottom: bot });
+    }
+    return ranges;
+  }
+
+  // ---------- rails state ----------
   let railsEl = null;
 
   function clearRails(){
@@ -71,56 +84,98 @@
     railsEl = null;
   }
 
+  // Find top/bottom bounds (first section to top of footer)
+  function findBounds(){
+    const sections = getSections();
+    const first = sections[0] || document.querySelector('main') || document.body;
+    const footer = document.querySelector('footer');
+
+    const topY = first ? (first.getBoundingClientRect().top + scrollY) : 0;
+    const bottomY = footer
+      ? (footer.getBoundingClientRect().top + scrollY)
+      : document.body.scrollHeight;
+
+    return { topY, bottomY };
+  }
+
+  // Try to detect the main content column to measure gutters
+  function findContentColumn(){
+    const candidates = document.querySelectorAll(
+      '.sqs-layout, .Index-page-content, .content, .site-content, main, #content'
+    );
+    for (const el of candidates){
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) return r;
+    }
+    const first = getSections()[0];
+    return first ? first.getBoundingClientRect() : document.body.getBoundingClientRect();
+  }
+
+  // ---------- builder ----------
   function buildRails(){
     clearRails();
-    if (!document.body.classList.contains('has-motifs')) return;
 
-    const hideBp = cssPx('--motif-hide-bp', F.hideBpPx);
+    // Only render if motifs are active
+    if (!body.classList.contains('has-motifs')) return;
+
+    // Thresholds
+    const hideBp   = cssPx('--motif-hide-bp', 960);     // ≈ 60rem
+    const minGutter= cssPx('--motif-min-gutter', 160);  // ≈ 10rem
+
     if (window.innerWidth < hideBp) return;
 
-    const { topY, bottomY, firstEl } = findBounds();
+    const { topY, bottomY } = findBounds();
     const contentRect = findContentColumn();
 
-    const railWidth = cssPx('--motif-rail-width', 32);
-    const railInset = cssPx('--motif-rail-inset', F.railInsetPx);
-    const minGutter = cssPx('--motif-min-gutter', F.minGutterPx);
-    const segLen = cssPx('--motif-seg-length', 224);
-    const segGap = cssPx('--motif-seg-gap', F.segGapPx);
-    const capH = cssPx('--motif-cap-height', 28);
-
-    // Compute gutters from the content column
-    const leftGutter = Math.max(0, contentRect.left);
+    // Gutters (space from viewport edge to content column)
+    const leftGutter  = Math.max(0, contentRect.left);
     const rightGutter = Math.max(0, window.innerWidth - contentRect.right);
-
-    // Hide if either side is too tight
     if (leftGutter < minGutter || rightGutter < minGutter) return;
 
-    // Rail X positions: center each rail in its gutter, then inset
-    const leftX  = Math.round((leftGutter * 0.5) - (railWidth * 0.5) + railInset);
-    const rightX = Math.round(window.innerWidth - (rightGutter * 0.5) - (railWidth * 0.5) - railInset);
+    // Geometry from CSS (fallbacks in px)
+    const railW   = cssPx('--motif-rail-width', 32);
+    const railIn  = cssPx('--motif-rail-inset', 16);
+    const segLen  = cssPx('--motif-seg-length', 224);
+    const segGap  = cssPx('--motif-seg-gap', 32);
+    const capH    = cssPx('--motif-cap-height', 28);
 
-    // Build container sized to the content vertical span
+    // Rail x positions: center of each gutter, nudged inward by inset
+    const leftX  = Math.round((leftGutter  * 0.5) - (railW * 0.5) + railIn);
+    const rightX = Math.round(window.innerWidth - (rightGutter * 0.5) - (railW * 0.5) - railIn);
+
+    // Container covering the full allowed vertical span
     railsEl = document.createElement('div');
     railsEl.className = 'motif-rails';
-    railsEl.style.top = `${topY}px`;
-    railsEl.style.height = `${Math.max(0, bottomY - topY)}px`;
+    railsEl.style.position = 'absolute';
     railsEl.style.left = '0';
     railsEl.style.right = '0';
+    railsEl.style.top = `${topY}px`;
+    railsEl.style.height = `${Math.max(0, bottomY - topY)}px`;
+    railsEl.style.pointerEvents = 'none';
+    railsEl.style.zIndex = '0';
+    railsEl.style.opacity = getComputedStyle(body).getPropertyValue('--motif-opacity') || '0.55';
     document.body.appendChild(railsEl);
 
-    // Helper to make one rail (left or right)
-    function makeRail(x){
+    // Build only inside enabled section ranges
+    const ranges = enabledRangesWithin(topY, bottomY);
+    if (!ranges.length) return;
+
+    function makeRailRange(x, rangeTop, rangeBot){
+      const h = Math.max(0, rangeBot - rangeTop);
+      if (h < 4) return;
+
       const rail = document.createElement('div');
       rail.className = 'motif-rail';
+      rail.style.position = 'absolute';
       rail.style.left = `${x}px`;
-      rail.style.top = '0';
-      rail.style.height = '100%';
+      rail.style.top = `${rangeTop - topY}px`; // relative to container
+      rail.style.height = `${h}px`;
+      rail.style.width = 'var(--motif-rail-width)';
       railsEl.appendChild(rail);
 
-      const usable = railsEl.getBoundingClientRect().height;
-      const segFull = segLen + (segGap + capH * 2); // include external cap overhang space
+      // Evenly distribute segments within this sub-range
+      const usable = h;
       let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
-      // Even spacing so top/bottom margins look balanced
       const totalSegSpace = count * segLen;
       const free = Math.max(0, usable - totalSegSpace);
       const gap = count > 1 ? (free / (count - 1)) : 0;
@@ -130,7 +185,7 @@
         const seg = document.createElement('div');
         seg.className = 'motif-seg';
         seg.style.position = 'absolute';
-        seg.style.top = `${cursor + capH}px`;   // push inside so caps overhang to “meet” next segment
+        seg.style.top = `${cursor + capH}px`; // cap pseudo-elements overhang to "meet" segments visually
         seg.style.left = '0';
         seg.style.width = '100%';
         seg.style.height = `${segLen}px`;
@@ -140,40 +195,29 @@
         seg.appendChild(center);
 
         rail.appendChild(seg);
-
         cursor += segLen + gap;
       }
-
-      return rail;
     }
 
-    makeRail(leftX);
-    makeRail(rightX);
+    for (const rg of ranges){
+      makeRailRange(leftX,  rg.top, rg.bottom);
+      makeRailRange(rightX, rg.top, rg.bottom);
+    }
   }
 
-  // Rebuild on resize & when layout changes (editor, images loading, etc.)
+  // ---------- observers & lifecycle ----------
   const ro = new ResizeObserver(() => buildRails());
   ro.observe(document.documentElement);
 
   const mo = new MutationObserver(() => buildRails());
-  mo.observe(document.documentElement, { childList: true, subtree: true });
+  mo.observe(document.documentElement, { childList:true, subtree:true, attributes:true, attributeFilter:['style','class'] });
 
-  window.addEventListener('load', buildRails, { once: true });
-  document.addEventListener('DOMContentLoaded', buildRails);
-  buildRails();
+  window.addEventListener('resize', () => buildRails(), { passive:true });
+  window.addEventListener('load',   () => buildRails(), { once:true, passive:true });
 
-  // --- Toggle body.has-motifs with opt-OUT marker ---
-function applyMotifs() {
-  const hasOptOut = !!document.getElementById('motifs-disable');
-  document.body.classList.toggle('has-motifs', !hasOptOut);
-}
-
-// Run once on load
-if (document.readyState !== 'loading') applyMotifs();
-else document.addEventListener('DOMContentLoaded', applyMotifs, { once:true });
-
-// Keep it synced if editor injects/removes blocks dynamically
-const mo = new MutationObserver(() => applyMotifs());
-mo.observe(document.documentElement, { childList:true, subtree:true });
-
+  // Initialize
+  onReady(() => {
+    applyMotifsPageToggle();      // set body.has-motifs (default ON unless motifs-disable exists)
+    buildRails();                 // draw rails based on current DOM/CSS
+  });
 })();

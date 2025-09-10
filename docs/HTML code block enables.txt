@@ -1,0 +1,8 @@
+HTML code block enables
+
+Default: Rails are ON everywhere.
+Opt-out entire page: add a Code Block anywhere on that page with:
+<div id="motifs-disable" style="display:none"></div>
+
+Opt-out only a section: drop a tiny Code Block inside that section:
+<div class="motifs-off" style="display:none"></div>
