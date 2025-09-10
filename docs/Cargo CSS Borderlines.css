@@ -4,9 +4,9 @@
 */
 
 body.has-motifs{
-  --motif-line-url: url("https://example.com/your-line.svg");
-  --motif-cap-url:  url("https://example.com/your-endcap.svg");
-  --motif-center-url:url("https://example.com/your-centerpiece.svg");
+  --motif-line-url: url("https://www.mysticmunson.design/s/linerail.svg");
+  --motif-cap-url:  url("https://www.mysticmunson.design/s/linecap.svg");
+  --motif-center-url:url("https://www.mysticmunson.design/s/linedecor.svg");
 
   /* Rail geometry */
   --motif-rail-width: 2rem;      /* visual width of each rail */
