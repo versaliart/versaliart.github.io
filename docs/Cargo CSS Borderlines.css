@@ -35,54 +35,60 @@ body.has-motifs{
 }
 
 /* Segments: scale the line art to the requested width, keep centered */
-/* segment remains the full rail box */
-.motif-seg{ position:absolute; left:0; width:100%; height:var(--motif-seg-length); }
 
-/* NEW: inner centered wrapper that all art hangs off of */
+/* SEGMENT = full rail box (no backgrounds or caps here anymore) */
+.motif-seg{
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--motif-seg-length);
+}
+
+/* INNER centered wrapper: line art lives here */
 .motif-line{
-  position:absolute;
-  top:0; left:50%;
+  position: absolute;
+  top: 0;
+  left: 50%;
   transform: translateX(-50%);
   width: var(--motif-line-width);
   height: 100%;
   background-image: var(--motif-line-url);
   background-repeat: repeat-y;
   background-position: center top;
-  background-size: 100% auto;            /* scales line art to chosen width */
+  background-size: var(--motif-line-width) auto;
 }
 
-/* end caps live on the same centered wrapper */
+/* CAPS live on the SAME centered wrapper — actually centered */
 .motif-line::before,
 .motif-line::after{
-  content:"";
-  position:absolute;
-  left:0;
-  width: var(--motif-cap-width);         /* default equals line width */
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--motif-cap-width);
   height: var(--motif-cap-height);
   background-image: var(--motif-cap-url);
-  background-repeat:no-repeat;
-  background-position:center;
-  background-size: 100% 100%;            /* use 'auto 100%' to keep cap aspect */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%; /* use 'auto 100%' if you want to preserve cap aspect */
 }
 .motif-line::before{ top:    calc(-1 * var(--motif-cap-height)); }
 .motif-line::after { bottom: calc(-1 * var(--motif-cap-height)); }
 
-/* centerpiece is centered within the same wrapper */
+/* Centerpiece stays centered inside the same wrapper */
 .motif-center{
-  position:absolute;
-  left:50%; top:50%;
+  position: absolute;
+  left: 50%; top: 50%;
   width: var(--motif-center-size);
   height: var(--motif-center-size);
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
   background-image: var(--motif-center-url);
-  background-repeat:no-repeat;
-  background-position:center;
+  background-repeat: no-repeat;
+  background-position: center;
   background-size: 100% 100%;
 }
-/* Small screens: hard-hide without JS */
-@media (max-width: 60rem){
-  .motif-rails{ display: none !important; }
-}
 
-/* test paint so segments are visible even without SVGs */
-body.has-motifs .motif-seg{ background: repeating-linear-gradient(0deg, rgba(255,200,0,.25), rgba(255,200,0,.25) 8px, transparent 8px, transparent 16px); }
+/* IMPORTANT: delete/disable any older rules you had like:
+   .motif-seg{ background:... }
+   .motif-seg::before, .motif-seg::after{ ... }
+*/
