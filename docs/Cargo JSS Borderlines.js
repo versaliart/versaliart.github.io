@@ -1,4 +1,4 @@
-/* Motif Rails v1.39 — stable observers, dedupe, single-instance */
+/* Motif Rails v1.40 — stable observers, dedupe, single-instance, centered inner wrapper */
 (function(){
   // ----- single-instance guard -----
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
@@ -7,13 +7,13 @@
   }
 
   const doc = document, body = doc.body, root = doc.documentElement;
-  const Q   = new URLSearchParams(location.search);
+  const Q = new URLSearchParams(location.search);
   const DBG = Q.has('motifdebug');
   const MODE_LOCK = Q.get('motifmode'); // "edge" | "gutter" | null
 
-  // public API (exposed once)
+  // public API
   const API = window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, {
-    version: '1.39',
+    version: '1.40',
     __installed: true,
     ping: () => '[motif] ok',
     rebuild: () => schedule('api')
@@ -99,7 +99,6 @@
   }
 
   function makeSignature(ctx){
-    // minimal signature of what would change DOM layout
     const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
     return [
       innerWidth, innerHeight,
@@ -156,7 +155,7 @@
     const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
     const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
 
-    // dedupe: if nothing relevant changed, do nothing
+    // dedupe
     const sig = makeSignature({ cTop, cH, leftX, rightX, ranges });
     if (sig === lastSig) { isBuilding = false; return; }
     lastSig = sig;
@@ -188,6 +187,7 @@
       });
       railsEl.appendChild(rail);
 
+      // pack segments
       const usable = h;
       let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
       const total = count * segLen;
@@ -196,24 +196,30 @@
 
       let y = 0;
       for (let i=0; i<count; i++){
-       // NEW: centered inner wrapper so line, caps, center share the same origin
-const seg = document.createElement('div');
-seg.className = 'motif-seg';
-Object.assign(seg.style, { position:'absolute', top:`${y + capH}px`, left:'0', width:'100%', height:`${segLen}px` });
+        // segment box
+        const seg = doc.createElement('div');
+        seg.className = 'motif-seg';
+        Object.assign(seg.style, {
+          position:'absolute', left:'0',
+          top:`${y + capH}px`,
+          width:'100%',
+          height:`${segLen}px`
+        });
 
-const line = document.createElement('div');
-line.className = 'motif-line';
-seg.appendChild(line);
+        // centered inner wrapper: line + caps + center share same origin
+        const line = doc.createElement('div');
+        line.className = 'motif-line';
+        if (DBG){
+          line.style.background =
+            'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
+        }
+        seg.appendChild(line);
 
-const center = document.createElement('div');
-center.className = 'motif-center';
-line.appendChild(center);
+        const center = doc.createElement('div');
+        center.className = 'motif-center';
+        line.appendChild(center);
 
-rail.appendChild(seg);
-
-// (optional) debug paint: apply to the inner wrapper now
-if (DBG) line.style.background = 'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
-
+        rail.appendChild(seg);
         y += segLen + gap;
       }
     }
@@ -226,10 +232,6 @@ if (DBG) line.style.background = 'repeating-linear-gradient(0deg, rgba(255,210,0
     if (DBG) console.log('[motif] built', { leftX, rightX, ranges: ranges.length, reason });
     isBuilding = false;
   }
-
-document.body.style.setProperty('--motif-z','1000');  // or just '10' if you prefer
-document.body.style.setProperty('--motif-opacity','.55');   // ensure not too faint
-window.MOTIF_RAILS?.rebuild();
 
   // ----- scheduling & observers (loop-proof) -----
   function schedule(reason){
@@ -247,13 +249,14 @@ window.MOTIF_RAILS?.rebuild();
   const mo = new MutationObserver((records) => {
     // ignore our own changes
     for (const rec of records){
-      if (railsEl && (rec.target === railsEl || railsEl.contains(rec.target))) {
-        return; // our own DOM; do nothing
-      }
+      if (!railsEl) break;
+      if (rec.target === railsEl || railsEl.contains(rec.target)) return;
+      // also ignore attribute changes we make to .motif-rails itself
+      if (rec.type === 'attributes' && rec.target === railsEl) return;
     }
     schedule('mutation');
   });
-  mo.observe(doc.documentElement, { childList:true, subtree:true });
+  mo.observe(doc.documentElement, { childList:true, subtree:true, attributes:true });
 
   // initial
   window.addEventListener('load', () => schedule('load'), { once:true, passive:true });
