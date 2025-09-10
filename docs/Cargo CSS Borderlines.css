@@ -11,7 +11,7 @@ body.has-motifs{
   /* Rail geometry */
   --motif-rail-width: 2rem;      /* visual width of each rail */
   --motif-rail-inset: 1rem;      /* nudge inward from the gutter edge */
-  --motif-line-width: 1rem;      
+  --motif-line-width: .25rem;      
   --motif-cap-width: var(--motif-line-width);
 
   --motif-seg-length: 14rem;     /* height of the line portion per segment */
