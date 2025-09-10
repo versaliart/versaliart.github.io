@@ -13,7 +13,7 @@ body.has-motifs{
   --motif-center-width:  1.5rem;     /* NEW: center width */
   --motif-center-height: 9rem;   /* NEW: center height (defaults square) */
 
-  --motif-seg-length: 14rem;     /* height of the line portion per segment */
+  --motif-seg-length: 7rem;     /* height of the line portion per segment */
   --motif-seg-gap: 10rem;         /* gap between segments */
 
   /* Visibility thresholds */
