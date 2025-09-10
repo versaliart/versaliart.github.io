@@ -133,7 +133,7 @@
     // offsets & geometry (all from your CSS custom properties)
     const topOffset    = cssPx('--motif-top-offset', 0);
     const bottomOffset = cssPx('--motif-bottom-offset', 0);
-
+    const capGap = cssPx('--motif-bottom-cap-gap', 0);
     const railW  = cssPx('--motif-rail-width', 32);
     const railIn = cssPx('--motif-rail-inset', 12);
     const edgeIn = cssPx('--motif-edge-inset', 24);
@@ -186,6 +186,10 @@
 
     // ---- per-range renderer: 2 line parts + center gap with caps above/below
     function makeRailRange(x, rTop, rBot){
+      let gapH = centerH + 2*capH + 2*pad;
+
+// now: include the extra space taken by the bottom cap above the center
+      let gapH = centerH + 2*capH + 2*pad + capGap;
       const h = Math.max(0, rBot - rTop);
       if (h < 4) return;
 

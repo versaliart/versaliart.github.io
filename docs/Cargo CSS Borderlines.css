@@ -37,6 +37,7 @@ body.has-motifs{
   --motif-min-seg-length: 4rem;         /* don't shrink below this */
   --motif-min-gap: 12px;                /* minimum gap between segments */
   --motif-center-gap-pad: 0.25rem;
+  --motif-bottom-cap-gap: .25rem;
 }
 
 /* Segments: scale the line art to the requested width, keep centered */
@@ -78,8 +79,8 @@ body.has-motifs{
   background-size: 100% 100%; /* use 'auto 100%' if you want to preserve cap aspect */
 }
 .motif-line::before{ top:    calc(-1 * var(--motif-cap-height)); }
-.motif-line::after { bottom: calc(-1 * var(--motif-cap-height)); }
 .motif-line::after{
+  bottom: calc(-1 * var(--motif-cap-height) - var(--motif-bottom-cap-gap, 0));
   transform: translateX(-50%) scaleY(-1);
 }
 
