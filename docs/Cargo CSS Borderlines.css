@@ -17,7 +17,7 @@ body.has-motifs{
   --motif-center-height: 9rem;   /* NEW: center height (defaults square) */
 
   --motif-seg-length: 14rem;     /* height of the line portion per segment */
-  --motif-seg-gap: 2rem;         /* gap between segments */
+  --motif-seg-gap: 9rem;         /* gap between segments */
 
   /* Visibility thresholds */
   --motif-min-gutter: 12rem;     /* hide if either gutter < this */
