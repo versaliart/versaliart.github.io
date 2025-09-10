@@ -1,4 +1,4 @@
-/* Motif Rails v2.6 — robust gutters + inline line art */
+/* Motif Rails v2.7 — robust gutters + inline line art */
 (function(){
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
     console.warn('[motif] rails already installed, skipping');
@@ -73,38 +73,40 @@
   }
 
   // Robust content column finder (ignores full-bleed)
-  function findContentColumn(){
-    const clientW = document.documentElement.clientWidth || window.innerWidth;
-    const cands = doc.querySelectorAll(
-      '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
-      '.content-wrapper, .site-wrapper, .page-content, .sqs-container, .sqs-row'
-    );
+// Outermost content bounds (ignore full-bleed wrappers)
+function findContentBounds(){
+  const clientW = document.documentElement.clientWidth || window.innerWidth;
+  const cands = document.querySelectorAll(
+    '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
+    '.content-wrapper, .site-wrapper, .page-content, .sqs-container, .sqs-row'
+  );
 
-    const MIN_GUTTER_PX = 2;
-    let best = null, bestScore = -Infinity;
-    for (const el of cands){
-      const r = el.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) continue;
+  let minLeft = Infinity, maxRight = -Infinity;
+  for (const el of cands){
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) continue;
 
-      const left  = Math.max(0, r.left);
-      const right = Math.max(0, clientW - r.right);
-      const minGut = Math.min(left, right);
+    // ignore truly full-bleed wrappers
+    if (r.width >= clientW - 1) continue;
 
-      if (r.width >= clientW - 1 || minGut < MIN_GUTTER_PX) continue; // ignore full-bleed
+    const left  = Math.max(0, r.left);
+    const right = Math.min(clientW, r.right);
 
-      const centered = 1 - Math.min(1, Math.abs(left - right) / clientW);
-      const narrower = Math.max(0, clientW - r.width);
-      const score = minGut * 2 + centered * 1000 + narrower;
-      if (score > bestScore){ bestScore = score; best = r; }
-    }
-    if (best) return best;
-
-    // Fallback: centered 88%/max-1200px (≈6% gutters each side)
-    const pctVar = parseFloat(getComputedStyle(body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
-    const colW = Math.min(1200, clientW * pctVar);
-    const left = (clientW - colW)/2;
-    return { left, right: left + colW };
+    minLeft  = Math.min(minLeft,  left);
+    maxRight = Math.max(maxRight, right);
   }
+
+  if (isFinite(minLeft) && isFinite(maxRight) && maxRight > minLeft) {
+    return { left: minLeft, right: maxRight, mode:'scan' };
+  }
+
+  // Fallback: centered column (you can tune the % in CSS: --motif-fallback-col-pct)
+  const pct  = parseFloat(getComputedStyle(document.body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
+  const colW = Math.min(1200, clientW * pct);
+  const left = (clientW - colW)/2;
+  return { left, right: left + colW, mode:'fallback' };
+}
+
 
   // ----- build state -----
   let railsEl = null;
@@ -160,7 +162,7 @@
     const zIndex = (DBG ? 99999 : (parseInt(zVarCss,10) || 9999));
     const opacity= (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '1';
 
-    const colRect = findContentColumn();
+    const colRect = findContentBounds();
     const leftG   = Math.max(0, colRect.left);
     const rightG  = Math.max(0, clientW - colRect.right);
 
