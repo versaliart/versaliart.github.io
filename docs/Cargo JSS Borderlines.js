@@ -161,4 +161,19 @@
   window.addEventListener('load', buildRails, { once: true });
   document.addEventListener('DOMContentLoaded', buildRails);
   buildRails();
+
+  // --- Toggle body.has-motifs when #motifs-enable is present ---
+function applyMotifs() {
+  const hasMarker = !!document.getElementById('motifs-enable');
+  document.body.classList.toggle('has-motifs', hasMarker);
+}
+
+// Run once on load
+if (document.readyState !== 'loading') applyMotifs();
+else document.addEventListener('DOMContentLoaded', applyMotifs, { once:true });
+
+// Keep it synced if editor injects/removes blocks dynamically
+const mo = new MutationObserver(() => applyMotifs());
+mo.observe(document.documentElement, { childList:true, subtree:true });
+
 })();
