@@ -211,5 +211,16 @@ header#header .header-nav-list > .header-nav-item > a{
   line-height: var(--mm-pill-line);
 }
 
+/* Restore pill sizing inside the glass header (beats Fonts.css !important) */
+header#header .header-nav-list > .header-nav-item > a{
+  font-size: var(--mm-pill-font) !important;   /* keep font size variable-driven */
+  line-height: var(--mm-pill-line) !important; /* 1 → lets padding actually shrink height */
+  padding-block: var(--mm-btn-pad-y) !important; /* 0px will now work */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+
 /* Remove the injected "Skip to Content" link inside the header */
 header#header .header-skip-link{ display:none !important; }
