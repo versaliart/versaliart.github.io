@@ -29,7 +29,8 @@ body.has-motifs{
   --motif-edge-inset: 36px;      /* if it’s using edge fallback */
   --motif-top-offset: 6rem;      /* push start below your hero title */
   --motif-bottom-offset: 2rem;   /* keep away from footer edge */
-  --motif-seg-length: 16rem;     /* slightly taller segments */
+
+  --motif-seg-length: 32rem;     /* slightly taller segments */
   --motif-seg-gap: 2.25rem;      /* a hair more breathing room */
   --motif-z: 1000;                  /* behind hero art; raise only if needed */
 }
