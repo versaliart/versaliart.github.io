@@ -107,7 +107,7 @@ function findContentColumn(){
 
   // fallback: centered 92%/max-1200px column
   const vw = clientW;
-  const colW = Math.min(1200, vw * 0.92);
+  const colW = Math.min(1200, vw * 0.88);
   const left = (vw - colW)/2;
   return { left, right: left + colW };
 }
@@ -147,7 +147,7 @@ function build(reason){
 
   // If a page-level disable is present, we stop (but say why).
   if (document.getElementById('motifs-disable')) {
-    if (DBG) console.warn('[motif] hidden: page toggle (#motifs-disable present)');
+    console.warn('[motif] hidden: page toggle (#motifs-disable present)');
     clearRails(); lastSig = 'hidden:off'; isBuilding = false; return;
   }
   // Ensure the CSS vars are available on body during the build.
@@ -185,10 +185,10 @@ function build(reason){
 
   // optional: hide when gutters are tight — unless debugging
   const hideGutter = cssPx('--motif-hide-gutter', 0); // 0 = disabled
-  if (!DBG && hideGutter > 0 && (leftG < hideGutter || rightG < hideGutter)) {
-    if (DBG) console.warn('[motif] hidden:gutter', { leftG, rightG, hideGutter });
-    clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return;
-  }
+if (hideGutter > 0 && (leftG < hideGutter && rightG < hideGutter)) {
+  console.warn('[motif] hidden:gutter', { leftG, rightG, hideGutter, clientW });
+  clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return;
+}
 
   let tight = (leftG < minG) || (rightG < minG);
   if (MODE_LOCK === 'edge')   tight = true;
