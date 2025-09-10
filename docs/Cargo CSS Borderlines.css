@@ -24,6 +24,15 @@ body.has-motifs{
   --motif-cap-height: 1.8rem;    /* endcap graphic height */
   --motif-center-size: 2.2rem;   /* centerpiece square size */
   --motif-opacity: 0.55;         /* overall transparency */
+
+  --motif-edge-inset: 36px;      /* if it’s using edge fallback */
+  --motif-top-offset: 6rem;      /* push start below your hero title */
+  --motif-bottom-offset: 2rem;   /* keep away from footer edge */
+  --motif-seg-length: 16rem;     /* slightly taller segments */
+  --motif-seg-gap: 2.25rem;      /* a hair more breathing room */
+  --motif-z: 0;                  /* behind hero art; raise only if needed */
+  --motif-hide-bp: 70rem;        /* hard-hide on narrower layouts */
+  --motif-min-gutter: 12rem;     /* forces “edge mode” unless gutters are generous */
 }
 
 /* Container spanning from first to last section (positions via JS) */
