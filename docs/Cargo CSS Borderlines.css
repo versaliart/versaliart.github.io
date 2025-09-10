@@ -87,3 +87,6 @@ body.has-motifs{
 @media (max-width: 60rem){
   .motif-rails{ display: none !important; }
 }
+
+/* test paint so segments are visible even without SVGs */
+body.has-motifs .motif-seg{ background: repeating-linear-gradient(0deg, rgba(255,200,0,.25), rgba(255,200,0,.25) 8px, transparent 8px, transparent 16px); }
