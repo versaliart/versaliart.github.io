@@ -40,6 +40,9 @@ body.has-starfield{
   --max-blur: 0.22rem;
   --star-color: #9989EC;
   --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
+
+  --jitter-fallback-mult: 2;   /* default 2.0 if omitted */
+  --jitter-fallback-steps: 3;     /* default 3 if omitted */
 }
 
 /* The overlay layer the JS injects inside your Shape Block */
