@@ -1,6 +1,6 @@
-/* ===== Topblock Split-Flip (Doors) v2.51 — FULL JS (bare) ===== */
+/* ===== Topblock Split-Flip (Doors) v2.50 — FULL JS (bare) ===== */
 (function(){
-  // ---------- Build doors ----------
+  // Build doors
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
@@ -18,7 +18,7 @@
     return doors;
   }
 
-  // ---------- Layout with sub-pixel precision ----------
+  // Paint geometry with sub-pixel precision
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
     const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
@@ -75,21 +75,10 @@
     paint(rf, (W/2) - seam); paint(rb, (W/2) - seam);
   }
 
-  // ---------- Globals: pointer tracking ----------
-  let LAST_PT = { x: -1e9, y: -1e9 }; // far away initial
-  const updatePt = (e) => {
-    if ('clientX' in e) { LAST_PT = { x: e.clientX, y: e.clientY }; return; }
-    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-    if (t) LAST_PT = { x: t.clientX, y: t.clientY };
-  };
-  // Track pointer globally so we always know where it is, even in pass-through
-  document.addEventListener('pointermove', updatePt, { capture: true, passive: true });
-  document.addEventListener('pointerdown', updatePt, { capture: true, passive: true });
-  document.addEventListener('touchmove',  updatePt, { capture: true, passive: true });
-  document.addEventListener('touchstart', updatePt, { capture: true, passive: true });
-
+  // Utilities
   const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
   const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+
   const closestFeBlock = el => el.closest('.fe-block') || null;
 
   function setPassThrough(block, on){
@@ -103,40 +92,52 @@
     }
   }
 
-  // ---------- Open/close with rAF guard ----------
+  // Robust open/close with multiple fallbacks
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
     block.classList.add('is-open');
     setPassThrough(block, true);
 
-    // rAF guard: closes as soon as pointer is outside rect (polls ~60fps)
-    const tick = () => {
-      if (!block.__open) return;
+    // Track last pointer; close when pointer is outside rect
+    const updatePt = (e) => {
+      block.__lastPt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
+        : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
+        : block.__lastPt || null;
+      if (!block.__lastPt) return;
       const r = block.getBoundingClientRect();
-      const p = LAST_PT;
+      const p = block.__lastPt;
       if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
         closeBlock(block);
-        return;
       }
-      block.__rafId = requestAnimationFrame(tick);
     };
-    block.__rafId = requestAnimationFrame(tick);
 
-    // Additional safety nets
-    const onScroll = () => { /* rAF will close if needed using LAST_PT */ };
-    const onBlur   = () => closeBlock(block);
-    const onVis    = () => { if (document.visibilityState !== 'visible') closeBlock(block); };
+    const onPointerMove  = (e) => updatePt(e);
+    const onPointerOver  = (e) => updatePt(e); // covers fast transitions without move
+    const onScroll       = ()  => {
+      if (!block.__lastPt) return;
+      const r = block.getBoundingClientRect();
+      const p = block.__lastPt;
+      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
+        closeBlock(block);
+      }
+    };
+    const onBlur         = ()  => closeBlock(block);
+    const onVisibility   = ()  => { if (document.visibilityState !== 'visible') closeBlock(block); };
 
+    document.addEventListener('pointermove', onPointerMove, true);
+    document.addEventListener('pointerover', onPointerOver, true);
     window.addEventListener('scroll', onScroll, true);
     window.addEventListener('blur', onBlur, true);
-    document.addEventListener('visibilitychange', onVis, true);
+    document.addEventListener('visibilitychange', onVisibility, true);
 
     block.__cleanupOpen = () => {
-      if (block.__rafId) { cancelAnimationFrame(block.__rafId); block.__rafId = null; }
+      document.removeEventListener('pointermove', onPointerMove, true);
+      document.removeEventListener('pointerover', onPointerOver, true);
       window.removeEventListener('scroll', onScroll, true);
       window.removeEventListener('blur', onBlur, true);
-      document.removeEventListener('visibilitychange', onVis, true);
+      document.removeEventListener('visibilitychange', onVisibility, true);
+      block.__lastPt = null;
     };
   }
 
@@ -145,11 +146,10 @@
     block.__open = false;
     block.classList.remove('is-open');
     setPassThrough(block, false);
-    if (block.__rafId) { cancelAnimationFrame(block.__rafId); block.__rafId = null; }
     if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
   }
 
-  // ---------- Initialize one ----------
+  // Initialize one
   function initOne(block){
     if (block.classList.contains('flip-top')) return;
 
@@ -175,12 +175,12 @@
       }, true);
     }
 
-    // Desktop: open on pointer entry; rAF guard ensures reliable close
+    // Desktop: open with pass-through; close via robust document listeners
     if (isFine()){
       block.addEventListener('mouseenter', () => openBlock(block));
     }
 
-    // Mobile: tap to open persistent; tap blank space to close
+    // Mobile: tap to open persistent
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
@@ -190,6 +190,7 @@
       }
     }, true);
 
+    // Tap blank space to close on mobile
     document.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (block.classList.contains('is-flipped')){
@@ -230,7 +231,7 @@
     }
   }
 
-  // ---------- Initialize all eligible ----------
+  // Initialize all eligible blocks
   function initAll(){
     document.querySelectorAll('.sqs-block.image-block').forEach(block => {
       const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');

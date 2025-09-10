@@ -1,256 +1,83 @@
-/* ===== Topblock Split-Flip (Doors) v2.52 — FULL JS (bare) ===== */
-(function(){
-  // ---------- Build doors ----------
-  function buildDoors(url){
-    const doors = document.createElement('div');
-    doors.className = 'flip-doors';
-    doors.dataset.image = url;
-    const mk = side => {
-      const d = document.createElement('div');
-      d.className = 'flip-door ' + side;
-      const f = document.createElement('div'); f.className = 'face front';
-      const b = document.createElement('div'); b.className = 'face back';
-      d.appendChild(f); d.appendChild(b);
-      return d;
-    };
-    doors.appendChild(mk('left'));
-    doors.appendChild(mk('right'));
-    return doors;
-  }
+/* ===== Topblock Split-Flip (Doors) v2.50 — FULL CSS ===== */
 
-  // ---------- Layout with sub-pixel precision ----------
-  function layout(block){
-    const container = block.querySelector('.fluid-image-container');
-    const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
-    const doors     = block.querySelector('.flip-doors');
-    if (!container || !imgEl || !doors) return;
+:root{
+  --flip-open-duration: 480ms;
+  --flip-close-duration: 480ms;
+  --flip-open-ease: cubic-bezier(.55,.055,.675,.19);
+  --flip-close-ease: cubic-bezier(.2,.7,.2,1);
 
-    const rect = container.getBoundingClientRect();
-    const W = Math.max(1, rect.width), H = Math.max(1, rect.height);
+  --flip-perspective: 1000px;
+  --flip-seam: 1px;
+  --edge-bleed: 1px;
+}
 
-    let iw = imgEl.naturalWidth  || 1;
-    let ih = imgEl.naturalHeight || 1;
-    const dims = imgEl.getAttribute('data-image-dimensions');
-    if (dims && dims.includes('x')) {
-      const [dw, dh] = dims.split('x').map(parseFloat);
-      if (dw > 0 && dh > 0){ iw = dw; ih = dh; }
-    }
+/* Opt-in Topflip */
+.sqs-block.image-block.flip-top .fluid-image-container{
+  perspective: var(--flip-perspective);
+  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  position: relative;
+}
 
-    let fx = 0.5, fy = 0.5;
-    const fp = imgEl.getAttribute('data-image-focal-point');
-    if (fp && fp.includes(',')){
-      const [sx, sy] = fp.split(',').map(parseFloat);
-      if (!Number.isNaN(sx)) fx = sx;
-      if (!Number.isNaN(sy)) fy = sy;
-    }
+/* Hide the real <img>; doors repaint it */
+.sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{ opacity: 0 !important; }
 
-    const scale = Math.max(W / iw, H / ih);
-    const bgW = iw * scale, bgH = ih * scale;
-    const posX = (W * fx) - (bgW * fx);
-    const posY = (H * fy) - (bgH * fy);
+/* Doors host */
+.sqs-block.image-block.flip-top .flip-doors{
+  position: absolute; inset: 0;
+  border-radius: inherit; overflow: hidden;
+  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  pointer-events: none;
+  contain: layout paint;
+}
 
-    const cs    = getComputedStyle(doors);
-    const seam  = parseFloat(cs.getPropertyValue('--flip-seam'))  || 0;
-    aconst bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
+/* Doors */
+.sqs-block.image-block.flip-top .flip-door{
+  position: absolute; top: 0; bottom: 0;
+  width: calc(50% + var(--flip-seam));
+  will-change: transform;
+  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transition-property: transform;
+  transition-duration: var(--flip-close-duration);
+  transition-timing-function: var(--flip-close-ease);
+}
+.sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
+.sqs-block.image-block.flip-top .flip-door.right { right: 0; transform-origin: center right; }
+.sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-    const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
+/* Faces (painted by JS) */
+.sqs-block.image-block.flip-top .face{
+  position: absolute;
+  inset: calc(-1 * var(--edge-bleed));
+  background-repeat: no-repeat; background-color: transparent;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
+}
+.sqs-block.image-block.flip-top .back{ transform: rotateY(180deg); }
 
-    const paint = (el, dx) => {
-      if (!el) return;
-      el.style.backgroundImage    = `url("${url}")`;
-      el.style.backgroundSize     = `${bgW}px ${bgH}px`;
-      el.style.backgroundPosition = `${(posX - dx + bleed)}px ${(posY + bleed)}px`;
-      el.style.backgroundRepeat   = 'no-repeat';
-      el.style.transform          = 'translateZ(0)';
-      el.style.backfaceVisibility = 'hidden';
-      el.style.webkitBackfaceVisibility = 'hidden';
-    };
+/* Closed state */
+.sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
+.sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-    const lf = doors.querySelector('.flip-door.left  .face.front');
-    const lb = doors.querySelector('.flip-door.left  .face.back');
-    const rf = doors.querySelector('.flip-door.right .face.front');
-    const rb = doors.querySelector('.flip-door.right .face.back');
+/* OPEN (class-driven) */
+.sqs-block.image-block.flip-top.is-open .flip-door{
+  transition-duration: var(--flip-open-duration);
+  transition-timing-function: var(--flip-open-ease);
+}
+.sqs-block.image-block.flip-top.is-open .flip-door.left  { transform: rotateY(-180deg); }
+.sqs-block.image-block.flip-top.is-open .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
 
-    paint(lf, 0); paint(lb, 0);
-    paint(rf, (W/2) - seam); paint(rb, (W/2) - seam);
-  }
+/* TRUE pass-through while open: Topflip + its fe-block wrapper */
+.sqs-block.image-block.flip-top.pe-through,
+.sqs-block.image-block.flip-top.pe-through *,
+.fe-block.pe-through,
+.fe-block.pe-through *{
+  pointer-events: none !important;
+}
 
-  // ---------- Globals: robust pointer tracking ----------
-  let LAST_PT = { x: -1e9, y: -1e9 };
-  function updatePtFromEvent(e){
-    if ('clientX' in e) { LAST_PT = { x: e.clientX, y: e.clientY }; return; }
-    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-    if (t) LAST_PT = { x: t.clientX, y: t.clientY };
-  }
-  // Track pointer globally (capture) so pass-through doesn't hide movement
-  ['pointermove','pointerdown','pointerover','mousemove','touchstart','touchmove'].forEach(type=>{
-    document.addEventListener(type, updatePtFromEvent, { capture:true, passive:true });
-  });
-
-  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
-  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
-  const closestFeBlock = el => el.closest('.fe-block') || null;
-
-  function setPassThrough(block, on){
-    const outer = closestFeBlock(block);
-    if (on){
-      block.classList.add('pe-through');
-      outer && outer.classList.add('pe-through');
-    } else {
-      block.classList.remove('pe-through');
-      outer && outer.classList.remove('pe-through');
-    }
-  }
-
-  // ---------- Open/close with rAF guard + grace window ----------
-  function openBlock(block, evt){
-    if (block.__open) return;
-    if (evt) updatePtFromEvent(evt);           // capture pointer at open
-    block.__open = true;
-    block.__openedAt = performance.now();
-    block.classList.add('is-open');
-    setPassThrough(block, true);
-
-    const GRACE_MS = 80; // small window to allow FIRST valid pointer sample
-
-    const tick = () => {
-      if (!block.__open) return;
-      const now = performance.now();
-      const r = block.getBoundingClientRect();
-      const p = LAST_PT;
-
-      // During the grace window, only close if we have a valid inside sample first
-      const inside = (p.x >= r.left && p.x <= r.right && p.y >= r.top && p.y <= r.bottom);
-      if (now - block.__openedAt < GRACE_MS){
-        // If we already know the pointer is outside within grace, treat as not-yet-initialized and keep open.
-        block.__rafId = requestAnimationFrame(tick);
-        return;
-      }
-
-      if (!inside){
-        closeBlock(block);
-        return;
-      }
-      block.__rafId = requestAnimationFrame(tick);
-    };
-    block.__rafId = requestAnimationFrame(tick);
-
-    // Safety nets
-    const onBlur = () => closeBlock(block);
-    const onVis  = () => { if (document.visibilityState !== 'visible') closeBlock(block); };
-    window.addEventListener('blur', onBlur, true);
-    document.addEventListener('visibilitychange', onVis, true);
-    block.__cleanupOpen = () => {
-      if (block.__rafId) { cancelAnimationFrame(block.__rafId); block.__rafId = null; }
-      window.removeEventListener('blur', onBlur, true);
-      document.removeEventListener('visibilitychange', onVis, true);
-      block.__openedAt = 0;
-    };
-  }
-
-  function closeBlock(block){
-    if (!block.__open) return;
-    block.__open = false;
-    block.classList.remove('is-open');
-    setPassThrough(block, false);
-    if (block.__rafId) { cancelAnimationFrame(block.__rafId); block.__rafId = null; }
-    if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
-  }
-
-  // ---------- Initialize one ----------
-  function initOne(block){
-    if (block.classList.contains('flip-top')) return;
-
-    const container = block.querySelector('.fluid-image-container');
-    const img = block.querySelector('img[data-sqsp-image-block-image]');
-    if (!container || !img) return;
-
-    const url = img.currentSrc || img.src;
-    if (!url) return;
-
-    block.classList.add('flip-top');
-
-    const doors = buildDoors(url);
-    container.appendChild(doors);
-
-    // Disable the marker link only while open/tapped-open (CSS also covers this)
-    const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
-    if (marker){
-      marker.addEventListener('click', (e) => {
-        if (block.classList.contains('is-open') || block.classList.contains('is-flipped')) {
-          e.preventDefault(); e.stopPropagation();
-        }
-      }, true);
-    }
-
-    // Desktop: open on pointer entry; pass event so we seed LAST_PT immediately
-    if (isFine()){
-      block.addEventListener('mouseenter', (e) => openBlock(block, e));
-    }
-
-    // Mobile: tap to open persistent; tap blank space to close
-    block.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (!block.classList.contains('is-flipped')){
-        e.preventDefault(); e.stopPropagation();
-        block.classList.add('is-flipped');
-        setPassThrough(block, true);
-      }
-    }, true);
-
-    document.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (block.classList.contains('is-flipped')){
-        const actionable = e.target.closest &&
-          e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
-        if (!actionable){
-          block.classList.remove('is-flipped');
-          setPassThrough(block, false);
-        }
-      }
-    }, true);
-
-    // Layout + reactions
-    const relayout = () => layout(block);
-    relayout();
-
-    const ro = new ResizeObserver(relayout);
-    ro.observe(container);
-
-    const mo = new MutationObserver(relayout);
-    mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
-
-    if (!img.complete) img.addEventListener('load', relayout, { once: true });
-    window.addEventListener('resize', relayout);
-
-    // Safety: close when off-screen
-    if ('IntersectionObserver' in window){
-      const io = new IntersectionObserver((entries)=>{
-        entries.forEach((entry)=>{
-          if (!entry.isIntersecting){
-            closeBlock(block);
-            block.classList.remove('is-flipped');
-            setPassThrough(block, false);
-          }
-        });
-      }, { threshold: 0.05 });
-      io.observe(block);
-    }
-  }
-
-  // ---------- Initialize all eligible ----------
-  function initAll(){
-    document.querySelectorAll('.sqs-block.image-block').forEach(block => {
-      const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
-      if (link) initOne(block);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAll);
-  } else {
-    initAll();
-  }
-  const moAll = new MutationObserver(initAll);
-  moAll.observe(document.documentElement, { childList: true, subtree: true });
-})();
+/* Marker link: clickable when closed; disabled while open/tapped-open */
+.sqs-block.image-block.flip-top.is-open a.sqs-block-image-link[href="#flip-top"],
+.sqs-block.image-block.flip-top.is-flipped a.sqs-block-image-link[href="#flip-top"]{
+  pointer-events: none !important;
+  cursor: default !important;
+}
