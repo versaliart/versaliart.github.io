@@ -52,5 +52,12 @@
       .catch(console.warn);
   });
 
+    // === Border art ===
+  whenSelector('header#header[data-test="header"]', function () {
+    loadScript("https://versaliart.github.io/Cargo%20JSS%20Borderlines.js")
+      .then(()=>console.log("[Loader] Header loaded"))
+      .catch(console.warn);
+  });
+
 })();
 </script>

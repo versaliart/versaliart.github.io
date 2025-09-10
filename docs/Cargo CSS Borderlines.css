@@ -1,0 +1,89 @@
+/* ===== Motif Rails v1.0 (CSS) =====
+   Swap the three URLs below for your assets.
+   All sizing is in rem as requested.
+*/
+
+body.has-motifs{
+  --motif-line-url: url("https://example.com/your-line.svg");
+  --motif-cap-url:  url("https://example.com/your-endcap.svg");
+  --motif-center-url:url("https://example.com/your-centerpiece.svg");
+
+  /* Rail geometry */
+  --motif-rail-width: 2rem;      /* visual width of each rail */
+  --motif-rail-inset: 1rem;      /* nudge inward from the gutter edge */
+
+  /* Segment geometry (each “panel” between two caps) */
+  --motif-seg-length: 14rem;     /* height of the line portion per segment */
+  --motif-seg-gap: 2rem;         /* gap between segments */
+
+  /* Visibility thresholds */
+  --motif-min-gutter: 10rem;     /* hide if either gutter < this */
+  --motif-hide-bp: 60rem;        /* hide if viewport < this (≈960px) */
+
+  /* Rendering tweaks */
+  --motif-cap-height: 1.8rem;    /* endcap graphic height */
+  --motif-center-size: 2.2rem;   /* centerpiece square size */
+  --motif-opacity: 0.55;         /* overall transparency */
+}
+
+/* Container spanning from first to last section (positions via JS) */
+.motif-rails{
+  position: absolute;
+  inset: 0 auto 0 auto; /* top/left set by JS */
+  pointer-events: none;
+  z-index: 0;           /* behind main content */
+  opacity: var(--motif-opacity);
+}
+
+/* Individual rails (left + right) get absolute coordinates from JS */
+.motif-rail{
+  position: absolute;
+  width: var(--motif-rail-width);
+}
+
+/* A single segment: line + two caps + a centerpiece */
+.motif-seg{
+  position: relative;
+  width: 100%;
+  height: var(--motif-seg-length);
+  background-image: var(--motif-line-url);
+  background-repeat: repeat-y;
+  background-position: center;
+  background-size: 100% auto;  /* scale line to rail width */
+  transform: translateZ(0);    /* crisp rendering */
+}
+
+/* End-caps (top+bottom) */
+.motif-seg::before,
+.motif-seg::after{
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: var(--motif-cap-height);
+  background-image: var(--motif-cap-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+.motif-seg::before{ top: calc(-1 * var(--motif-cap-height)); }
+.motif-seg::after { bottom: calc(-1 * var(--motif-cap-height)); }
+
+/* Centerpiece (sits between caps, centered) */
+.motif-center{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--motif-center-size);
+  height: var(--motif-center-size);
+  transform: translate(-50%, -50%);
+  background-image: var(--motif-center-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+}
+
+/* Small screens: hard-hide without JS */
+@media (max-width: 60rem){
+  .motif-rails{ display: none !important; }
+}
