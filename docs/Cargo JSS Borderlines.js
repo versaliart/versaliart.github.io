@@ -11,6 +11,12 @@
   const DBG = Q.has('motifdebug');
   const MODE_LOCK = Q.get('motifmode'); // "edge" | "gutter" | null
 
+
+if (DBG) console.log('[motif] gutters', { leftG: Math.max(0, findContentColumn().left),
+                                          rightG: Math.max(0, (document.documentElement.clientWidth||innerWidth) - findContentColumn().right),
+                                          hideGutter: cssPx('--motif-hide-gutter', 0) });
+
+
   // public API
   const API = window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, {
     version: '2.2-center-gap',
@@ -301,7 +307,3 @@ function findContentColumn(){
   window.addEventListener('load', () => schedule('load'), { once:true, passive:true });
   onReady(() => schedule('domready'));
 })();
-
-if (DBG) console.log('[motif] gutters', { leftG: Math.max(0, findContentColumn().left),
-                                          rightG: Math.max(0, (document.documentElement.clientWidth||innerWidth) - findContentColumn().right),
-                                          hideGutter: cssPx('--motif-hide-gutter', 0) });
