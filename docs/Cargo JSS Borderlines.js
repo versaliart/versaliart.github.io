@@ -91,7 +91,7 @@ function enabledRangesWithin(boundsTop, boundsBottom){
       const r = el.getBoundingClientRect();
       if (r.width > 0 && r.height > 0) return r;
     }
-    const vw = innerWidth;
+const vw = document.documentElement.clientWidth || innerWidth; // instead of innerWidth
     const colW = Math.min(1200, vw * 0.92);
     const left = (vw - colW)/2;
     return { left, right: left + colW };
@@ -111,7 +111,7 @@ function enabledRangesWithin(boundsTop, boundsBottom){
   function makeSignature(ctx){
     const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
     return [
-      innerWidth, innerHeight,
+      clientW, innerHeight,
       ctx.cTop|0, ctx.cH|0,
       ctx.leftX|0, ctx.rightX|0,
       rangeSig
@@ -126,14 +126,24 @@ function enabledRangesWithin(boundsTop, boundsBottom){
     if (!body.classList.contains('has-motifs')) { isBuilding = false; return; }
 
     const hideBp  = cssPx('--motif-hide-bp', 960);            // hide under this width
-    if (innerWidth < hideBp) { isBuilding = false; return; }   // gate by breakpoint
+    if (clientW < hideBp) { isBuilding = false; return; }   // gate by breakpoint
 
     const { topY, bottomY } = findBounds();
-    // Viewport width that EXCLUDES the vertical scrollbar
-const clientW = doc.documentElement.clientWidth || innerWidth;
-// (Optional) scrollbar width if you want to log/debug:
-const sbw = Math.max(0, innerWidth - clientW);
-if (DBG) console.log('[motif] vw=', clientW, 'scrollbar=', sbw);
+
+// Viewport width that EXCLUDES the vertical scrollbar
+const clientW = doc.documentElement.clientWidth || clientW;
+const sbw = Math.max(0, clientW - clientW);  // scrollbar width (for debug)
+if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw);
+
+// Hide under a breakpoint — and CLEAR existing rails
+const hideBp  = cssPx('--motif-hide-bp', 960);
+if (clientW < hideBp) {
+  clearRails();
+  lastSig = 'hidden:bp';
+  isBuilding = false;
+  return;
+}
+
 
     // offsets & geometry (all from your CSS custom properties)
     const topOffset    = cssPx('--motif-top-offset', 0);
@@ -154,6 +164,16 @@ if (DBG) console.log('[motif] vw=', clientW, 'scrollbar=', sbw);
     const colRect = findContentColumn();
     const leftG   = Math.max(0, colRect.left);
     const rightG  = Math.max(0, clientW - colRect.right);
+
+    // Optional: hide rails if gutters get too small on either side
+const hideGutter = cssPx('--motif-hide-gutter', 0); // 0 = disabled
+if (hideGutter > 0 && (leftG < hideGutter || rightG < hideGutter)) {
+  clearRails();
+  lastSig = 'hidden:gutter';
+  isBuilding = false;
+  return;
+}
+
     let tight = (leftG < minG) || (rightG < minG);
     if (MODE_LOCK === 'edge')   tight = true;
     if (MODE_LOCK === 'gutter') tight = false;
