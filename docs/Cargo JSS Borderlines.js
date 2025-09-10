@@ -188,21 +188,21 @@ function makeRailRange(x, rTop, rBot){
   });
   railsEl.appendChild(rail);
 
-  // pack segments
+  // pack segments to fill the usable height
   const usable = h;
   let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
   const total = count * segLen;
   const free  = Math.max(0, usable - total);
   const gap   = count > 1 ? (free / (count - 1)) : 0;
 
-  // 1) draw segments (unchanged)
+  // 1) draw segments (note: no +capH here)
   let y = 0;
   for (let i=0; i<count; i++){
     const seg = doc.createElement('div');
     seg.className = 'motif-seg';
     Object.assign(seg.style, {
       position:'absolute', left:'0',
-      top:`${y + capH}px`,
+      top:`${y}px`,
       width:'100%',
       height:`${segLen}px`
     });
@@ -219,24 +219,18 @@ function makeRailRange(x, rTop, rBot){
     y += segLen + gap;
   }
 
-  // 2) place centers in the *gaps* between segments
-  // number of gaps = count - 1
-  if (count > 1 && gap > 0.5){  // tiny safeguard for microscopic gaps
+  // 2) centers in the gaps between segments
+  if (count > 1 && gap > 0.5){
     for (let g = 0; g < count - 1; g++){
-      // gap midpoint relative to this rail:
-      // first seg top is capH; each seg adds segLen; each gap adds gap
-      const mid = capH + (g + 1) * segLen + g * gap + (gap / 2);
-
+      // midpoint between segment g and g+1 (no capH in the math)
+      const mid = (g + 1) * segLen + g * gap + (gap / 2);
       const ctr = doc.createElement('div');
       ctr.className = 'motif-center';
-      // centered horizontally by CSS (left:50%/translateX(-50%))
-      // vertically centered around the midpoint
-      ctr.style.top = `${mid}px`;               // anchor to gap midpoint
+      ctr.style.top = `${mid}px`;
       rail.appendChild(ctr);
     }
   }
 }
-
 
     for (const rg of ranges){
       makeRailRange(leftX,  rg.top, rg.bottom);
