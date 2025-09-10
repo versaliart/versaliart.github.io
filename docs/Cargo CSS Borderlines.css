@@ -33,6 +33,9 @@ body.has-motifs{
   --motif-placement-mode: gutter;
   --motif-gutter-anchor: 0.5;
   --motif-max-gutter: 64;
+
+  --motif-ink: #111; /* color of the rail */
+
 }
 
 /* Container (JS also sets these inline; keep here as a safety net) */
@@ -100,6 +103,78 @@ body.has-motifs{
   background-size:100% 100%;
 }
 
+/* 2) LINE: use the SVG as a mask; paint with --motif-ink */
+.motif-line{
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--motif-line-width);
+  height: 100%;
+
+  background: none !important;                 /* stop image painting */
+  background-color: var(--motif-ink);          /* this is the visible color */
+
+  /* mask = your line svg (repeats vertically) */
+  -webkit-mask-image: var(--motif-line-url);
+          mask-image: var(--motif-line-url);
+  -webkit-mask-repeat: repeat-y;
+          mask-repeat: repeat-y;
+  -webkit-mask-position: 50% 0;
+          mask-position: 50% 0;
+  -webkit-mask-size: var(--motif-line-width) auto;
+          mask-size: var(--motif-line-width) auto;
+}
+
+/* 3) CAPS: same idea on the pseudo-elements */
+.motif-line::before,
+.motif-line::after{
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: var(--motif-cap-width);
+  height: var(--motif-cap-height);
+
+  background: none !important;
+  background-color: var(--motif-ink);
+
+  -webkit-mask-image: var(--motif-cap-url);
+          mask-image: var(--motif-cap-url);
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+}
+.motif-line::before{ top:    calc(-1 * var(--motif-cap-height)); }
+.motif-line::after{
+  bottom: calc(-1 * var(--motif-cap-height) - var(--motif-bottom-cap-gap, 0));
+  transform: translateX(-50%) scaleY(-1);
+}
+
+/* 4) CENTERPIECE: masked + painted */
+.motif-center{
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width:  var(--motif-center-width);
+  height: var(--motif-center-height);
+
+  background: none !important;
+  background-color: var(--motif-ink);
+
+  -webkit-mask-image: var(--motif-center-url);
+          mask-image: var(--motif-center-url);
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-size: 100% 100%;
+          mask-size: 100% 100%;
+}
+
 @media (max-width: 60rem) {        /* 60rem ≈ 960px */
   body.has-motifs .motif-rails { display: none !important; }
 }
+
