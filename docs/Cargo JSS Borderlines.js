@@ -202,20 +202,46 @@ function makeRailRange(x, rTop, rBot){
   });
   railsEl.appendChild(rail);
 
-  // --- keep caps inside the range ---
-  // reserve capH at the top and capH at the bottom so caps never overhang
-  const insetTop = capH;
-  const insetBot = capH;
+  // keep caps inside the range
+  const insetTop = capH, insetBot = capH;
   const usable = h - insetTop - insetBot;
-  if (usable <= 0) return; // not enough space to show a segment + caps
+  if (usable <= 0) return;
 
-  // pack segments evenly in the inset area
+  // read adaptive knobs
+  const minSeg = cssPx('--motif-min-seg-length', segLen * 0.6);
+  const minGap = cssPx('--motif-min-gap',       Math.max(6, segGap * 0.4));
+  const wantMinCount = Math.max(1, parseInt(getComputedStyle(body).getPropertyValue('--motif-min-segments')) || 2);
+
+  // base count (old behavior)
   let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
-  const totalSegSpace = count * segLen;
-  const free = Math.max(0, usable - totalSegSpace);
-  const gap = count > 1 ? (free / (count - 1)) : 0;
 
-  // 1) draw segments starting at insetTop (no overhang)
+  // try to show at least min segments if physically possible with compression
+  const canFitMin = usable >= (wantMinCount * minSeg + (wantMinCount - 1) * minGap);
+  if (count < wantMinCount && canFitMin) count = wantMinCount;
+
+  // compute actual sizes with clamping
+  // first try: keep desired segLen, adjust gap
+  let gap = count > 1 ? (usable - count * segLen) / (count - 1) : 0;
+
+  if (count > 1 && gap < minGap){
+    // not enough room → clamp gap, shrink segments evenly (but not below minSeg)
+    let segLenActual = (usable - (count - 1) * minGap) / count;
+
+    // if still too small, reduce count until segments are >= minSeg
+    while (count > 1 && segLenActual < minSeg){
+      count -= 1;
+      segLenActual = (usable - (count - 1) * minGap) / count;
+    }
+
+    // final sizes
+    gap = count > 1 ? Math.max(minGap, (usable - count * segLenActual) / (count - 1)) : 0;
+    segLen = Math.max(minSeg, segLenActual);
+  } else {
+    // keep original segLen (no compression needed)
+    gap = Math.max(0, gap);
+  }
+
+  // 1) draw segments from insetTop downward
   let y = insetTop;
   for (let i = 0; i < count; i++){
     const seg = doc.createElement('div');
@@ -234,12 +260,12 @@ function makeRailRange(x, rTop, rBot){
         'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
     }
     seg.appendChild(line);
-
     rail.appendChild(seg);
-    y += segLen + gap;
+
+    y += segLen + (count > 1 ? gap : 0);
   }
 
-  // 2) centers in the gap midpoints (within the inset area)
+  // 2) centers at gap midpoints (within inset)
   if (count > 1 && gap > 0.5){
     for (let g = 0; g < count - 1; g++){
       const mid = insetTop + (g + 1) * segLen + g * gap + (gap / 2);
