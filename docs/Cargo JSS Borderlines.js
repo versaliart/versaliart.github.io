@@ -76,17 +76,36 @@
     const bottomY = footer ? footer.getBoundingClientRect().top + scrollY : doc.body.scrollHeight;
     return { topY, bottomY };
   }
-  function findContentColumn(){
-    const candidates = doc.querySelectorAll('.sqs-layout, .Index-page-content, .content, .site-content, main, #content');
-    for (const el of candidates){
-      const r = el.getBoundingClientRect();
-      if (r.width > 0 && r.height > 0) return r;
-    }
-    const vw = document.documentElement.clientWidth || window.innerWidth; // scrollbar-safe
-    const colW = Math.min(1200, vw * 0.92);
-    const left = (vw - colW)/2;
-    return { left, right: left + colW };
+function findContentColumn(){
+  const clientW = document.documentElement.clientWidth || window.innerWidth;
+  const cands = doc.querySelectorAll(
+    '.sqs-layout, .Index-page-content, .content, .site-content, main, #content'
+  );
+
+  let best = null, bestScore = -Infinity;
+  for (const el of cands){
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) continue;
+
+    const left  = Math.max(0, r.left);
+    const right = Math.max(0, clientW - r.right);
+    const gutters = Math.min(left, right);                 // bigger is better
+    const centered = 1 - Math.min(1, Math.abs(left-right)/clientW); // 1 = perfectly centered
+    const narrower = Math.max(0, clientW - r.width);       // prefer narrower-than-viewport
+
+    const score = gutters * 2 + centered * 1000 + narrower;
+    if (score > bestScore){ bestScore = score; best = r; }
   }
+
+  if (best) return best;
+
+  // fallback: centered 92%/max-1200px column
+  const vw = clientW;
+  const colW = Math.min(1200, vw * 0.92);
+  const left = (vw - colW)/2;
+  return { left, right: left + colW };
+}
+
 
   // ----- build state -----
   let railsEl = null;
