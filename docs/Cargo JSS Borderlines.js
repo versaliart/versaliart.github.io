@@ -274,14 +274,14 @@
         const lineImgVar   = getComputedStyle(body).getPropertyValue('--motif-line-url').trim();
         const lineWidthVar = getComputedStyle(body).getPropertyValue('--motif-line-width').trim() || '2px';
         if (lineImgVar){
-  line.style.setProperty('-webkit-mask-image',  lineImgVar, 'important');
-  line.style.setProperty('mask-image',          lineImgVar, 'important');
-  line.style.setProperty('-webkit-mask-repeat', 'repeat-y', 'important');
-  line.style.setProperty('mask-repeat',         'repeat-y', 'important');
-  line.style.setProperty('-webkit-mask-position','50% 0',   'important');
-  line.style.setProperty('mask-position',        '50% 0',   'important');
-  line.style.setProperty('-webkit-mask-size',   `${lineWidthVar} auto`, 'important');
-  line.style.setProperty('mask-size',           `${lineWidthVar} auto`, 'important');
+          line.style.setProperty('background-image',  lineImgVar, 'important');
+          line.style.setProperty('background-repeat', 'repeat-y', 'important');
+          line.style.setProperty('background-position', '50% 0', 'important');
+          line.style.setProperty('background-size',   `${lineWidthVar} auto`, 'important');
+        } else if (DBG){
+          line.style.background =
+            'repeating-linear-gradient(0deg, rgba(255,210,0,.30), rgba(255,210,0,.30) 10px, transparent 10px, transparent 20px)';
+        }
         line.style.left = '50%';
         line.style.transform = 'translateX(-50%)';
         line.style.width = lineWidthVar;
