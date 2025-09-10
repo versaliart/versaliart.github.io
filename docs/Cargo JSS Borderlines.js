@@ -75,35 +75,39 @@
   }
 
   // Narrow content column (for gutter placement) – prefers centered, narrower-than-viewport
-  function findContentColumn(){
-    const clientW = document.documentElement.clientWidth || window.innerWidth;
-    const cands = doc.querySelectorAll(
-      '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
-      '.content-wrapper, .page-content, .sqs-container, .sqs-row'
-    );
-    const MIN_GUTTER_PX = 2;
+// Pick the WIDEST centered non-full-bleed column
+function findContentColumn(){
+  const clientW = document.documentElement.clientWidth || window.innerWidth;
+  const cands = document.querySelectorAll(
+    '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
+    '.content-wrapper, .page-content, .sqs-container, .sqs-row'
+  );
 
-    let best = null, bestScore = -Infinity;
-    for (const el of cands){
-      const r = el.getBoundingClientRect();
-      if (r.width <= 0 || r.height <= 0) continue;
-      if (r.width >= clientW - 1) continue;               // ignore full-bleed
-      const left  = Math.max(0, r.left);
-      const right = Math.max(0, clientW - r.right);
-      const minGut = Math.min(left, right);
-      if (minGut < MIN_GUTTER_PX) continue;               // trivial gutters
-      const centered = 1 - Math.min(1, Math.abs(left - right)/clientW);
-      const narrower = Math.max(0, clientW - r.width);
-      const score = minGut * 2 + centered * 1000 + narrower;
-      if (score > bestScore){ bestScore = score; best = r; }
-    }
-    if (best) return best;
+  let best = null, bestScore = -Infinity;
+  for (const el of cands){
+    const r = el.getBoundingClientRect();
+    if (r.width <= 0 || r.height <= 0) continue;
+    if (r.width >= clientW - 1) continue; // ignore full-bleed
 
-    // Fallback: 92% / max 1200px centered column (classic)
-    const colW = Math.min(1200, clientW * 0.92);
-    const left = (clientW - colW)/2;
-    return { left, right: left + colW };
+    const left  = Math.max(0, r.left);
+    const right = Math.max(0, clientW - r.right);
+    const minGut = Math.min(left, right);
+
+    const centered = 1 - Math.min(1, Math.abs(left - right) / Math.max(1, clientW));
+    // NEW: prefer wider columns; lightly penalize huge gutters so we don't pick a narrow inner
+    const score = (r.width) + centered * clientW - Math.max(0, minGut - 64) * 4;
+
+    if (score > bestScore){ bestScore = score; best = r; }
   }
+
+  if (best) return best;
+
+  // Fallback: make the column fairly wide by default (92%)
+  const pct  = parseFloat(getComputedStyle(document.body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
+  const colW = Math.min(1200, clientW * pct);
+  const left = (clientW - colW)/2;
+  return { left, right: left + colW };
+}
 
   // Outermost content bounds (optional alternate placement)
   function findContentBounds(){
@@ -145,7 +149,7 @@
 
     applyMotifsPageToggle();
     body.classList.add('has-motifs');
-
+    const maxGutterForPlacement = cssPx('--motif-max-gutter', 64); // cap used only for positioning
     const clientW = document.documentElement.clientWidth || window.innerWidth;
     const sbw = Math.max(0, window.innerWidth - clientW);
     if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw, 'reason=', reason);

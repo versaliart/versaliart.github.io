@@ -32,7 +32,7 @@ body.has-motifs{
   --motif-content-clear: 12px;
   --motif-placement-mode: gutter;
   --motif-gutter-anchor: 0.5;
-  
+  --motif-max-gutter: 64;
 }
 
 /* Container (JS also sets these inline; keep here as a safety net) */
