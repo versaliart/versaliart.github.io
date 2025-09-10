@@ -30,6 +30,9 @@ body.has-motifs{
   --motif-z: 10;
   --motif-fallback-col-pct: .92;
   --motif-content-clear: 12px;
+  --motif-placement-mode: gutter;
+  --motif-gutter-anchor: 0.5;
+  
 }
 
 /* Container (JS also sets these inline; keep here as a safety net) */

@@ -1,4 +1,4 @@
-/* Motif Rails v2.7 — robust gutters + inline line art */
+/* Motif Rails v2.6.1 — gutter placement (default) + optional bounds mode */
 (function(){
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
     console.warn('[motif] rails already installed, skipping');
@@ -10,16 +10,16 @@
   const DBG = Q.has('motifdebug');
   const MODE_LOCK = Q.get('motifmode'); // "edge" | "gutter" | null
 
-  // public API
+  // API
   const API = window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, {
-    version: '2.5-center-gap',
+    version: '2.6.1-center-gap',
     __installed: true,
     ping: () => '[motif] ok',
     rebuild: () => schedule('api')
   });
   if (DBG) console.log('[motif] rails loaded', API.version);
 
-  // ----- utils -----
+  // utils
   const onReady = fn => (doc.readyState !== 'loading')
     ? fn()
     : doc.addEventListener('DOMContentLoaded', fn, { once:true });
@@ -39,6 +39,7 @@
     body.classList.toggle('has-motifs', !off);
   }
 
+  // sections & ranges
   function getSections(){
     return Array.from(doc.querySelectorAll(
       '.page-section, section[data-section-id], section.sqs-section, .Index-page-content section, main section, #content section'
@@ -63,6 +64,7 @@
     return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
   }
 
+  // page bounds
   function findBounds(){
     const secs = getSections();
     const first = secs[0] || doc.querySelector('main') || body;
@@ -72,43 +74,60 @@
     return { topY, bottomY };
   }
 
-  // Robust content column finder (ignores full-bleed)
-// Outermost content bounds (ignore full-bleed wrappers)
-function findContentBounds(){
-  const clientW = document.documentElement.clientWidth || window.innerWidth;
-  const cands = document.querySelectorAll(
-    '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
-    '.content-wrapper, .site-wrapper, .page-content, .sqs-container, .sqs-row'
-  );
+  // Narrow content column (for gutter placement) – prefers centered, narrower-than-viewport
+  function findContentColumn(){
+    const clientW = document.documentElement.clientWidth || window.innerWidth;
+    const cands = doc.querySelectorAll(
+      '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
+      '.content-wrapper, .page-content, .sqs-container, .sqs-row'
+    );
+    const MIN_GUTTER_PX = 2;
 
-  let minLeft = Infinity, maxRight = -Infinity;
-  for (const el of cands){
-    const r = el.getBoundingClientRect();
-    if (r.width <= 0 || r.height <= 0) continue;
+    let best = null, bestScore = -Infinity;
+    for (const el of cands){
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) continue;
+      if (r.width >= clientW - 1) continue;               // ignore full-bleed
+      const left  = Math.max(0, r.left);
+      const right = Math.max(0, clientW - r.right);
+      const minGut = Math.min(left, right);
+      if (minGut < MIN_GUTTER_PX) continue;               // trivial gutters
+      const centered = 1 - Math.min(1, Math.abs(left - right)/clientW);
+      const narrower = Math.max(0, clientW - r.width);
+      const score = minGut * 2 + centered * 1000 + narrower;
+      if (score > bestScore){ bestScore = score; best = r; }
+    }
+    if (best) return best;
 
-    // ignore truly full-bleed wrappers
-    if (r.width >= clientW - 1) continue;
-
-    const left  = Math.max(0, r.left);
-    const right = Math.min(clientW, r.right);
-
-    minLeft  = Math.min(minLeft,  left);
-    maxRight = Math.max(maxRight, right);
+    // Fallback: 92% / max 1200px centered column (classic)
+    const colW = Math.min(1200, clientW * 0.92);
+    const left = (clientW - colW)/2;
+    return { left, right: left + colW };
   }
 
-  if (isFinite(minLeft) && isFinite(maxRight) && maxRight > minLeft) {
-    return { left: minLeft, right: maxRight, mode:'scan' };
+  // Outermost content bounds (optional alternate placement)
+  function findContentBounds(){
+    const clientW = document.documentElement.clientWidth || window.innerWidth;
+    const cands = doc.querySelectorAll(
+      '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
+      '.content-wrapper, .site-wrapper, .page-content, .sqs-container, .sqs-row'
+    );
+    let minLeft = Infinity, maxRight = -Infinity;
+    for (const el of cands){
+      const r = el.getBoundingClientRect();
+      if (r.width <= 0 || r.height <= 0) continue;
+      if (r.width >= clientW - 1) continue;               // ignore full-bleed
+      minLeft  = Math.min(minLeft,  Math.max(0, r.left));
+      maxRight = Math.max(maxRight, Math.min(clientW, r.right));
+    }
+    if (isFinite(minLeft) && isFinite(maxRight) && maxRight > minLeft) {
+      return { left: minLeft, right: maxRight };
+    }
+    // fall back to column
+    return findContentColumn();
   }
 
-  // Fallback: centered column (you can tune the % in CSS: --motif-fallback-col-pct)
-  const pct  = parseFloat(getComputedStyle(document.body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
-  const colW = Math.min(1200, clientW * pct);
-  const left = (clientW - colW)/2;
-  return { left, right: left + colW, mode:'fallback' };
-}
-
-
-  // ----- build state -----
+  // build state
   let railsEl = null;
   let isBuilding = false;
   let scheduled = false;
@@ -119,102 +138,103 @@ function findContentBounds(){
     railsEl = null;
   }
 
+  // build
   function build(reason){
     if (isBuilding) return;
     isBuilding = true;
 
     applyMotifsPageToggle();
-    body.classList.add('has-motifs'); // ensure CSS vars exist
-    const contentClear = cssPx('--motif-content-clear', cssPx('--motif-rail-inset', 12));
+    body.classList.add('has-motifs');
+
     const clientW = document.documentElement.clientWidth || window.innerWidth;
     const sbw = Math.max(0, window.innerWidth - clientW);
     if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw, 'reason=', reason);
 
-    // page-level disable
     if (doc.getElementById('motifs-disable')) {
-      console.warn('[motif] hidden: page toggle (#motifs-disable present)');
       clearRails(); lastSig = 'hidden:off'; isBuilding = false; return;
     }
 
-    // breakpoint hide (only in normal mode)
     const hideBp  = cssPx('--motif-hide-bp', 960);
     if (!DBG && clientW < hideBp) {
-      console.warn('[motif] hidden:bp', { clientW, hideBp });
       clearRails(); lastSig = 'hidden:bp'; isBuilding = false; return;
     }
 
     const { topY, bottomY } = findBounds();
 
-    // geometry
+    // geometry / knobs
     const topOffset    = cssPx('--motif-top-offset', 0);
     const bottomOffset = cssPx('--motif-bottom-offset', 0);
-    const capGap = cssPx('--motif-bottom-cap-gap', 0);
+    const capGap       = cssPx('--motif-bottom-cap-gap', 0);
 
-    const railW  = cssPx('--motif-rail-width', 32);
-    const railIn = cssPx('--motif-rail-inset', 12);
-    const edgeIn = cssPx('--motif-edge-inset', 24);
-    const capH   = cssPx('--motif-cap-height', 24);
-    const centerH= cssPx('--motif-center-height', 36);
-    let   pad    = cssPx('--motif-center-gap-pad', 0);
+    const railW   = cssPx('--motif-rail-width', 32);
+    const railIn  = cssPx('--motif-rail-inset', 12);
+    const edgeIn  = cssPx('--motif-edge-inset', 24);
+    const capH    = cssPx('--motif-cap-height', 24);
+    const centerH = cssPx('--motif-center-height', 36);
+    let   pad     = cssPx('--motif-center-gap-pad', 0);
 
-    const minG   = cssPx('--motif-min-gutter', 160);
-    const zVarCss= (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
-    const zIndex = (DBG ? 99999 : (parseInt(zVarCss,10) || 9999));
-    const opacity= (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '1';
+    const minG    = cssPx('--motif-min-gutter', 160);
+    const zVarCss = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
+    const zIndex  = (DBG ? 99999 : (parseInt(zVarCss,10) || 9999));
+    const opacity = (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '1';
 
-    const colRect = findContentBounds();
-    const leftG   = Math.max(0, colRect.left);
-    const rightG  = Math.max(0, clientW - colRect.right);
+    const placementMode = (getComputedStyle(body).getPropertyValue('--motif-placement-mode') || '').trim() || 'gutter';
+    const gutterAnchor  = parseFloat(getComputedStyle(body).getPropertyValue('--motif-gutter-anchor')) || 0.5;
+    const contentClear  = cssPx('--motif-content-clear', railIn);
 
-    // gutter hide: only hide if BOTH sides are tight (and not in debug)
+    // gutters & placement
+    let leftG, rightG, leftX, rightX;
+
+    const colRect  = findContentColumn();   // for gutter mode
+    const bounds   = findContentBounds();   // for bounds mode
+    const useBounds= (placementMode === 'bounds');
+
+    if (!useBounds){
+      // GUTTER MODE (classic look)
+      leftG  = Math.max(0, colRect.left);
+      rightG = Math.max(0, clientW - colRect.right);
+
+      let tight = (leftG < minG) || (rightG < minG);
+      if (MODE_LOCK === 'edge')   tight = true;
+      if (MODE_LOCK === 'gutter') tight = false;
+
+      if (tight){
+        leftX  = Math.max(0, Math.round(edgeIn));
+        rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+      } else {
+        leftX  = Math.round((leftG  * gutterAnchor) - (railW * 0.5) + railIn);
+        rightX = Math.round(clientW - (rightG * gutterAnchor) - (railW * 0.5) - railIn);
+      }
+    } else {
+      // BOUNDS MODE (outside outermost content)
+      leftG  = Math.max(0, bounds.left);
+      rightG = Math.max(0, clientW - bounds.right);
+
+      leftX  = Math.round(bounds.left  - contentClear - railW);
+      rightX = Math.round(bounds.right + contentClear);
+      leftX  = Math.max(0, leftX);
+      rightX = Math.min(clientW - railW, rightX);
+
+      const need = railW + contentClear;
+      if ((leftG < need) && (rightG < need)){
+        leftX  = Math.max(0, Math.round(edgeIn));
+        rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+      }
+    }
+
+    // gutter hide (only hide if BOTH sides tight; never in debug)
     const hideGutter = cssPx('--motif-hide-gutter', 0);
     const guttersTight = hideGutter > 0 && (leftG < hideGutter && rightG < hideGutter);
     if (guttersTight && !DBG){
-      console.warn('[motif] hidden:gutter', { leftG, rightG, hideGutter, clientW });
       clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return;
-    } else if (DBG) {
-      console.log('[motif] gutters', { leftG, rightG, hideGutter, clientW });
     }
 
-    let tight = (leftG < minG) || (rightG < minG);
-    if (MODE_LOCK === 'edge')   tight = true;
-    if (MODE_LOCK === 'gutter') tight = false;
+    if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, placementMode });
 
-    let leftX, rightX;
-const placeFromContent = () => {
-  // Never overlap content: sit just OUTSIDE the narrowest inner column
-  leftX  = Math.round(colRect.left  - contentClear - railW);
-  rightX = Math.round(colRect.right + contentClear);
-
-  // Clamp to viewport so we don’t go negative or off-screen
-  leftX  = Math.max(0, leftX);
-  rightX = Math.min(clientW - railW, rightX);
-};
-
-// Force-edge lock still respected via URL (?motifmode=edge)
-if (MODE_LOCK === 'edge') {
-  leftX  = Math.max(0, Math.round(edgeIn));
-  rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
-} else {
-  placeFromContent();
-
-  // If BOTH gutters are truly too small to fit the rail with clearance,
-  // fall back to edge placement (or your hide logic will kick in).
-  const needL = railW + contentClear;
-  const needR = railW + contentClear;
-  if ((leftG < needL) && (rightG < needR)) {
-    leftX  = Math.max(0, Math.round(edgeIn));
-    rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
-  }
-}
-
-if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentClear, railW });
-
-
+    // container
     const cTop = topY + topOffset;
     const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
     const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
-
     if (DBG) console.log('[motif] ranges', ranges);
 
     const sig = [
@@ -238,7 +258,7 @@ if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentCle
     if (DBG) railsEl.style.outline = '1px dashed rgba(255,0,0,.35)';
     body.appendChild(railsEl);
 
-    // per-range renderer
+    // per-range render
     function makeRailRange(x, rTop, rBot){
       const h = Math.max(0, rBot - rTop);
       if (h < 4) return;
@@ -279,10 +299,8 @@ if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentCle
         const line = doc.createElement('div');
         line.className = 'motif-line';
 
-        // Apply line art inline to beat global resets
         const lineImgVar   = getComputedStyle(body).getPropertyValue('--motif-line-url').trim();
         const lineWidthVar = getComputedStyle(body).getPropertyValue('--motif-line-width').trim() || '2px';
-
         if (lineImgVar){
           line.style.setProperty('background-image',  lineImgVar, 'important');
           line.style.setProperty('background-repeat', 'repeat-y', 'important');
@@ -301,10 +319,12 @@ if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentCle
         rail.appendChild(seg);
       }
 
+      // top / bottom segments
       addLine(insetTop, topH);
       addLine(insetTop + topH + gapH, botH);
 
-      const ctr = doc.createElement('div');
+      // centered centerpiece (equal pad to gap caps)
+      const ctr = document.createElement('div');
       ctr.className = 'motif-center';
       ctr.style.top = `${insetTop + topH + capH + capGap + padLocal}px`;
       rail.appendChild(ctr);
@@ -319,6 +339,7 @@ if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentCle
     isBuilding = false;
   }
 
+  // scheduling
   function schedule(reason){
     if (scheduled || isBuilding) return;
     scheduled = true;
@@ -328,7 +349,6 @@ if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, contentCle
   const ro = new ResizeObserver(() => schedule('resize'));
   ro.observe(doc.documentElement);
 
-  // ignore attribute churn — just DOM structure changes
   const mo = new MutationObserver((records) => {
     for (const rec of records){
       if (!railsEl) break;
