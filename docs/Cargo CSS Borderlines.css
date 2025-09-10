@@ -13,6 +13,8 @@ body.has-motifs{
   --motif-rail-inset: 1rem;      /* nudge inward from the gutter edge */
   --motif-line-width: .25rem;      
   --motif-cap-width: 1.5rem;
+  --motif-center-width:  var(--motif-line-width);     /* NEW: center width */
+  --motif-center-height: var(--motif-center-width);   /* NEW: center height (defaults square) */
 
   --motif-seg-length: 14rem;     /* height of the line portion per segment */
   --motif-seg-gap: 2rem;         /* gap between segments */
@@ -79,10 +81,10 @@ body.has-motifs{
 /* Centerpiece stays centered inside the same wrapper */
 .motif-center{
   position: absolute;
-  left: 50%; top: 50%;
-  width: var(--motif-center-size);
-  height: var(--motif-center-size);
-  transform: translate(-50%, -50%);
+  left: 50%;
+  transform: translate(-50%, -50%); /* horizontal + vertical centering around its top */
+  width:  var(--motif-center-width);
+  height: var(--motif-center-height);
   background-image: var(--motif-center-url);
   background-repeat: no-repeat;
   background-position: center;
