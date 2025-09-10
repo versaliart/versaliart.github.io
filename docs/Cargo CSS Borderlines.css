@@ -16,11 +16,10 @@ body.has-motifs{
   --motif-center-height: 9rem;
 
   /* Placement + visibility */
-  --motif-min-gutter: 8rem;         /* determines “tight” mode (≈160px) */
+  --motif-min-gutter: 12rem;         /* determines “tight” mode (≈160px) */
   --motif-edge-inset: 2.25rem;       /* fallback distance from page edge */
-  --motif-hide-gutter: 3.75rem;      /* hide if either gutter < this (≈60px) */
-
-  --motif-hide-bp: 60rem;            /* hide if viewport < this (≈960px) */
+  --motif-hide-gutter: 40px;         /* hide if either gutter < this (≈60px) */
+  --motif-hide-bp: 900px;            /* hide if viewport < this (≈960px) */
   --motif-top-offset: 0rem;          /* page-level top trim */
   --motif-bottom-offset: 0rem;       /* page-level bottom trim */
 
