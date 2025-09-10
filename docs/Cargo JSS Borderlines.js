@@ -202,16 +202,22 @@ function makeRailRange(x, rTop, rBot){
   });
   railsEl.appendChild(rail);
 
-  // pack segments to fill the usable height
-  const usable = h;
-  let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
-  const total = count * segLen;
-  const free  = Math.max(0, usable - total);
-  const gap   = count > 1 ? (free / (count - 1)) : 0;
+  // --- keep caps inside the range ---
+  // reserve capH at the top and capH at the bottom so caps never overhang
+  const insetTop = capH;
+  const insetBot = capH;
+  const usable = h - insetTop - insetBot;
+  if (usable <= 0) return; // not enough space to show a segment + caps
 
-  // 1) draw segments (note: no +capH here)
-  let y = 0;
-  for (let i=0; i<count; i++){
+  // pack segments evenly in the inset area
+  let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
+  const totalSegSpace = count * segLen;
+  const free = Math.max(0, usable - totalSegSpace);
+  const gap = count > 1 ? (free / (count - 1)) : 0;
+
+  // 1) draw segments starting at insetTop (no overhang)
+  let y = insetTop;
+  for (let i = 0; i < count; i++){
     const seg = doc.createElement('div');
     seg.className = 'motif-seg';
     Object.assign(seg.style, {
@@ -233,11 +239,10 @@ function makeRailRange(x, rTop, rBot){
     y += segLen + gap;
   }
 
-  // 2) centers in the gaps between segments
+  // 2) centers in the gap midpoints (within the inset area)
   if (count > 1 && gap > 0.5){
     for (let g = 0; g < count - 1; g++){
-      // midpoint between segment g and g+1 (no capH in the math)
-      const mid = (g + 1) * segLen + g * gap + (gap / 2);
+      const mid = insetTop + (g + 1) * segLen + g * gap + (gap / 2);
       const ctr = doc.createElement('div');
       ctr.className = 'motif-center';
       ctr.style.top = `${mid}px`;
@@ -245,6 +250,7 @@ function makeRailRange(x, rTop, rBot){
     }
   }
 }
+
 
     for (const rg of ranges){
       makeRailRange(leftX,  rg.top, rg.bottom);
