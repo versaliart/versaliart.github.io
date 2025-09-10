@@ -226,7 +226,7 @@ function build(reason){
     position:'absolute', left:'0', right:'0',
     top: `${cTop}px`, height: `${cH}px`,
     pointerEvents:'none',
-    zIndex: DBG ? '99999' : zVar,   // raise in debug so it’s definitely on top
+    zIndex: String(zIndex),
     opacity
   });
   if (DBG) railsEl.style.outline = '1px dashed rgba(255,0,0,.35)';
@@ -275,31 +275,34 @@ function addLine(atTopPx, heightPx){
   const line = doc.createElement('div');
   line.className = 'motif-line';
 
-  // Always apply the line art from the CSS var as an inline style.
-  // This avoids cases where the var fails to cascade or gets stripped/minified.
-  const lineImg = getComputedStyle(body).getPropertyValue('--motif-line-url').trim();
-  if (lineImg) {
-    line.style.backgroundImage  = lineImg;        // e.g. url(".../linerail.svg")
-    line.style.backgroundRepeat = 'repeat-y';
-    line.style.backgroundPosition = '50% 0';
-    line.style.backgroundSize   = 'var(--motif-line-width) auto';
+  // Read once from CSS vars and apply INLINE with !important so global resets
+  // like `background: none` can’t wipe the art in normal (non-debug) mode.
+  const lineImgVar   = getComputedStyle(body).getPropertyValue('--motif-line-url').trim(); // e.g. url(".../linerail.svg")
+  const lineWidthVar = getComputedStyle(body).getPropertyValue('--motif-line-width').trim() || '2px';
+
+  if (lineImgVar){
+    line.style.setProperty('background-image',  lineImgVar, 'important');
+    line.style.setProperty('background-repeat', 'repeat-y', 'important');
+    line.style.setProperty('background-position', '50% 0', 'important');
+    line.style.setProperty('background-size',   `${lineWidthVar} auto`, 'important');
     line.style.left = '50%';
     line.style.transform = 'translateX(-50%)';
-    line.style.width = 'var(--motif-line-width)';
+    line.style.width = lineWidthVar;
     line.style.height = '100%';
-  } else if (DBG) {
-    // Visible fallback when the URL var is missing (debug only)
+  } else if (DBG){
+    // Visible fallback only when debugging
     line.style.background =
       'repeating-linear-gradient(0deg, rgba(255,210,0,.30), rgba(255,210,0,.30) 10px, transparent 10px, transparent 20px)';
     line.style.left = '50%';
     line.style.transform = 'translateX(-50%)';
-    line.style.width = 'var(--motif-line-width)';
+    line.style.width = lineWidthVar;
     line.style.height = '100%';
   }
 
   seg.appendChild(line);
   rail.appendChild(seg);
 }
+
 
 
     addLine(insetTop, topH);
@@ -341,7 +344,8 @@ function addLine(atTopPx, heightPx){
     }
     schedule('mutation');
   });
-  mo.observe(doc.documentElement, { childList:true, subtree:true, attributes:true });
+
+mo.observe(doc.documentElement, { childList:true, subtree:true });  // ignore attribute churn
 
   window.addEventListener('load', () => schedule('load'), { once:true, passive:true });
   onReady(() => schedule('domready'));
