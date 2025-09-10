@@ -79,7 +79,7 @@ body.has-motifs{
   background-size: 100% 100%; /* use 'auto 100%' if you want to preserve cap aspect */
 }
 .motif-line::before{ top:    calc(-1 * var(--motif-cap-height)); }
-.motif-line::after{
+.motif-line::after{ 
   bottom: calc(-1 * var(--motif-cap-height) - var(--motif-bottom-cap-gap, 0));
   transform: translateX(-50%) scaleY(-1);
 }
