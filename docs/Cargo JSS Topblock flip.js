@@ -1,75 +1,57 @@
-/* ===== Topblock Split-Flip (Doors) v2.49 — FULL JS (bare) ===== */
+/* ===== Topblock Split-Flip (Doors) v2.51 — FULL JS (bare) ===== */
 (function(){
-  // ---------- Build DOM for the doors ----------
+  // Build doors
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
     doors.dataset.image = url;
-
-    const makeDoor = side => {
+    const mk = side => {
       const d = document.createElement('div');
       d.className = 'flip-door ' + side;
-      const front = document.createElement('div'); front.className = 'face front';
-      const back  = document.createElement('div'); back.className  = 'face back';
-      d.appendChild(front); d.appendChild(back);
+      const f = document.createElement('div'); f.className = 'face front';
+      const b = document.createElement('div'); b.className = 'face back';
+      d.appendChild(f); d.appendChild(b);
       return d;
     };
-
-    doors.appendChild(makeDoor('left'));
-    doors.appendChild(makeDoor('right'));
+    doors.appendChild(mk('left'));
+    doors.appendChild(mk('right'));
     return doors;
   }
 
-  // ---------- Layout with sub-pixel precision ----------
+  // Paint geometry with sub-pixel precision
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
     const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
     const doors     = block.querySelector('.flip-doors');
     if (!container || !imgEl || !doors) return;
 
-    // Container size
     const rect = container.getBoundingClientRect();
-    const W = Math.max(1, rect.width);
-    const H = Math.max(1, rect.height);
+    const W = Math.max(1, rect.width), H = Math.max(1, rect.height);
 
-    // Natural image dimensions
     let iw = imgEl.naturalWidth  || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
     if (dims && dims.includes('x')) {
-      const [dwStr, dhStr] = dims.split('x');
-      const dw = parseFloat(dwStr), dh = parseFloat(dhStr);
-      if (dw > 0 && dh > 0) { iw = dw; ih = dh; }
+      const [dw, dh] = dims.split('x').map(parseFloat);
+      if (dw > 0 && dh > 0){ iw = dw; ih = dh; }
     }
 
-    // Focal point (0..1)
     let fx = 0.5, fy = 0.5;
     const fp = imgEl.getAttribute('data-image-focal-point');
-    if (fp && fp.includes(',')) {
-      const [sxStr, syStr] = fp.split(',');
-      const sx = parseFloat(sxStr), sy = parseFloat(syStr);
+    if (fp && fp.includes(',')){
+      const [sx, sy] = fp.split(',').map(parseFloat);
       if (!Number.isNaN(sx)) fx = sx;
       if (!Number.isNaN(sy)) fy = sy;
     }
 
-    // object-fit: cover (no rounding)
     const scale = Math.max(W / iw, H / ih);
-    const bgW = iw * scale;
-    const bgH = ih * scale;
-
-    // Top-left background origin to respect focal point
+    const bgW = iw * scale, bgH = ih * scale;
     const posX = (W * fx) - (bgW * fx);
     const posY = (H * fy) - (bgH * fy);
 
-    const cs = getComputedStyle(doors);
+    const cs    = getComputedStyle(doors);
     const seam  = parseFloat(cs.getPropertyValue('--flip-seam'))  || 0;
     const bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
-
-    // Faces
-    const leftFront  = doors.querySelector('.flip-door.left  .face.front');
-    const rightFront = doors.querySelector('.flip-door.right .face.front');
-    const leftBack   = doors.querySelector('.flip-door.left  .face.back');
-    const rightBack  = doors.querySelector('.flip-door.right .face.back');
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
@@ -84,22 +66,21 @@
       el.style.webkitBackfaceVisibility = 'hidden';
     };
 
-    // Left uses container origin; right uses center minus overlap
-    paint(leftFront, 0);
-    paint(leftBack,  0);
-    paint(rightFront, (W / 2) - seam);
-    paint(rightBack,  (W / 2) - seam);
+    const lf = doors.querySelector('.flip-door.left  .face.front');
+    const lb = doors.querySelector('.flip-door.left  .face.back');
+    const rf = doors.querySelector('.flip-door.right .face.front');
+    const rb = doors.querySelector('.flip-door.right .face.back');
+
+    paint(lf, 0); paint(lb, 0);
+    paint(rf, (W/2) - seam); paint(rb, (W/2) - seam);
   }
 
-  // ---------- Utilities ----------
-  function isCoarse(){ return matchMedia('(hover: none), (pointer: coarse)').matches; }
-  function isFine(){   return matchMedia('(hover: hover) and (pointer: fine)').matches; }
+  // Utilities
+  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
+  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  function closestFeBlock(el){
-    return el.closest('.fe-block') || null;
-  }
+  const closestFeBlock = el => el.closest('.fe-block') || null;
 
-  // Apply/remove pass-through on both the flip-top and its fe-block wrapper
   function setPassThrough(block, on){
     const outer = closestFeBlock(block);
     if (on){
@@ -111,33 +92,52 @@
     }
   }
 
-  // ---------- Open/close (desktop) ----------
+  // Robust open/close with multiple fallbacks
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
     block.classList.add('is-open');
     setPassThrough(block, true);
 
-    // Close when pointer leaves the block rect (track at document level)
-    const onMove = (ev) => {
+    // Track last pointer; close when pointer is outside rect
+    const updatePt = (e) => {
+      block.__lastPt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
+        : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
+        : block.__lastPt || null;
+      if (!block.__lastPt) return;
       const r = block.getBoundingClientRect();
-      const x = ev.clientX, y = ev.clientY;
-      if (x < r.left || x > r.right || y < r.top || y > r.bottom){
+      const p = block.__lastPt;
+      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
         closeBlock(block);
       }
     };
-    const onScroll = () => {
-      // If the pointer is no longer over the block's rect after scroll, close
-      const r = block.getBoundingClientRect();
-      const el = document.elementFromPoint?.(r.left + 1, r.top + 1);
-      if (el && !block.contains(el)) closeBlock(block);
-    };
 
-    document.addEventListener('pointermove', onMove, true);
+    const onPointerMove  = (e) => updatePt(e);
+    const onPointerOver  = (e) => updatePt(e); // covers fast transitions without move
+    const onScroll       = ()  => {
+      if (!block.__lastPt) return;
+      const r = block.getBoundingClientRect();
+      const p = block.__lastPt;
+      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
+        closeBlock(block);
+      }
+    };
+    const onBlur         = ()  => closeBlock(block);
+    const onVisibility   = ()  => { if (document.visibilityState !== 'visible') closeBlock(block); };
+
+    document.addEventListener('pointermove', onPointerMove, true);
+    document.addEventListener('pointerover', onPointerOver, true);
     window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('blur', onBlur, true);
+    document.addEventListener('visibilitychange', onVisibility, true);
+
     block.__cleanupOpen = () => {
-      document.removeEventListener('pointermove', onMove, true);
+      document.removeEventListener('pointermove', onPointerMove, true);
+      document.removeEventListener('pointerover', onPointerOver, true);
       window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('blur', onBlur, true);
+      document.removeEventListener('visibilitychange', onVisibility, true);
+      block.__lastPt = null;
     };
   }
 
@@ -149,7 +149,7 @@
     if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
   }
 
-  // ---------- Initialize one block ----------
+  // Initialize one
   function initOne(block){
     if (block.classList.contains('flip-top')) return;
 
@@ -160,13 +160,12 @@
     const url = img.currentSrc || img.src;
     if (!url) return;
 
-    block.classList.add('flip-top');           // mark as processed
+    block.classList.add('flip-top');
 
-    // 1) Build & insert doors overlay
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // 2) Disable the marker link only while open or tapped-open (CSS also covers this)
+    // Disable the marker link only while open/tapped-open (CSS also covers this)
     const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
     if (marker){
       marker.addEventListener('click', (e) => {
@@ -176,13 +175,12 @@
       }, true);
     }
 
-    // 3) Desktop hover → open with true pass-through; close on pointer leave
+    // Desktop: open with pass-through; close via robust document listeners
     if (isFine()){
       block.addEventListener('mouseenter', () => openBlock(block));
-      // We close via document pointer tracker in openBlock()
     }
 
-    // 4) Mobile tap to toggle persistent open (and pass-through)
+    // Mobile: tap to open persistent
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
@@ -205,7 +203,7 @@
       }
     }, true);
 
-    // 5) Initial layout + reactive relayouts
+    // Layout + reactions
     const relayout = () => layout(block);
     relayout();
 
@@ -216,10 +214,9 @@
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
 
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
-
     window.addEventListener('resize', relayout);
 
-    // 6) Safety: close when off-screen
+    // Safety: close when off-screen
     if ('IntersectionObserver' in window){
       const io = new IntersectionObserver((entries)=>{
         entries.forEach((entry)=>{
@@ -234,7 +231,7 @@
     }
   }
 
-  // ---------- Initialize all eligible blocks ----------
+  // Initialize all eligible blocks
   function initAll(){
     document.querySelectorAll('.sqs-block.image-block').forEach(block => {
       const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
