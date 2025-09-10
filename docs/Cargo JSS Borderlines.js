@@ -173,56 +173,70 @@
     });
     body.appendChild(railsEl);
 
-    function makeRailRange(x, rTop, rBot){
-      const h = Math.max(0, rBot - rTop);
-      if (h < 4) return;
-      const rail = doc.createElement('div');
-      rail.className = 'motif-rail';
-      Object.assign(rail.style, {
-        position:'absolute',
-        left:`${x}px`,
-        top:`${rTop - cTop}px`,
-        height:`${h}px`,
-        width:'var(--motif-rail-width)'
-      });
-      railsEl.appendChild(rail);
+function makeRailRange(x, rTop, rBot){
+  const h = Math.max(0, rBot - rTop);
+  if (h < 4) return;
 
-      // pack segments
-      const usable = h;
-      let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
-      const total = count * segLen;
-      const free  = Math.max(0, usable - total);
-      const gap   = count > 1 ? (free / (count - 1)) : 0;
+  const rail = doc.createElement('div');
+  rail.className = 'motif-rail';
+  Object.assign(rail.style, {
+    position:'absolute',
+    left:`${x}px`,
+    top:`${rTop - cTop}px`,
+    height:`${h}px`,
+    width:'var(--motif-rail-width)'
+  });
+  railsEl.appendChild(rail);
 
-      let y = 0;
-      for (let i=0; i<count; i++){
-        // segment box
-        const seg = doc.createElement('div');
-        seg.className = 'motif-seg';
-        Object.assign(seg.style, {
-          position:'absolute', left:'0',
-          top:`${y + capH}px`,
-          width:'100%',
-          height:`${segLen}px`
-        });
+  // pack segments
+  const usable = h;
+  let count = Math.max(1, Math.floor((usable + segGap) / (segLen + segGap)));
+  const total = count * segLen;
+  const free  = Math.max(0, usable - total);
+  const gap   = count > 1 ? (free / (count - 1)) : 0;
 
-        // centered inner wrapper: line + caps + center share same origin
-        const line = doc.createElement('div');
-        line.className = 'motif-line';
-        if (DBG){
-          line.style.background =
-            'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
-        }
-        seg.appendChild(line);
+  // 1) draw segments (unchanged)
+  let y = 0;
+  for (let i=0; i<count; i++){
+    const seg = doc.createElement('div');
+    seg.className = 'motif-seg';
+    Object.assign(seg.style, {
+      position:'absolute', left:'0',
+      top:`${y + capH}px`,
+      width:'100%',
+      height:`${segLen}px`
+    });
 
-        const center = doc.createElement('div');
-        center.className = 'motif-center';
-        line.appendChild(center);
-
-        rail.appendChild(seg);
-        y += segLen + gap;
-      }
+    const line = doc.createElement('div');
+    line.className = 'motif-line';
+    if (DBG){
+      line.style.background =
+        'repeating-linear-gradient(0deg, rgba(255,210,0,.28), rgba(255,210,0,.28) 10px, transparent 10px, transparent 20px)';
     }
+    seg.appendChild(line);
+
+    rail.appendChild(seg);
+    y += segLen + gap;
+  }
+
+  // 2) place centers in the *gaps* between segments
+  // number of gaps = count - 1
+  if (count > 1 && gap > 0.5){  // tiny safeguard for microscopic gaps
+    for (let g = 0; g < count - 1; g++){
+      // gap midpoint relative to this rail:
+      // first seg top is capH; each seg adds segLen; each gap adds gap
+      const mid = capH + (g + 1) * segLen + g * gap + (gap / 2);
+
+      const ctr = doc.createElement('div');
+      ctr.className = 'motif-center';
+      // centered horizontally by CSS (left:50%/translateX(-50%))
+      // vertically centered around the midpoint
+      ctr.style.top = `${mid}px`;               // anchor to gap midpoint
+      rail.appendChild(ctr);
+    }
+  }
+}
+
 
     for (const rg of ranges){
       makeRailRange(leftX,  rg.top, rg.bottom);
