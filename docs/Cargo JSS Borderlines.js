@@ -1,4 +1,4 @@
-/* Motif Rails v2.1 — center-gap layout (top/bottom caps + gap caps) */
+/* Motif Rails v2.2 — center-gap layout (top/bottom caps + gap caps) */
 (function(){
   // ----- single-instance guard -----
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
