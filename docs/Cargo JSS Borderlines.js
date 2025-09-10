@@ -301,3 +301,7 @@ function findContentColumn(){
   window.addEventListener('load', () => schedule('load'), { once:true, passive:true });
   onReady(() => schedule('domready'));
 })();
+
+if (DBG) console.log('[motif] gutters', { leftG: Math.max(0, findContentColumn().left),
+                                          rightG: Math.max(0, (document.documentElement.clientWidth||innerWidth) - findContentColumn().right),
+                                          hideGutter: cssPx('--motif-hide-gutter', 0) });
