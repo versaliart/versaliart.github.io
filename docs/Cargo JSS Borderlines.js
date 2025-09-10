@@ -108,27 +108,45 @@ const vw = document.documentElement.clientWidth || innerWidth; // instead of inn
     railsEl = null;
   }
 
-  function makeSignature(ctx){
-    const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
-    return [
-      clientW, innerHeight,
-      ctx.cTop|0, ctx.cH|0,
-      ctx.leftX|0, ctx.rightX|0,
-      rangeSig
-    ].join('|');
+function makeSignature(ctx){
+  const rangeSig = ctx.ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',');
+  return [
+    ctx.vw, window.innerHeight,     // <-- pass vw in from build()
+    ctx.cTop|0, ctx.cH|0,
+    ctx.leftX|0, ctx.rightX|0,
+    rangeSig
+  ].join('|');
+}
+
+
+function build(reason){
+  if (isBuilding) return;
+  isBuilding = true;
+
+  applyMotifsPageToggle();
+  if (!body.classList.contains('has-motifs')) {
+    clearRails();
+    lastSig = 'hidden:off';
+    isBuilding = false;
+    return;
   }
 
-  function build(reason){
-    if (isBuilding) return;
-    isBuilding = true;
+  // Viewport width that EXCLUDES the vertical scrollbar
+  const clientW = document.documentElement.clientWidth || window.innerWidth;
+  const sbw = Math.max(0, window.innerWidth - clientW);
+  if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw);
 
-    applyMotifsPageToggle();
-    if (!body.classList.contains('has-motifs')) { isBuilding = false; return; }
+  // Hide under a breakpoint — and CLEAR existing rails
+  const hideBp  = cssPx('--motif-hide-bp', 960);
+  if (clientW < hideBp) {
+    clearRails();
+    lastSig = 'hidden:bp';
+    isBuilding = false;
+    return;
+  }
 
-    const hideBp  = cssPx('--motif-hide-bp', 960);            // hide under this width
-    if (clientW < hideBp) { isBuilding = false; return; }   // gate by breakpoint
+  const { topY, bottomY } = findBounds();
 
-    const { topY, bottomY } = findBounds();
 
 // Viewport width that EXCLUDES the vertical scrollbar
 const clientW = doc.documentElement.clientWidth || clientW;
@@ -193,9 +211,10 @@ if (tight){
     const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
 
     // dedupe
-    const sig = makeSignature({ cTop, cH, leftX, rightX, ranges });
-    if (sig === lastSig) { isBuilding = false; return; }
-    lastSig = sig;
+const sig = makeSignature({ vw: clientW, cTop, cH, leftX, rightX, ranges });
+if (sig === lastSig) { isBuilding = false; return; }
+lastSig = sig;
+
 
     // (re)build
     clearRails();
