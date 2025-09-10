@@ -1,4 +1,4 @@
-/* ===== Motif Rails v2.0 (CSS) ===== */
+/* ===== Motif Rails v2.2 (CSS) ===== */
 
 body.has-motifs{
   --motif-line-url: url("https://www.mysticmunson.design/s/linerail.svg");
@@ -99,8 +99,3 @@ body.has-motifs{
 
 /* v2.1: JS sets exact top in px — keep only horizontal centering */
 .motif-rail .motif-center{ transform: translateX(-50%); }
-
-/* IMPORTANT: delete/disable any older rules you had like:
-   .motif-seg{ background:... }
-   .motif-seg::before, .motif-seg::after{ ... }
-*/
