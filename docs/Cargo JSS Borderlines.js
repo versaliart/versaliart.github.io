@@ -1,5 +1,6 @@
-/* Motif Rails v2.6.1 — gutter placement (default) + optional bounds mode */
+/* Motif Rails v2.7 — widest-column gutters + capped placement + per-section gap */
 (function(){
+  // ----- single-instance guard -----
   if (window.MOTIF_RAILS && window.MOTIF_RAILS.__installed) {
     console.warn('[motif] rails already installed, skipping');
     return;
@@ -10,16 +11,16 @@
   const DBG = Q.has('motifdebug');
   const MODE_LOCK = Q.get('motifmode'); // "edge" | "gutter" | null
 
-  // API
+  // public API
   const API = window.MOTIF_RAILS = Object.assign(window.MOTIF_RAILS || {}, {
-    version: '2.6.1-center-gap',
+    version: '2.7-center-gap',
     __installed: true,
     ping: () => '[motif] ok',
     rebuild: () => schedule('api')
   });
   if (DBG) console.log('[motif] rails loaded', API.version);
 
-  // utils
+  // ----- utils -----
   const onReady = fn => (doc.readyState !== 'loading')
     ? fn()
     : doc.addEventListener('DOMContentLoaded', fn, { once:true });
@@ -39,7 +40,7 @@
     body.classList.toggle('has-motifs', !off);
   }
 
-  // sections & ranges
+  // ----- sections & ranges (opt-out with .motifs-off / data-motifs="off") -----
   function getSections(){
     return Array.from(doc.querySelectorAll(
       '.page-section, section[data-section-id], section.sqs-section, .Index-page-content section, main section, #content section'
@@ -52,19 +53,20 @@
   function enabledRangesWithin(boundsTop, boundsBottom){
     const secs = getSections();
     if (!secs.length) return [{ top: boundsTop, bottom: boundsBottom }];
+
     const ranges = [];
     for (const s of secs){
       if (sectionIsOff(s)) continue;
       const r = s.getBoundingClientRect();
       const t = Math.max(boundsTop, r.top + scrollY);
       const b = Math.min(boundsBottom, r.bottom + scrollY);
-      if (b <= t + 2) continue;
+      if (b <= t + 2) continue; // collapsed/invisible
       ranges.push({ top: t, bottom: b });
     }
     return ranges.length ? ranges : [{ top: boundsTop, bottom: boundsBottom }];
   }
 
-  // page bounds
+  // ----- page vertical bounds -----
   function findBounds(){
     const secs = getSections();
     const first = secs[0] || doc.querySelector('main') || body;
@@ -74,64 +76,40 @@
     return { topY, bottomY };
   }
 
-  // Narrow content column (for gutter placement) – prefers centered, narrower-than-viewport
-// Pick the WIDEST centered non-full-bleed column
-function findContentColumn(){
-  const clientW = document.documentElement.clientWidth || window.innerWidth;
-  const cands = document.querySelectorAll(
-    '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
-    '.content-wrapper, .page-content, .sqs-container, .sqs-row'
-  );
-
-  let best = null, bestScore = -Infinity;
-  for (const el of cands){
-    const r = el.getBoundingClientRect();
-    if (r.width <= 0 || r.height <= 0) continue;
-    if (r.width >= clientW - 1) continue; // ignore full-bleed
-
-    const left  = Math.max(0, r.left);
-    const right = Math.max(0, clientW - r.right);
-    const minGut = Math.min(left, right);
-
-    const centered = 1 - Math.min(1, Math.abs(left - right) / Math.max(1, clientW));
-    // NEW: prefer wider columns; lightly penalize huge gutters so we don't pick a narrow inner
-    const score = (r.width) + centered * clientW - Math.max(0, minGut - 64) * 4;
-
-    if (score > bestScore){ bestScore = score; best = r; }
-  }
-
-  if (best) return best;
-
-  // Fallback: make the column fairly wide by default (92%)
-  const pct  = parseFloat(getComputedStyle(document.body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
-  const colW = Math.min(1200, clientW * pct);
-  const left = (clientW - colW)/2;
-  return { left, right: left + colW };
-}
-
-  // Outermost content bounds (optional alternate placement)
-  function findContentBounds(){
+  // ----- WIDEST centered non–full-bleed content column -----
+  function findWidestCenteredColumn(){
     const clientW = document.documentElement.clientWidth || window.innerWidth;
     const cands = doc.querySelectorAll(
       '.sqs-layout, .Index-page-content, .content, .site-content, main, #content, ' +
-      '.content-wrapper, .site-wrapper, .page-content, .sqs-container, .sqs-row'
+      '.content-wrapper, .page-content, .sqs-container, .sqs-row'
     );
-    let minLeft = Infinity, maxRight = -Infinity;
+
+    let best = null, bestScore = -Infinity;
     for (const el of cands){
       const r = el.getBoundingClientRect();
       if (r.width <= 0 || r.height <= 0) continue;
-      if (r.width >= clientW - 1) continue;               // ignore full-bleed
-      minLeft  = Math.min(minLeft,  Math.max(0, r.left));
-      maxRight = Math.max(maxRight, Math.min(clientW, r.right));
+      if (r.width >= clientW - 1) continue; // ignore full-bleed
+
+      const left  = Math.max(0, r.left);
+      const right = Math.max(0, clientW - r.right);
+      const minGut = Math.min(left, right);
+      const centered = 1 - Math.min(1, Math.abs(left - right) / Math.max(1, clientW));
+
+      // Prefer WIDER columns; lightly penalize giant gutters so we don't pick a narrow inner
+      const score = r.width + centered * clientW - Math.max(0, minGut - 64) * 4;
+      if (score > bestScore){ bestScore = score; best = r; }
     }
-    if (isFinite(minLeft) && isFinite(maxRight) && maxRight > minLeft) {
-      return { left: minLeft, right: maxRight };
-    }
-    // fall back to column
-    return findContentColumn();
+
+    if (best) return best;
+
+    // Fallback: centered 92%/max-1200
+    const pct  = parseFloat(getComputedStyle(body).getPropertyValue('--motif-fallback-col-pct')) || 0.92;
+    const colW = Math.min(1200, clientW * pct);
+    const left = (clientW - colW)/2;
+    return { left, right: left + colW };
   }
 
-  // build state
+  // ----- build state -----
   let railsEl = null;
   let isBuilding = false;
   let scheduled = false;
@@ -142,22 +120,24 @@ function findContentColumn(){
     railsEl = null;
   }
 
-  // build
+  // ----- build -----
   function build(reason){
     if (isBuilding) return;
     isBuilding = true;
 
     applyMotifsPageToggle();
-    body.classList.add('has-motifs');
-    const maxGutterForPlacement = cssPx('--motif-max-gutter', 64); // cap used only for positioning
-    const clientW = document.documentElement.clientWidth || window.innerWidth;
+    body.classList.add('has-motifs'); // ensure CSS vars exist
+
+    const clientW = document.documentElement.clientWidth || window.innerWidth; // excludes scrollbar
     const sbw = Math.max(0, window.innerWidth - clientW);
     if (DBG) console.log('[motif] clientW=', clientW, 'scrollbar=', sbw, 'reason=', reason);
 
+    // page-level disable
     if (doc.getElementById('motifs-disable')) {
       clearRails(); lastSig = 'hidden:off'; isBuilding = false; return;
     }
 
+    // width breakpoint hide (no rails under this)
     const hideBp  = cssPx('--motif-hide-bp', 960);
     if (!DBG && clientW < hideBp) {
       clearRails(); lastSig = 'hidden:bp'; isBuilding = false; return;
@@ -177,70 +157,56 @@ function findContentColumn(){
     const centerH = cssPx('--motif-center-height', 36);
     let   pad     = cssPx('--motif-center-gap-pad', 0);
 
-    const minG    = cssPx('--motif-min-gutter', 160);
+    const minG       = cssPx('--motif-min-gutter', 160);
+    const hideGutter = cssPx('--motif-hide-gutter', 0); // 0 = disabled
+    const maxPlaceG  = cssPx('--motif-max-gutter', 64); // cap gutter used for placement
+    const autoEdgeAt = cssPx('--motif-auto-edge-at', 120); // snap to edge if a gutter < this
+
     const zVarCss = (getComputedStyle(body).getPropertyValue('--motif-z') || '').trim();
     const zIndex  = (DBG ? 99999 : (parseInt(zVarCss,10) || 9999));
     const opacity = (getComputedStyle(body).getPropertyValue('--motif-opacity') || '').trim() || '1';
 
-    const placementMode = (getComputedStyle(body).getPropertyValue('--motif-placement-mode') || '').trim() || 'gutter';
-    const gutterAnchor  = parseFloat(getComputedStyle(body).getPropertyValue('--motif-gutter-anchor')) || 0.5;
-    const contentClear  = cssPx('--motif-content-clear', railIn);
+    // gutter anchor (0=edge side .. 0.5=middle of gutter). Default near edge.
+    const anchorVar = parseFloat(getComputedStyle(body).getPropertyValue('--motif-gutter-anchor'));
+    const gutterAnchor = isNaN(anchorVar) ? 0.25 : Math.max(0, Math.min(1, anchorVar));
 
-    // gutters & placement
-    let leftG, rightG, leftX, rightX;
+    // gutters from the WIDEST centered column
+    const colRect = findWidestCenteredColumn();
+    let leftG  = Math.max(0, colRect.left);
+    let rightG = Math.max(0, clientW - colRect.right);
 
-    const colRect  = findContentColumn();   // for gutter mode
-    const bounds   = findContentBounds();   // for bounds mode
-    const useBounds= (placementMode === 'bounds');
-
-    if (!useBounds){
-      // GUTTER MODE (classic look)
-      leftG  = Math.max(0, colRect.left);
-      rightG = Math.max(0, clientW - colRect.right);
-
-      let tight = (leftG < minG) || (rightG < minG);
-      if (MODE_LOCK === 'edge')   tight = true;
-      if (MODE_LOCK === 'gutter') tight = false;
-
-      if (tight){
-        leftX  = Math.max(0, Math.round(edgeIn));
-        rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
-      } else {
-        leftX  = Math.round((leftG  * gutterAnchor) - (railW * 0.5) + railIn);
-        rightX = Math.round(clientW - (rightG * gutterAnchor) - (railW * 0.5) - railIn);
-      }
-    } else {
-      // BOUNDS MODE (outside outermost content)
-      leftG  = Math.max(0, bounds.left);
-      rightG = Math.max(0, clientW - bounds.right);
-
-      leftX  = Math.round(bounds.left  - contentClear - railW);
-      rightX = Math.round(bounds.right + contentClear);
-      leftX  = Math.max(0, leftX);
-      rightX = Math.min(clientW - railW, rightX);
-
-      const need = railW + contentClear;
-      if ((leftG < need) && (rightG < need)){
-        leftX  = Math.max(0, Math.round(edgeIn));
-        rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
-      }
-    }
-
-    // gutter hide (only hide if BOTH sides tight; never in debug)
-    const hideGutter = cssPx('--motif-hide-gutter', 0);
+    // hide if BOTH gutters too small (unless debugging)
     const guttersTight = hideGutter > 0 && (leftG < hideGutter && rightG < hideGutter);
-    if (guttersTight && !DBG){
-      clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return;
+    if (guttersTight && !DBG){ clearRails(); lastSig = 'hidden:gutter'; isBuilding = false; return; }
+
+    // positions
+    let leftX, rightX;
+
+    const forceEdge =
+      (MODE_LOCK === 'edge') ||
+      (leftG < autoEdgeAt || rightG < autoEdgeAt);
+
+    if (forceEdge){
+      leftX  = Math.max(0, Math.round(edgeIn));
+      rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+    } else {
+      // clamp gutter used for placement so a narrow inner wrapper can't drag rails inward
+      const placeLeftG  = Math.min(leftG,  maxPlaceG);
+      const placeRightG = Math.min(rightG, maxPlaceG);
+
+      leftX  = Math.round((placeLeftG  * gutterAnchor) - (railW * 0.5) + railIn);
+      rightX = Math.round(clientW - (placeRightG * gutterAnchor) - (railW * 0.5) - railIn);
     }
 
-    if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, placementMode });
+    if (DBG) console.log('[motif] railX', { leftX, rightX, leftG, rightG, gutterAnchor, maxPlaceG, autoEdgeAt });
 
-    // container
+    // container bounds
     const cTop = topY + topOffset;
     const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
     const ranges = enabledRangesWithin(topY + topOffset, bottomY - bottomOffset);
     if (DBG) console.log('[motif] ranges', ranges);
 
+    // signature (dedupe)
     const sig = [
       clientW, window.innerHeight, cTop|0, cH|0, leftX|0, rightX|0,
       ranges.map(r => (r.top|0)+'-'+(r.bottom|0)).join(',')
@@ -248,6 +214,7 @@ function findContentColumn(){
     if (sig === lastSig) { isBuilding = false; return; }
     lastSig = sig;
 
+    // (re)build
     clearRails();
 
     railsEl = doc.createElement('div');
@@ -262,7 +229,7 @@ function findContentColumn(){
     if (DBG) railsEl.style.outline = '1px dashed rgba(255,0,0,.35)';
     body.appendChild(railsEl);
 
-    // per-range render
+    // ---- per-range renderer ----
     function makeRailRange(x, rTop, rBot){
       const h = Math.max(0, rBot - rTop);
       if (h < 4) return;
@@ -284,7 +251,7 @@ function findContentColumn(){
       if (usable <= 0) return;
 
       let padLocal = pad;
-      let gapH = centerH + 2*capH + 2*padLocal + capGap;
+      let gapH = centerH + 2*capH + 2*padLocal + capGap;  // cap + pad + center + pad + cap + extra bottom-cap gap
       if (gapH > usable){
         const spare = Math.max(0, usable - centerH - capGap);
         padLocal = Math.max(0, spare/2 - capH);
@@ -303,6 +270,7 @@ function findContentColumn(){
         const line = doc.createElement('div');
         line.className = 'motif-line';
 
+        // Apply line art inline to beat global resets
         const lineImgVar   = getComputedStyle(body).getPropertyValue('--motif-line-url').trim();
         const lineWidthVar = getComputedStyle(body).getPropertyValue('--motif-line-width').trim() || '2px';
         if (lineImgVar){
@@ -323,11 +291,13 @@ function findContentColumn(){
         rail.appendChild(seg);
       }
 
-      // top / bottom segments
+      // TOP segment (top cap + gap cap)
       addLine(insetTop, topH);
+
+      // BOTTOM segment (gap cap + bottom cap)
       addLine(insetTop + topH + gapH, botH);
 
-      // centered centerpiece (equal pad to gap caps)
+      // Centerpiece positioned so spacing to both caps = padLocal (CSS-only bottom-cap gap)
       const ctr = document.createElement('div');
       ctr.className = 'motif-center';
       ctr.style.top = `${insetTop + topH + capH + capGap + padLocal}px`;
@@ -343,7 +313,7 @@ function findContentColumn(){
     isBuilding = false;
   }
 
-  // scheduling
+  // ----- scheduling & observers -----
   function schedule(reason){
     if (scheduled || isBuilding) return;
     scheduled = true;
