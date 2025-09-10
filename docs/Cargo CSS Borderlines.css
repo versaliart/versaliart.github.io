@@ -17,7 +17,7 @@ body.has-motifs{
   --motif-seg-gap: 10rem;         /* gap between segments */
 
   /* Visibility thresholds */
-  --motif-min-gutter: 12rem;     /* hide if either gutter < this */
+  --motif-min-gutter: 8rem;     /* hide if either gutter < this */
   --motif-hide-bp: 60rem;        /* hide if viewport < this (≈960px) */
 
   /* Rendering tweaks */

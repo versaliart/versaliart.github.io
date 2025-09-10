@@ -129,6 +129,11 @@ function enabledRangesWithin(boundsTop, boundsBottom){
     if (innerWidth < hideBp) { isBuilding = false; return; }   // gate by breakpoint
 
     const { topY, bottomY } = findBounds();
+    // Viewport width that EXCLUDES the vertical scrollbar
+const clientW = doc.documentElement.clientWidth || innerWidth;
+// (Optional) scrollbar width if you want to log/debug:
+const sbw = Math.max(0, innerWidth - clientW);
+if (DBG) console.log('[motif] vw=', clientW, 'scrollbar=', sbw);
 
     // offsets & geometry (all from your CSS custom properties)
     const topOffset    = cssPx('--motif-top-offset', 0);
@@ -148,19 +153,20 @@ function enabledRangesWithin(boundsTop, boundsBottom){
 
     const colRect = findContentColumn();
     const leftG   = Math.max(0, colRect.left);
-    const rightG  = Math.max(0, innerWidth - colRect.right);
+    const rightG  = Math.max(0, clientW - colRect.right);
     let tight = (leftG < minG) || (rightG < minG);
     if (MODE_LOCK === 'edge')   tight = true;
     if (MODE_LOCK === 'gutter') tight = false;
 
     let leftX, rightX;
-    if (tight){
-      leftX  = Math.max(0, Math.round(edgeIn));
-      rightX = Math.max(0, Math.round(innerWidth - edgeIn - railW));
-    }else{
-      leftX  = Math.round((leftG * 0.5) - (railW * 0.5) + railIn);
-      rightX = Math.round(innerWidth - (rightG * 0.5) - (railW * 0.5) - railIn);
-    }
+if (tight){
+  leftX  = Math.max(0, Math.round(edgeIn));
+  rightX = Math.max(0, Math.round(clientW - edgeIn - railW));
+}else{
+  leftX  = Math.round((leftG * 0.5) - (railW * 0.5) + railIn);
+  rightX = Math.round(clientW - (rightG * 0.5) - (railW * 0.5) - railIn);
+}
+
 
     const cTop = topY + topOffset;
     const cH   = Math.max(0, bottomY - topY - topOffset - bottomOffset);
