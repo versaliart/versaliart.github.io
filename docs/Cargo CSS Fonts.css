@@ -171,7 +171,7 @@ figure figcaption, .caption, figcaption, small{
   font-family:"Maax",sans-serif !important;
   font-weight:700 !important;
   font-size:var(--h3) !important;
-  line-height:1.2 !important;
+  line-height:1.4;
   text-transform:none !important;
   letter-spacing:0 !important;
 }
@@ -180,7 +180,7 @@ figure figcaption, .caption, figcaption, small{
   font-family:"Maax",sans-serif !important;
   font-weight:500 !important;          /* Medium */
   font-size:1rem !important;           /* similar to P2 */
-  line-height:1.4 !important;
+  line-height:1.4;
   letter-spacing:.02em !important;
   text-transform:uppercase;
 }
@@ -204,7 +204,7 @@ button.sqs-add-to-cart-button{
   font-family:"Maax",sans-serif !important;
   font-weight:700 !important;          /* Bold */
   font-size:1rem !important;
-  line-height:1.2 !important;
+  line-height:1.2;
   letter-spacing:.03em !important;
   text-transform:uppercase !important;
 }
