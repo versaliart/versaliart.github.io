@@ -8,6 +8,11 @@ Opt-out entire page: add a Code Block anywhere on that page with:
 Opt-out only a section: drop a tiny Code Block inside that section:
 <div class="motifs-off" style="display:none"></div>
 
+<!-- Motif: page-level top offset -->
+<style>
+  body.has-motifs { --motif-top-offset: 3rem !important; }
+</style>
+
 
 
 <!-- CODE BLOCK DROP IN FOR TAG PILLS -->
