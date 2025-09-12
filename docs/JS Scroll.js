@@ -1,4 +1,4 @@
-/*! snap-scroll.js v1.4.3 — single snap line at marked section bottom; absolute crossing + seeded first down + immediate up after down */
+/*! snap-scroll.js v1.4.4 — single snap line at marked section bottom; absolute crossing + seeded first down + immediate re-arm both ways + optional guard/input-lock */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -18,15 +18,18 @@
     var markers = [].slice.call(document.querySelectorAll("[data-snap-scroll]"));
     if (!markers.length) return;
 
+    // Build controllers
     var ctrls = markers.map(function(marker){
       var section = getSection(marker);
       if (!section) return null;
       var opts = {
-        direction: (marker.dataset.direction || "both").toLowerCase(), // "down" | "up" | "both"
+        direction: (marker.dataset.direction || "both").toLowerCase(),  // "down" | "up" | "both"
         offsetTop: clamp(parseInt(marker.dataset.offsetTop || "0", 10) || 0, 0, 1000),
         duration : clamp(parseInt(marker.dataset.duration  || "900", 10) || 900, 200, 4000),
         epsilon  : clamp(parseInt(marker.dataset.epsilon   || "2",  10) || 2, 0, 20),
         intentPx : clamp(parseInt(marker.dataset.intentPx  || "16", 10) || 16, 4, 200),
+        guardMs  : clamp(parseInt(marker.dataset.guardMs   || "240",10) || 240, 0, 1000), // brief re-arm window
+        lockInput: String(marker.dataset.lockInput || "false") === "true",
         debug    : String(marker.dataset.debug || "false") === "true"
       };
       return {
@@ -41,11 +44,37 @@
         downTravel:0,
         lastViewBottomAbs: null,
         lastViewTopAbs:    null,
-        seededDown: false,   // allow first DOWN crossing when snapline is already visible
-        seededUp:   false    // NEW: allow immediate UP after a DOWN snap
+        seededDown: false,  // allow first DOWN when snap line already visible
+        seededUp:   false,  // allow immediate UP after a DOWN snap
+        guardUntil: 0
       };
     }).filter(Boolean);
     if (!ctrls.length) return;
+
+    // Optional: temporarily block wheel/touch/keys while we're snapping (only if requested)
+    function anyCtrlLockingInput(){
+      for (var i=0;i<ctrls.length;i++){
+        if (ctrls[i].lock && ctrls[i].opts.lockInput) return true;
+      }
+      return false;
+    }
+    function preventWhileLocked(e){
+      if (anyCtrlLockingInput()){
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }
+    // Attach once; passive:false is needed to preventDefault on wheel/touch
+    document.addEventListener('wheel',      preventWhileLocked, { passive:false });
+    document.addEventListener('touchmove',  preventWhileLocked, { passive:false });
+    document.addEventListener('keydown', function(e){
+      // block typical scroll keys while snapping
+      if (!anyCtrlLockingInput()) return;
+      var k = e.key;
+      if (k === 'ArrowDown' || k === 'ArrowUp' || k === 'PageDown' || k === 'PageUp' || k === 'Home' || k === 'End' || k === ' '){
+        e.preventDefault(); e.stopPropagation();
+      }
+    }, { passive:false });
 
     var lastY = window.scrollY || 0;
     var ticking = false;
@@ -62,11 +91,19 @@
       // reset intent accumulators
       ctrl.upTravel = ctrl.downTravel = 0;
 
-      // After snapping DOWN to the next section, prime UP so the first upward nudge can snap immediately
-      ctrl.seededUp = (target === ctrl.next);
+      // Re-arm immediately for the reverse direction:
+      // - If we snapped DOWN to next: prime UP and clear top edge so the first tiny up-nudge snaps.
+      // - If we snapped UP to marked section: prime DOWN and clear bottom edge likewise.
+      if (target === ctrl.next) {
+        ctrl.seededUp = true;
+        ctrl.lastViewTopAbs = null;
+      } else if (target === ctrl.section) {
+        ctrl.seededDown = true;
+        ctrl.lastViewBottomAbs = null;
+      }
 
-      // Consumed after use
-      ctrl.seededDown = false;
+      // brief guard window to absorb landing jitter and keep seeds live
+      ctrl.guardUntil = performance.now() + ctrl.opts.guardMs;
 
       clearTimeout(ctrl.lockTimer);
       ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; globalLock = false; }, ctrl.opts.duration);
@@ -82,6 +119,7 @@
       if (dir === 0) return;
 
       var vh = window.innerHeight;
+      var now = performance.now();
 
       ctrls.forEach(function (ctrl) {
         if (!ctrl || ctrl.lock || globalLock) return;
@@ -118,36 +156,35 @@
           }
         }
 
+        // During guard window after a snap, keep seeds alive and relax intent
+        var inGuard = now < ctrl.guardUntil;
+
         // ----- DOWN: crossing when viewport bottom passes the line -----
+        var downCross =
+          (ctrl.seededDown || inGuard || ctrl.downTravel >= intent) &&
+          (ctrl.lastViewBottomAbs < (lineAbs - EPS)) &&
+          (viewBottomAbs        >= (lineAbs - EPS));
+
         if ((ctrl.opts.direction === "down" || ctrl.opts.direction === "both") &&
-            dir === 1 && ctrl.next &&
-            (ctrl.seededDown || ctrl.downTravel >= intent) &&
-            ctrl.lastViewBottomAbs < (lineAbs - EPS) &&
-            viewBottomAbs      >= (lineAbs - EPS)) {
+            dir === 1 && ctrl.next && downCross) {
           snap(ctrl, ctrl.next, "down/cross-abs-bottom");
-          // keep last edges current
+          // keep edges current; consume seeds by snap()
           ctrl.lastViewBottomAbs = viewBottomAbs;
           ctrl.lastViewTopAbs    = viewTopAbs;
-          // after DOWN, allow immediate UP
-          ctrl.seededUp = true;
           return;
         }
 
         // ----- UP: crossing when content top passes the line (header-aware) -----
-        // If seededUp is true (we just snapped DOWN), ignore the "prev > threshold" check and intent.
-        var crossedUp =
-          (ctrl.seededUp && (viewTopAbs <= (lineAbs + EPS))) ||
-          (!ctrl.seededUp &&
-            ctrl.upTravel >= intent &&
-            ctrl.lastViewTopAbs > (lineAbs + EPS) &&
-            viewTopAbs     <= (lineAbs + EPS));
+        var upCross =
+          (ctrl.seededUp || inGuard || ctrl.upTravel >= intent) &&
+          (ctrl.lastViewTopAbs > (lineAbs + EPS)) &&
+          (viewTopAbs        <= (lineAbs + EPS));
 
         if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
-            dir === -1 && crossedUp) {
+            dir === -1 && upCross) {
           snap(ctrl, ctrl.section, "up/cross-abs-top");
           ctrl.lastViewBottomAbs = viewBottomAbs;
           ctrl.lastViewTopAbs    = viewTopAbs;
-          ctrl.seededUp = false; // consume the seed
           return;
         }
 
@@ -161,11 +198,11 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", function(){
       lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; });
+      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; c.guardUntil = 0; });
     }, { passive: true });
     document.addEventListener("visibilitychange", function(){
       lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; });
+      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; c.guardUntil = 0; });
     });
   });
 })();
