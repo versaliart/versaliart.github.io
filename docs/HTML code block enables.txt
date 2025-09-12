@@ -39,8 +39,7 @@ Opt-out only a section: drop a tiny Code Block inside that section:
   data-offset-top="0"
   data-duration="900"
   data-epsilon="1"
-  data-arm-px="48"
-  data-intent-px="24"
+  data-intent-px="20"
   data-debug="false"
   style="display:none"
 ></div>
