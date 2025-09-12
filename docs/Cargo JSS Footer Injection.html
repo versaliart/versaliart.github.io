@@ -65,8 +65,14 @@
 whenSelector('[data-snap-scroll]', function () {
   loadScript('https://versaliart.github.io/Cargo%20JSS%20SnapScroll.js')
     .then(() => console.log('[Loader] SnapScroll loaded'))
-    .catch(err => console.warn('[Loader] SnapScroll failed', err));
-    
+    .catch(err => console.warn('[Loader] SnapScroll failed', err)); 
 });
+
+  whenSelector(".tarot-stack", function () {
+    loadScript("https://versaliart.github.io/Cargo%20JSS%20TarotStack.js")
+      .then(()=>console.log("[Loader] TarotStack loaded"))
+      .catch(console.warn);
+  });
+
 })();
 </script>

@@ -1,0 +1,15 @@
+<div class="tarot-stack center">
+  <div class="tarot-table">
+    <div class="t-pile" data-role="draw"></div>
+    <div class="t-pile" data-role="discard"></div>
+  </div>
+
+  <template class="t-def" data-back="https://.../back1.jpg">
+    <p>Front of card 1</p>
+  </template>
+
+  <template class="t-def" data-back="https://.../back2.jpg">
+    <p>Front of card 2</p>
+  </template>
+</div>
+</div>
