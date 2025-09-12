@@ -6,7 +6,7 @@
   --pile-pad: .5rem;          /* padding around each pile well */
   --pile-radius: .75rem;
   --table-gap: 2rem;          /* gap between draw & discard */
-  --shadow: 0 .25rem .7rem rgba(0,0,0,.35);
+  --shadow: 0.25rem .7rem rgba(0,0,0,.35);
   --flip-ms: 600ms;
   --slide-ms: 520ms;
   --shuffle-ms: 700ms;
