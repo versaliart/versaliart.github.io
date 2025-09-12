@@ -114,11 +114,17 @@
         }
 
         // UPWARD: trigger when the section’s top begins to move below the viewport top
-        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
-            dir === -1 && ctrl.prev && rect.top >= (0 + EPS)) {
-          snap(ctrl, ctrl.prev, "up/top-cross");
-          return;
-        }
+// --- UPWARD: only when user scrolls up from the TOP of the next section ---
+if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") && dir === -1 && ctrl.prev && ctrl.next) {
+  var nextTop = ctrl.next.getBoundingClientRect().top;
+  // After a down-snap, ctrl.next's top sits at ≈ offsetTop. The moment the user scrolls up,
+  // nextTop increases beyond offsetTop (+EPS) → snap back to the previous section.
+  if (nextTop >= (ctrl.opts.offsetTop + ctrl.opts.epsilon)) {
+    snap(ctrl, ctrl.prev, "up/from-next-top");
+    return;
+  }
+}
+
       });
     }
 
