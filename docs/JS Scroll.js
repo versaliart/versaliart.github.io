@@ -1,163 +1,61 @@
-/*! snap-scroll.js v1.4.2 — single snap line at marked section bottom; absolute crossing + seeded first down + rearm after up */
-(function () {
-  function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
-  function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
-  function getSection(el){ return el.closest("section.page-section, section"); }
-  function nextSectionOf(section){
-    var n = section.nextElementSibling;
-    while (n && !n.matches("section.page-section, section")) n = n.nextElementSibling;
-    return n || null;
-  }
-  function scrollToSectionTop(target, offsetTop){
-    var rect = target.getBoundingClientRect();
-    var y = rect.top + window.pageYOffset - (offsetTop || 0);
-    window.scrollTo({ top: y, behavior: "smooth" });
-  }
+/* Scrollify — only for the section that has [data-snap-scrollify] and its next sibling */
 
-  ready(function () {
-    var markers = [].slice.call(document.querySelectorAll("[data-snap-scroll]"));
-    if (!markers.length) return;
+whenSelector('[data-snap-scrollify]', function (marker) {
+  // 1) Ensure jQuery is present (Squarespace 7.1 may not include it on all templates)
+  var needjQ = !window.jQuery;
+  (needjQ
+    ? loadScript('https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js')
+    : Promise.resolve()
+  )
+  // 2) Load Scrollify (jQuery plugin)
+  .then(function () {
+    return loadScript('https://cdnjs.cloudflare.com/ajax/libs/scrollify/1.0.21/jquery.scrollify.min.js');
+  })
+  .then(function () {
+    var $ = window.jQuery;
+    var section = marker.closest('section.page-section, section');
+    if (!section) return;
+    var next = section.nextElementSibling;
+    if (!next) return;
 
-    var ctrls = markers.map(function(marker){
-      var section = getSection(marker);
-      if (!section) return null;
-      var opts = {
-        direction: (marker.dataset.direction || "both").toLowerCase(), // "down" | "up" | "both"
-        offsetTop: clamp(parseInt(marker.dataset.offsetTop || "0", 10) || 0, 0, 1000),
-        duration : clamp(parseInt(marker.dataset.duration  || "900", 10) || 900, 200, 4000),
-        epsilon  : clamp(parseInt(marker.dataset.epsilon   || "2",  10) || 2, 0, 20),
-        intentPx : clamp(parseInt(marker.dataset.intentPx  || "16", 10) || 16, 4, 200),
-        debug    : String(marker.dataset.debug || "false") === "true"
-      };
-      return {
-        section,
-        next: nextSectionOf(section),
-        opts,
-        lock:false,
-        lockTimer:null,
-        // state
-        lastDir:0,
-        upTravel:0,
-        downTravel:0,
-        lastViewBottomAbs: null,
-        lastViewTopAbs:    null,
-        seededDown: false
-      };
-    }).filter(Boolean);
-    if (!ctrls.length) return;
+    // Give the two target sections a unique class so Scrollify only manages these
+    var uid = 'snapify-' + Math.random().toString(36).slice(2, 8);
+    section.classList.add(uid);
+    next.classList.add(uid);
 
-    var lastY = window.scrollY || 0;
-    var ticking = false;
-    var globalLock = false;
+    var offsetTop = parseInt(marker.dataset.offsetTop || '0', 10);
 
-    function log(ctrl){ if (ctrl && ctrl.opts.debug) console.log.apply(console, ["[snap-scroll]"].concat([].slice.call(arguments,1))); }
-
-    function snap(ctrl, target, reason){
-      if (!target || globalLock || ctrl.lock) return;
-      ctrl.lock = true; globalLock = true;
-      scrollToSectionTop(target, ctrl.opts.offsetTop);
-      log(ctrl, "snap ->", reason, target);
-
-      // reset travel
-      ctrl.upTravel = ctrl.downTravel = 0;
-      ctrl.seededDown = false;
-
-      // RE-ARM after snapping UP to the marked section
-      if (target === ctrl.section) {
-        ctrl.lastViewBottomAbs = null;
-        ctrl.lastViewTopAbs    = null;
+    // Initialize Scrollify just for these two sections
+    $.scrollify({
+      section: '.' + uid,
+      // Important: don't force heights; let your Squarespace layout breathe
+      setHeights: false,
+      // Keep normal scrollbars visible
+      scrollbars: true,
+      // Allow inner overflow scrolling within each section
+      overflowScroll: true,
+      // Handle touch scrolling
+      touchScroll: true,
+      // Don’t modify URL hashes
+      updateHash: false,
+      // Align with sticky header if you have one
+      offset: offsetTop,
+      // If you have areas that should scroll normally inside a panel, mark them with data-standard-scroll
+      standardScrollElements: '[data-standard-scroll]',
+      // Optional callbacks for debugging
+      afterRender: function () {
+        if (marker.dataset.debug === 'true') console.log('[Scrollify] ready on', section, next);
+      },
+      afterResize: function () {
+        // Recalculate panel positions on resize/content changes
+        $.scrollify.update();
       }
-
-      clearTimeout(ctrl.lockTimer);
-      ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; globalLock = false; }, ctrl.opts.duration);
-    }
-
-    function onScrollTick(){
-      ticking = false;
-
-      var y = window.scrollY || 0;
-      var dir = y > lastY ? 1 : (y < lastY ? -1 : 0);
-      var dy  = Math.abs(y - lastY);
-      lastY = y;
-      if (dir === 0) return;
-
-      var vh = window.innerHeight;
-
-      ctrls.forEach(function (ctrl) {
-        if (!ctrl || ctrl.lock || globalLock) return;
-
-        var rect = ctrl.section.getBoundingClientRect();
-        var EPS     = ctrl.opts.epsilon;
-        var viewTopAbs = y + ctrl.opts.offsetTop;   // absolute content-top
-        var viewBottomAbs = y + vh;                 // absolute viewport bottom
-        var lineAbs = (rect.top + y) + rect.height; // absolute snap line (section bottom)
-        var intent  = ctrl.opts.intentPx;
-
-        // intent accumulation
-        if (dir !== ctrl.lastDir) {
-          ctrl.upTravel = ctrl.downTravel = 0;
-          ctrl.lastDir = dir;
-        }
-        if (dir === 1) ctrl.downTravel += dy;
-        else if (dir === -1) ctrl.upTravel += dy;
-
-        // seed previous edges (handles short first section)
-        if (ctrl.lastViewBottomAbs == null) {
-          if (viewBottomAbs >= lineAbs - EPS) {
-            ctrl.lastViewBottomAbs = (lineAbs - EPS) - 1;
-            ctrl.seededDown = true;    // permit first down crossing without intent
-          } else {
-            ctrl.lastViewBottomAbs = viewBottomAbs;
-          }
-        }
-        if (ctrl.lastViewTopAbs == null) {
-          if (viewTopAbs <= lineAbs + EPS) {
-            ctrl.lastViewTopAbs = (lineAbs + EPS) + 1;
-          } else {
-            ctrl.lastViewTopAbs = viewTopAbs;
-          }
-        }
-
-        // ----- DOWN: crossing when viewport bottom passes the line -----
-        if ((ctrl.opts.direction === "down" || ctrl.opts.direction === "both") &&
-            dir === 1 && ctrl.next &&
-            (ctrl.seededDown || ctrl.downTravel >= intent) &&
-            ctrl.lastViewBottomAbs < (lineAbs - EPS) &&
-            viewBottomAbs      >= (lineAbs - EPS)) {
-          snap(ctrl, ctrl.next, "down/cross-abs-bottom");
-          ctrl.lastViewBottomAbs = viewBottomAbs;
-          ctrl.lastViewTopAbs    = viewTopAbs;
-          ctrl.seededDown = false;
-          return;
-        }
-
-        // ----- UP: crossing when content top passes the line (header-aware) -----
-        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
-            dir === -1 &&
-            ctrl.upTravel >= intent &&
-            ctrl.lastViewTopAbs > (lineAbs + EPS) &&
-            viewTopAbs     <= (lineAbs + EPS)) {
-          snap(ctrl, ctrl.section, "up/cross-abs-top");
-          ctrl.lastViewBottomAbs = viewBottomAbs;
-          ctrl.lastViewTopAbs    = viewTopAbs;
-          return;
-        }
-
-        // store for next tick
-        ctrl.lastViewBottomAbs = viewBottomAbs;
-        ctrl.lastViewTopAbs    = viewTopAbs;
-      });
-    }
-
-    function onScroll(){ if (!ticking) { ticking = true; requestAnimationFrame(onScrollTick); } }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", function(){
-      lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; });
-    }, { passive: true });
-    document.addEventListener("visibilitychange", function(){
-      lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; });
     });
+
+    // Also update on orientation changes / major resizes
+    window.addEventListener('resize', function () { $.scrollify.update(); }, { passive: true });
+  })
+  .catch(function (err) {
+    console.warn('[Loader] Scrollify failed', err);
   });
-})();
+});
