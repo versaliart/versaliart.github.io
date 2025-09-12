@@ -1,11 +1,4 @@
-/*! snap-scroll.js v1.5.1
- *  - Single snap line at bottom of marked section
- *  - Absolute crossing detection (robust at any zoom)
- *  - Seeded first DOWN when snap line starts visible
- *  - Immediate UP after a DOWN snap
- *  - Scrollify-style input capture (wheel/touch/keys) with safe preventDefault (only when snapping)
- *  - Momentum cooldown after snaps
- */
+/*! snap-scroll.js v1.5.0 — Scrollify-style input capture (optional) + single snap line engine */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -27,7 +20,6 @@
     var markers = [].slice.call(document.querySelectorAll("[data-snap-scroll]"));
     if (!markers.length) return;
 
-    // Build controllers (one per marker)
     var ctrls = markers.map(function(marker){
       var section = getSection(marker);
       if (!section) return null;
@@ -37,28 +29,28 @@
         duration : clamp(parseInt(marker.dataset.duration  || "900", 10) || 900, 120, 5000),
         epsilon  : clamp(parseInt(marker.dataset.epsilon   || "2",  10) || 2, 0, 20),
         intentPx : clamp(parseInt(marker.dataset.intentPx  || "0",  10) || 0, 0, 200),
-
-        // Scrollify-like capture settings
-        capture    : (marker.dataset.capture || "off").toLowerCase(),   // "off" | "snap" | "always"
-        momentum   : clamp(parseInt(marker.dataset.momentumMs || "250", 10) || 250, 0, 1500),
-        restEps    : clamp(parseInt(marker.dataset.restEps    || "2",   10) || 2, 0, 12),
-        debug      : String(marker.dataset.debug || "false") === "true"
+        // NEW for Scrollify-like behavior
+        capture  : (marker.dataset.capture || "off").toLowerCase(),     // "off" | "snap" | "always"
+        momentum : clamp(parseInt(marker.dataset.momentumMs || "280", 10) || 280, 0, 1500),
+        restEps  : clamp(parseInt(marker.dataset.restEps    || "2",  10) || 2, 0, 12),
+        debug    : String(marker.dataset.debug || "false") === "true"
       };
       return {
         section,
         next: nextSectionOf(section),
         opts,
-        // snap state
         lock:false,
         lockTimer:null,
+        // snapline state
         lastDir:0,
         upTravel:0,
         downTravel:0,
         lastViewBottomAbs: null,
         lastViewTopAbs:    null,
-        seededDown: false,   // allow first DOWN when snapline starts visible
+        seededDown: false,   // first DOWN when snapline starts visible
         seededUp:   false,   // immediate UP after a DOWN snap
-        cooldownUntil: 0,    // momentum cooldown after snaps
+        // capture state
+        cooldownUntil: 0,
         touchStartY: null
       };
     }).filter(Boolean);
@@ -66,7 +58,7 @@
 
     function log(ctrl){ if (ctrl && ctrl.opts.debug) console.log.apply(console, ["[snap-scroll]"].concat([].slice.call(arguments,1))); }
 
-    // Utility: are we inside the pair (marked section + its next)?
+    // --- helpers for capture mode ---
     function inPair(ctrl){
       if (!ctrl.next) return false;
       var y = window.scrollY, vh = window.innerHeight;
@@ -80,11 +72,8 @@
       var top = el.getBoundingClientRect().top;
       return Math.abs(top - offsetTop) <= restEps;
     }
-    function directionAllowed(ctrl, dir){ // dir: "down"|"up"
-      if (ctrl.opts.direction === "both") return true;
-      return ctrl.opts.direction === dir;
-    }
     function activeCtrl(){
+      // choose the pair whose snapline is closest to the viewport edges
       var y = window.scrollY, vh = window.innerHeight, best=null, bestScore=Infinity;
       ctrls.forEach(function(c){
         if (!c.next) return;
@@ -104,7 +93,7 @@
       // reset intent accumulators
       ctrl.upTravel = ctrl.downTravel = 0;
 
-      // prime the reverse direction immediately
+      // prime reverse direction immediately, like Scrollify
       if (target === ctrl.next) {
         ctrl.seededUp = true;
         ctrl.lastViewTopAbs = null;   // make reverse crossing immediate
@@ -113,14 +102,14 @@
         ctrl.lastViewBottomAbs = null;
       }
 
-      // momentum cooldown (absorb leftover input)
+      // brief cooldown to swallow momentum
       ctrl.cooldownUntil = performance.now() + ctrl.opts.momentum;
 
       clearTimeout(ctrl.lockTimer);
       ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; }, ctrl.opts.duration);
     }
 
-    // ----------------- Snapline crossing engine (fallback/always-on) -----------------
+    // --- Scroll engine (snapline crossings — kept as robust fallback) ---
     var lastY = window.scrollY || 0, ticking = false;
     function onScrollTick(){
       ticking = false;
@@ -142,7 +131,7 @@
         var lineAbs = (rect.top + y) + rect.height; // absolute snap line (section bottom)
         var intent  = ctrl.opts.intentPx;
 
-        // track intended direction movement
+        // intent accumulation
         if (dir !== ctrl.lastDir) {
           ctrl.upTravel = ctrl.downTravel = 0;
           ctrl.lastDir = dir;
@@ -159,7 +148,7 @@
         }
 
         // DOWN crossing (viewport bottom passes snapline)
-        if (directionAllowed(ctrl, "down") &&
+        if ((ctrl.opts.direction === "down" || ctrl.opts.direction === "both") &&
             dir === 1 &&
             (ctrl.seededDown || ctrl.downTravel >= intent) &&
             ctrl.lastViewBottomAbs < (lineAbs - EPS) &&
@@ -179,7 +168,7 @@
              (ctrl.lastViewTopAbs > topThresh) &&
              (viewTopAbs        <= topThresh));
 
-        if (directionAllowed(ctrl, "up") &&
+        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
             dir === -1 && upCross) {
           snap(ctrl, ctrl.section, "up/cross-abs-top");
           ctrl.seededUp = false;
@@ -188,7 +177,6 @@
           return;
         }
 
-        // store for next tick
         ctrl.lastViewBottomAbs = viewBottomAbs;
         ctrl.lastViewTopAbs    = viewTopAbs;
       });
@@ -196,7 +184,7 @@
     function onScroll(){ if (!ticking) { ticking = true; requestAnimationFrame(onScrollTick); } }
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    // ----------------- Scrollify-style input capture (only preventDefault when snapping) -----------------
+    // --- Scrollify-style input capture (wheel/touch/keys) ---
     function captureEnabled(ctrl){
       return ctrl && (ctrl.opts.capture === "always" || (ctrl.opts.capture === "snap" && ctrl.lock));
     }
@@ -210,35 +198,23 @@
       var ctrl = currentCtrlForCapture();
       if (!ctrl || !captureEnabled(ctrl)) return;
 
-      var dy = e.deltaY || 0;
-      if (dy === 0) return;
-
       var now = performance.now();
+      if (now < ctrl.cooldownUntil) { e.preventDefault(); return; }
+
+      var dy = e.deltaY || 0;
+      if (dy === 0) { e.preventDefault(); return; }
+
+      // Decide direction and target; prevent native scroll
+      e.preventDefault();
+
       var atTopMarked = atTopOf(ctrl.section, ctrl.opts.offsetTop, ctrl.opts.restEps);
       var atTopNext   = atTopOf(ctrl.next,    ctrl.opts.offsetTop, ctrl.opts.restEps);
 
-      var wantDown = dy > 0, wantUp = dy < 0;
-
-      var shouldSnapDown = wantDown && !atTopNext && directionAllowed(ctrl, "down");
-      var shouldSnapUp   = wantUp   && !atTopMarked && directionAllowed(ctrl, "up");
-
-      // During cooldown, only block if a snap would happen
-      if (now < ctrl.cooldownUntil && (shouldSnapDown || shouldSnapUp)) {
-        e.preventDefault();
-        return;
+      if (dy > 0) { // want DOWN
+        if (!atTopNext) snap(ctrl, ctrl.next, "capture/wheel-down");
+      } else {      // want UP
+        if (!atTopMarked) snap(ctrl, ctrl.section, "capture/wheel-up");
       }
-
-      if (shouldSnapDown) {
-        e.preventDefault();
-        snap(ctrl, ctrl.next, "capture/wheel-down");
-        return;
-      }
-      if (shouldSnapUp) {
-        e.preventDefault();
-        snap(ctrl, ctrl.section, "capture/wheel-up");
-        return;
-      }
-      // else: let native scroll flow
     }
     document.addEventListener("wheel", onWheel, { passive:false });
 
@@ -252,22 +228,20 @@
       var ctrl = currentCtrlForCapture();
       if (!ctrl || !captureEnabled(ctrl)) return;
       if (ctrl.touchStartY == null) return;
-
       var y = e.touches ? e.touches[0].clientY : null;
       if (y == null) return;
       var dy = ctrl.touchStartY - y; // positive = swipe up (go DOWN)
-      var threshold = 30; // px deadzone
+      var threshold = 30; // px
       if (Math.abs(dy) < threshold) return;
 
+      e.preventDefault();
       var atTopMarked = atTopOf(ctrl.section, ctrl.opts.offsetTop, ctrl.opts.restEps);
       var atTopNext   = atTopOf(ctrl.next,    ctrl.opts.offsetTop, ctrl.opts.restEps);
 
-      if (dy > 0 && !atTopNext && directionAllowed(ctrl, "down")) {
-        e.preventDefault();
-        snap(ctrl, ctrl.next, "capture/touch-down");
-      } else if (dy < 0 && !atTopMarked && directionAllowed(ctrl, "up")) {
-        e.preventDefault();
-        snap(ctrl, ctrl.section, "capture/touch-up");
+      if (dy > 0) { // swipe up => go DOWN
+        if (!atTopNext) snap(ctrl, ctrl.next, "capture/touch-down");
+      } else {      // swipe down => go UP
+        if (!atTopMarked) snap(ctrl, ctrl.section, "capture/touch-up");
       }
       ctrl.touchStartY = null; // consume
     }
@@ -278,23 +252,24 @@
     function onKey(e){
       var ctrl = currentCtrlForCapture();
       if (!ctrl || !captureEnabled(ctrl)) return;
-
       var k = e.key;
-      var atTopMarked = atTopOf(ctrl.section, ctrl.opts.offsetTop, ctrl.opts.restEps);
-      var atTopNext   = atTopOf(ctrl.next,    ctrl.opts.offsetTop, ctrl.opts.restEps);
-
-      if ((k === "ArrowDown" || k === "PageDown" || k === " ")) {
-        if (!atTopNext && directionAllowed(ctrl, "down")) { e.preventDefault(); snap(ctrl, ctrl.next, "capture/key-down"); }
-      } else if ((k === "ArrowUp" || k === "PageUp" || k === "Home")) {
-        if (!atTopMarked && directionAllowed(ctrl, "up")) { e.preventDefault(); snap(ctrl, ctrl.section, "capture/key-up"); }
-      } else if (k === "End") {
-        if (!atTopNext && directionAllowed(ctrl, "down")) { e.preventDefault(); snap(ctrl, ctrl.next, "capture/key-end"); }
+      if (k === "ArrowDown" || k === "PageDown" || k === " "){
+        e.preventDefault();
+        var atTopNext = atTopOf(ctrl.next, ctrl.opts.offsetTop, ctrl.opts.restEps);
+        if (!atTopNext) snap(ctrl, ctrl.next, "capture/key-down");
+      } else if (k === "ArrowUp" || k === "PageUp" || k === "Home"){
+        e.preventDefault();
+        var atTopMarked = atTopOf(ctrl.section, ctrl.opts.offsetTop, ctrl.opts.restEps);
+        if (!atTopMarked) snap(ctrl, ctrl.section, "capture/key-up");
+      } else if (k === "End"){
+        e.preventDefault();
+        var atTopNext2 = atTopOf(ctrl.next, ctrl.opts.offsetTop, ctrl.opts.restEps);
+        if (!atTopNext2) snap(ctrl, ctrl.next, "capture/key-end");
       }
-      // else: ignore, let native behavior proceed
     }
     document.addEventListener("keydown", onKey, { passive:false });
 
-    // Resets
+    // Resize/visibility resets
     window.addEventListener("resize", function(){
       ctrls.forEach(function(c){
         c.lastViewBottomAbs = c.lastViewTopAbs = null;
