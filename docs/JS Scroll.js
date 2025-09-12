@@ -174,19 +174,23 @@
           return;
         }
 
-        // ----- UP: crossing when content top passes the line (header-aware) -----
-        var upCross =
-          (ctrl.seededUp || inGuard || ctrl.upTravel >= intent) &&
-          (ctrl.lastViewTopAbs > (lineAbs + EPS)) &&
-          (viewTopAbs        <= (lineAbs + EPS));
+// ----- UP: crossing when content top passes the line (header-aware) -----
+var topThresh = lineAbs + EPS;
+var upCross = ctrl.seededUp
+  ? (viewTopAbs <= topThresh)                   // immediate UP after a DOWN snap
+  : ((inGuard || ctrl.upTravel >= intent) &&
+     (ctrl.lastViewTopAbs > topThresh) &&
+     (viewTopAbs        <= topThresh));
 
-        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
-            dir === -1 && upCross) {
-          snap(ctrl, ctrl.section, "up/cross-abs-top");
-          ctrl.lastViewBottomAbs = viewBottomAbs;
-          ctrl.lastViewTopAbs    = viewTopAbs;
-          return;
-        }
+if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
+    dir === -1 && upCross) {
+  snap(ctrl, ctrl.section, "up/cross-abs-top");
+  ctrl.seededUp = false;                        // consume the seed
+  ctrl.lastViewBottomAbs = viewBottomAbs;
+  ctrl.lastViewTopAbs    = viewTopAbs;
+  return;
+}
+
 
         // store for next tick
         ctrl.lastViewBottomAbs = viewBottomAbs;
