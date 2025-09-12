@@ -41,8 +41,5 @@ Opt-out only a section: drop a tiny Code Block inside that section:
   data-epsilon="1"
   data-intent-px="1"
   data-debug="true"
-  data-capture="always"
-  data-momentum-ms="120"
-  data-rest-eps="2"
   style="display:none"
 ></div>
