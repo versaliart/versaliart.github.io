@@ -1,4 +1,4 @@
-/*! snap-scroll.js v1.3.0 — single snap line at marked section bottom with true edge-cross detection */
+/*! snap-scroll.js v1.3.1 — single snap line at marked section bottom with seeded first-tick for short sections */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -22,7 +22,7 @@
       var section = getSection(marker);
       if (!section) return null;
       var opts = {
-        direction: (marker.dataset.direction || "both").toLowerCase(), // "down" | "up" | "both"
+        direction: (marker.dataset.direction || "both").toLowerCase(),
         offsetTop: clamp(parseInt(marker.dataset.offsetTop || "0", 10) || 0, 0, 1000),
         duration : clamp(parseInt(marker.dataset.duration  || "900", 10) || 900, 200, 4000),
         epsilon  : clamp(parseInt(marker.dataset.epsilon   || "1",  10) || 1, 0, 20),
@@ -35,11 +35,10 @@
         opts,
         lock:false,
         lockTimer:null,
-        // state for crossing + intent
         lastDir:0,
         upTravel:0,
         downTravel:0,
-        lastLineY: null // previous position of the snap line (section bottom) in viewport coords
+        lastLineY: null
       };
     }).filter(Boolean);
     if (!ctrls.length) return;
@@ -55,10 +54,7 @@
       ctrl.lock = true; globalLock = true;
       scrollToSectionTop(target, ctrl.opts.offsetTop);
       log(ctrl, "snap ->", reason, target);
-
-      // reset intent counters after a snap
       ctrl.upTravel = ctrl.downTravel = 0;
-
       clearTimeout(ctrl.lockTimer);
       ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; globalLock = false; }, ctrl.opts.duration);
     }
@@ -67,7 +63,7 @@
       ticking = false;
 
       var y = window.scrollY || 0;
-      var dir = y > lastY ? 1 : (y < lastY ? -1 : 0); // 1=down, -1=up, 0=still
+      var dir = y > lastY ? 1 : (y < lastY ? -1 : 0);
       var dy  = Math.abs(y - lastY);
       lastY = y;
       if (dir === 0) return;
@@ -78,13 +74,11 @@
         if (!ctrl || ctrl.lock || globalLock) return false;
 
         var rect = ctrl.section.getBoundingClientRect();
-        var lineY = rect.bottom;              // <-- the single snap line (bottom of marked section)
-        var prev  = (ctrl.lastLineY == null) ? lineY : ctrl.lastLineY;
         var EPS   = ctrl.opts.epsilon;
         var off   = ctrl.opts.offsetTop;
         var intent= ctrl.opts.intentPx;
 
-        // track per-direction travel to enforce intent
+        // direction travel (intent)
         if (dir !== ctrl.lastDir) {
           ctrl.upTravel = ctrl.downTravel = 0;
           ctrl.lastDir = dir;
@@ -92,31 +86,37 @@
         if (dir === 1) ctrl.downTravel += dy;
         else if (dir === -1) ctrl.upTravel += dy;
 
-        // --- DOWNWARD crossing: (prev > bottomThreshold) && (lineY <= bottomThreshold)
-        var bottomThreshold = vh - EPS;
+        // single snap line (section bottom)
+        var vhBottom = vh - EPS;
+        // --- seed previous line position on first tick (handles short sections) ---
+        if (ctrl.lastLineY == null) {
+          ctrl.lastLineY = (rect.bottom <= vhBottom) ? (vhBottom + 1) : rect.bottom;
+        }
+
+        var lineY = rect.bottom;
+        var prev  = ctrl.lastLineY;
+
+        // DOWN: crossing viewport bottom
         if ((ctrl.opts.direction === "down" || ctrl.opts.direction === "both") &&
             dir === 1 && ctrl.next &&
             ctrl.downTravel >= intent &&
-            prev > bottomThreshold && lineY <= bottomThreshold) {
+            prev > vhBottom && lineY <= vhBottom) {
           snap(ctrl, ctrl.next, "down/cross-bottom-line");
-          ctrl.lastLineY = lineY;  // update after snap to current reading
+          ctrl.lastLineY = lineY;
           return true;
         }
 
-        // --- UPWARD crossing: (prev < topThreshold) && (lineY >= topThreshold)
-        // topThreshold is the visible content top (header-aware)
+        // UP: crossing top content edge (header-aware)
         var topThreshold = off + EPS;
         if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
             dir === -1 &&
             ctrl.upTravel >= intent &&
             prev < topThreshold && lineY >= topThreshold) {
-          // Up snaps back to THIS marked section’s top
           snap(ctrl, ctrl.section, "up/cross-top-line");
           ctrl.lastLineY = lineY;
           return true;
         }
 
-        // store for next tick
         ctrl.lastLineY = lineY;
         return false;
       });
