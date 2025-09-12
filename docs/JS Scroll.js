@@ -1,4 +1,4 @@
-/*! snap-scroll.js v1.4.1 — single snap line at marked section bottom; absolute crossing detection + seeded first down */
+/*! snap-scroll.js v1.4.2 — single snap line at marked section bottom; absolute crossing + seeded first down + rearm after up */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -57,8 +57,17 @@
       ctrl.lock = true; globalLock = true;
       scrollToSectionTop(target, ctrl.opts.offsetTop);
       log(ctrl, "snap ->", reason, target);
+
+      // reset travel
       ctrl.upTravel = ctrl.downTravel = 0;
       ctrl.seededDown = false;
+
+      // RE-ARM after snapping UP to the marked section
+      if (target === ctrl.section) {
+        ctrl.lastViewBottomAbs = null;
+        ctrl.lastViewTopAbs    = null;
+      }
+
       clearTimeout(ctrl.lockTimer);
       ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; globalLock = false; }, ctrl.opts.duration);
     }
