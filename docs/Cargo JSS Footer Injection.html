@@ -61,6 +61,11 @@
       .catch(console.warn);
   });
 
-  // (Removed the second header-gated block that was supposed to load Borderlines)
+whenSelector('[data-snap-scroll]', function () {
+  loadScript('https://versaliart.github.io/JS%20SnapScroll.js')
+    .then(() => console.log('[Loader] SnapScroll loaded'))
+    .catch(err => console.warn('[Loader] SnapScroll failed', err));
+
+});
 })();
 </script>
