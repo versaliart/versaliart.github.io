@@ -1,16 +1,20 @@
-/* tarot-stack.css v1.0 — scoped, no global leaks */
+/* tarot-stack.css v1.1 — smooth flip-in-place + FLIP-friendly */
 .tarot-stack{
   --card-w: 12rem;
   --card-h: calc(var(--card-w) * 1.38);
-  --pile-gap: .12rem;         /* slight stagger within a pile */
-  --pile-pad: .5rem;          /* padding around each pile well */
+  --pile-gap: .12rem;
+  --pile-pad: .5rem;
   --pile-radius: .75rem;
-  --table-gap: 2rem;          /* gap between draw & discard */
-  --shadow: 0.25rem .7rem rgba(0,0,0,.35);
+  --table-gap: 2rem;
+  --shadow: 0 .25rem .7rem rgba(0,0,0,.35);
+
+  /* motion tuning */
   --flip-ms: 600ms;
-  --slide-ms: 520ms;
+  --move-ms: 520ms;
   --shuffle-ms: 700ms;
-  --easing: cubic-bezier(.2,.7,.2,1);
+  --ease: cubic-bezier(.2,.7,.2,1);
+  --scale-active: 1.08;
+
   position: relative;
   width: 100%;
   min-height: calc(var(--card-h) + 2*var(--pile-pad));
@@ -27,7 +31,7 @@
   gap: var(--table-gap);
 }
 
-/* Pile “wells” */
+/* Pile wells */
 .t-pile{
   position: relative;
   width: calc(var(--card-w) + 2*var(--pile-pad));
@@ -37,7 +41,7 @@
   box-shadow: inset 0 0 .25rem rgba(0,0,0,.15);
 }
 
-/* Card root + faces */
+/* Card root */
 .t-card{
   position: absolute;
   top: var(--pile-pad);
@@ -45,28 +49,29 @@
   width: var(--card-w);
   height: var(--card-h);
   transform-style: preserve-3d;
-  transform-origin: center right;
-  will-change: transform, left, top;
-  cursor: pointer;
-  transition: transform var(--flip-ms) var(--easing), 
-              left var(--slide-ms) var(--easing), 
-              top var(--slide-ms) var(--easing),
-              box-shadow 200ms var(--easing);
+  transform-origin: center center;
+  will-change: transform;
   box-shadow: var(--shadow);
   border-radius: .6rem;
   user-select: none;
+  cursor: pointer;
+  transition: transform var(--flip-ms) var(--ease);
 }
-.t-card[aria-disabled="true"]{ cursor: default; }
 
-/* Subtle fan within piles */
-.t-card[data-pile="draw"]{ 
-  left: calc(var(--pile-pad) + (var(--i,0) * var(--pile-gap)));
-  top:  calc(var(--pile-pad) + (var(--i,0) * var(--pile-gap)));
+/* stagger within piles (logical layout; motion handled by FLIP in JS) */
+.t-card[data-pile="draw"]{
+  inset: auto;
+  top: calc(var(--pile-pad) + (var(--i,0)*var(--pile-gap)));
+  left: calc(var(--pile-pad) + (var(--i,0)*var(--pile-gap)));
 }
 .t-card[data-pile="discard"]{
-  left: calc(var(--pile-pad) + (var(--i,0) * var(--pile-gap)));
-  top:  calc(var(--pile-pad) + (var(--i,0) * var(--pile-gap)));
+  inset: auto;
+  top: calc(var(--pile-pad) + (var(--i,0)*var(--pile-gap)));
+  left: calc(var(--pile-pad) + (var(--i,0)*var(--pile-gap)));
 }
+
+.t-card[aria-disabled="true"]{ cursor: default; }
+.t-card.is-top{ box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.5); }
 
 /* Faces */
 .t-face{
@@ -87,39 +92,29 @@
   background: #fff;
   border: 1px solid #c9c4b2;
 }
-
-/* Default “front” content look (you can style inside HTML as you like) */
 .t-front > .t-content{
   padding: 1rem;
   height: 100%;
   overflow: auto;
-  font: 400 0.95rem/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+  font: 400 0.95rem/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
 }
 
-/* States */
-.t-card.is-flipped{ transform: translateZ(0) rotateY(180deg); }
-.t-card.is-top{ box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.5); }
+/* Flip/active states */
+.t-card.is-flipped{ transform: rotateY(180deg) scale(var(--scale-active)); }
+.t-card.is-armed:not(.is-flipped){ transform: scale(var(--scale-active)); }
 
-/* Enter/leave motion helpers */
-.t-card.fly-right{ transition: transform var(--slide-ms) var(--easing), left var(--slide-ms) var(--easing), top var(--slide-ms) var(--easing); transform: translateX(40%) rotateZ(6deg); }
-.t-card.fly-left{  transition: transform var(--slide-ms) var(--easing), left var(--slide-ms) var(--easing), top var(--slide-ms) var(--easing); transform: translateX(-40%) rotateZ(-6deg); }
-
-/* Shuffle animation: cards hop up then arc */
+/* Shuffle wiggle */
 @keyframes pile-shuffle{
-  0%   { transform: translateY(0) rotateZ(0); }
-  40%  { transform: translateY(-10%) rotateZ(4deg); }
-  100% { transform: translateY(0) rotateZ(0); }
+  0%{ transform: translateY(0) rotateZ(0); }
+  40%{ transform: translateY(-10%) rotateZ(4deg); }
+  100%{ transform: translateY(0) rotateZ(0); }
 }
-.t-card.shuffle{
-  animation: pile-shuffle var(--shuffle-ms) var(--easing) both;
-}
+.t-card.shuffle{ animation: pile-shuffle var(--shuffle-ms) var(--ease) both; }
 
-/* Reduced motion */
+/* Reduce motion */
 @media (prefers-reduced-motion: reduce){
-  .t-card, .t-card.shuffle{ transition: none; animation: none; }
+  .t-card{ transition: none !important; }
+  .t-card.shuffle{ animation: none !important; }
 }
 
-/* Tiny helper: center the table when Code Block is very wide */
-.tarot-stack.center{
-  justify-items: center;
-}
+.tarot-stack.center{ justify-items: center; }
