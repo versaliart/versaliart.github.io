@@ -4,11 +4,11 @@
     <div class="t-pile" data-role="discard"></div>
   </div>
 
-  <template class="t-def" data-back="https://.../back1.jpg">
+  <template class="t-def" data-back="https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/094958d4-08c8-4c15-aaed-6051e27ca4cd/MMcard2small.jpg">
     <p>Front of card 1</p>
   </template>
 
-  <template class="t-def" data-back="https://.../back2.jpg">
+  <template class="t-def" data-back="https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/094958d4-08c8-4c15-aaed-6051e27ca4cd/MMcard2small.jpg">
     <p>Front of card 2</p>
   </template>
 </div>
