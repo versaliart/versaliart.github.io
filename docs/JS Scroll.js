@@ -1,4 +1,4 @@
-/*! snap-scroll.js v1.4.1 — single snap line at marked section bottom; absolute crossing detection + seeded first down */
+/*! snap-scroll.js v1.4.3 — single snap line at marked section bottom; absolute crossing + seeded first down + immediate up after down */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -41,7 +41,8 @@
         downTravel:0,
         lastViewBottomAbs: null,
         lastViewTopAbs:    null,
-        seededDown: false
+        seededDown: false,   // allow first DOWN crossing when snapline is already visible
+        seededUp:   false    // NEW: allow immediate UP after a DOWN snap
       };
     }).filter(Boolean);
     if (!ctrls.length) return;
@@ -57,8 +58,16 @@
       ctrl.lock = true; globalLock = true;
       scrollToSectionTop(target, ctrl.opts.offsetTop);
       log(ctrl, "snap ->", reason, target);
+
+      // reset intent accumulators
       ctrl.upTravel = ctrl.downTravel = 0;
+
+      // After snapping DOWN to the next section, prime UP so the first upward nudge can snap immediately
+      ctrl.seededUp = (target === ctrl.next);
+
+      // Consumed after use
       ctrl.seededDown = false;
+
       clearTimeout(ctrl.lockTimer);
       ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; globalLock = false; }, ctrl.opts.duration);
     }
@@ -116,21 +125,29 @@
             ctrl.lastViewBottomAbs < (lineAbs - EPS) &&
             viewBottomAbs      >= (lineAbs - EPS)) {
           snap(ctrl, ctrl.next, "down/cross-abs-bottom");
+          // keep last edges current
           ctrl.lastViewBottomAbs = viewBottomAbs;
           ctrl.lastViewTopAbs    = viewTopAbs;
-          ctrl.seededDown = false;
+          // after DOWN, allow immediate UP
+          ctrl.seededUp = true;
           return;
         }
 
         // ----- UP: crossing when content top passes the line (header-aware) -----
-        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
-            dir === -1 &&
+        // If seededUp is true (we just snapped DOWN), ignore the "prev > threshold" check and intent.
+        var crossedUp =
+          (ctrl.seededUp && (viewTopAbs <= (lineAbs + EPS))) ||
+          (!ctrl.seededUp &&
             ctrl.upTravel >= intent &&
             ctrl.lastViewTopAbs > (lineAbs + EPS) &&
-            viewTopAbs     <= (lineAbs + EPS)) {
+            viewTopAbs     <= (lineAbs + EPS));
+
+        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
+            dir === -1 && crossedUp) {
           snap(ctrl, ctrl.section, "up/cross-abs-top");
           ctrl.lastViewBottomAbs = viewBottomAbs;
           ctrl.lastViewTopAbs    = viewTopAbs;
+          ctrl.seededUp = false; // consume the seed
           return;
         }
 
@@ -144,11 +161,11 @@
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", function(){
       lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; });
+      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; });
     }, { passive: true });
     document.addEventListener("visibilitychange", function(){
       lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; });
+      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; });
     });
   });
 })();
