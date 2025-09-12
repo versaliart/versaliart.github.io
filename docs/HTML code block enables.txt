@@ -38,8 +38,8 @@ Opt-out only a section: drop a tiny Code Block inside that section:
   data-direction="both"
   data-offset-top="0"
   data-duration="900"
-  data-epsilon="1"
-  data-intent-px="20"
-  data-debug="false"
+  data-epsilon="2"
+  data-intent-px="16"
+  data-debug="true"
   style="display:none"
 ></div>

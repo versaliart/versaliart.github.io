@@ -1,4 +1,4 @@
-/*! snap-scroll.js v1.3.1 — single snap line at marked section bottom with seeded first-tick for short sections */
+/*! snap-scroll.js v1.4.0 — single snap line at marked section bottom; absolute crossing detection */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -22,11 +22,11 @@
       var section = getSection(marker);
       if (!section) return null;
       var opts = {
-        direction: (marker.dataset.direction || "both").toLowerCase(),
+        direction: (marker.dataset.direction || "both").toLowerCase(), // "down" | "up" | "both"
         offsetTop: clamp(parseInt(marker.dataset.offsetTop || "0", 10) || 0, 0, 1000),
         duration : clamp(parseInt(marker.dataset.duration  || "900", 10) || 900, 200, 4000),
-        epsilon  : clamp(parseInt(marker.dataset.epsilon   || "1",  10) || 1, 0, 20),
-        intentPx : clamp(parseInt(marker.dataset.intentPx  || "20", 10) || 20, 4, 200),
+        epsilon  : clamp(parseInt(marker.dataset.epsilon   || "2",  10) || 2, 0, 20),
+        intentPx : clamp(parseInt(marker.dataset.intentPx  || "16", 10) || 16, 4, 200),
         debug    : String(marker.dataset.debug || "false") === "true"
       };
       return {
@@ -35,10 +35,12 @@
         opts,
         lock:false,
         lockTimer:null,
+        // state
         lastDir:0,
         upTravel:0,
         downTravel:0,
-        lastLineY: null
+        lastViewBottomAbs: null,  // previous absolute viewport bottom (y + innerHeight)
+        lastViewTopAbs:    null   // previous absolute viewport "content top" (y + offsetTop)
       };
     }).filter(Boolean);
     if (!ctrls.length) return;
@@ -63,22 +65,24 @@
       ticking = false;
 
       var y = window.scrollY || 0;
-      var dir = y > lastY ? 1 : (y < lastY ? -1 : 0);
+      var dir = y > lastY ? 1 : (y < lastY ? -1 : 0); // 1=down, -1=up
       var dy  = Math.abs(y - lastY);
       lastY = y;
       if (dir === 0) return;
 
       var vh = window.innerHeight;
-
-      ctrls.some(function (ctrl) {
-        if (!ctrl || ctrl.lock || globalLock) return false;
+      var viewBottomAbs = y + vh;                 // absolute Y of viewport bottom
+      // header-aware top edge (content start)
+      ctrls.forEach(function (ctrl) {
+        if (!ctrl || ctrl.lock || globalLock) return;
 
         var rect = ctrl.section.getBoundingClientRect();
-        var EPS   = ctrl.opts.epsilon;
-        var off   = ctrl.opts.offsetTop;
-        var intent= ctrl.opts.intentPx;
+        var lineAbs = (rect.top + y) + rect.height; // absolute Y of snap line (section bottom)
+        var EPS     = ctrl.opts.epsilon;
+        var viewTopAbs = y + ctrl.opts.offsetTop;   // absolute Y of content top (after sticky header)
+        var intent  = ctrl.opts.intentPx;
 
-        // direction travel (intent)
+        // track intent
         if (dir !== ctrl.lastDir) {
           ctrl.upTravel = ctrl.downTravel = 0;
           ctrl.lastDir = dir;
@@ -86,45 +90,55 @@
         if (dir === 1) ctrl.downTravel += dy;
         else if (dir === -1) ctrl.upTravel += dy;
 
-        // single snap line (section bottom)
-        var vhBottom = vh - EPS;
-        // --- seed previous line position on first tick (handles short sections) ---
-        if (ctrl.lastLineY == null) {
-          ctrl.lastLineY = (rect.bottom <= vhBottom) ? (vhBottom + 1) : rect.bottom;
+        // ---- Seed previous viewport edges on first tick (handles short first sections) ----
+        if (ctrl.lastViewBottomAbs == null) {
+          // if already at/over the line, seed just "before" so the first down move is a crossing
+          ctrl.lastViewBottomAbs = (viewBottomAbs >= lineAbs - EPS) ? (lineAbs - EPS - 1) : viewBottomAbs;
+        }
+        if (ctrl.lastViewTopAbs == null) {
+          // if already above the line, seed just "after" so the first up move is a crossing
+          ctrl.lastViewTopAbs = (viewTopAbs <= lineAbs + EPS) ? (lineAbs + EPS + 1) : viewTopAbs;
         }
 
-        var lineY = rect.bottom;
-        var prev  = ctrl.lastLineY;
-
-        // DOWN: crossing viewport bottom
+        // ---------- DOWN: crossing when viewport bottom passes the line ----------
         if ((ctrl.opts.direction === "down" || ctrl.opts.direction === "both") &&
             dir === 1 && ctrl.next &&
             ctrl.downTravel >= intent &&
-            prev > vhBottom && lineY <= vhBottom) {
-          snap(ctrl, ctrl.next, "down/cross-bottom-line");
-          ctrl.lastLineY = lineY;
-          return true;
+            ctrl.lastViewBottomAbs < (lineAbs - EPS) &&
+            viewBottomAbs      >= (lineAbs - EPS)) {
+          snap(ctrl, ctrl.next, "down/cross-abs-bottom");
+          ctrl.lastViewBottomAbs = viewBottomAbs;
+          ctrl.lastViewTopAbs    = viewTopAbs;
+          return;
         }
 
-        // UP: crossing top content edge (header-aware)
-        var topThreshold = off + EPS;
+        // ---------- UP: crossing when content top passes the line (header-aware) ----------
         if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
             dir === -1 &&
             ctrl.upTravel >= intent &&
-            prev < topThreshold && lineY >= topThreshold) {
-          snap(ctrl, ctrl.section, "up/cross-top-line");
-          ctrl.lastLineY = lineY;
-          return true;
+            ctrl.lastViewTopAbs > (lineAbs + EPS) &&
+            viewTopAbs     <= (lineAbs + EPS)) {
+          snap(ctrl, ctrl.section, "up/cross-abs-top");
+          ctrl.lastViewBottomAbs = viewBottomAbs;
+          ctrl.lastViewTopAbs    = viewTopAbs;
+          return;
         }
 
-        ctrl.lastLineY = lineY;
-        return false;
+        // store for next tick
+        ctrl.lastViewBottomAbs = viewBottomAbs;
+        ctrl.lastViewTopAbs    = viewTopAbs;
       });
     }
 
     function onScroll(){ if (!ticking) { ticking = true; requestAnimationFrame(onScrollTick); } }
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", function(){ lastY = window.scrollY || 0; ctrls.forEach(c=>{ c.lastLineY = null; }); }, { passive: true });
-    document.addEventListener("visibilitychange", function(){ lastY = window.scrollY || 0; ctrls.forEach(c=>{ c.lastLineY = null; }); });
+    window.addEventListener("resize", function(){
+      lastY = window.scrollY || 0;
+      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; });
+    }, { passive: true });
+    document.addEventListener("visibilitychange", function(){
+      lastY = window.scrollY || 0;
+      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; });
+    });
   });
 })();
