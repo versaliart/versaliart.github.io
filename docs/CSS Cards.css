@@ -1,81 +1,79 @@
-/* tarot-stack.css v1.4 — fix centering; split flip/move; smooth FLIP; 80% pile size, 100% overlay on flip */
+/* tarot-piles.css v1.5 — example-faithful flip + smooth move-to-discard */
+
 .tarot-stack{
-  /* Motion */
+  --card-w: 260px;             /* base size (fits both piles) */
+  --card-ratio: 1.38;          /* height = ratio * width  (≈ 3.6:2.6) */
+  --card-h: calc(var(--card-w) * var(--card-ratio));
+  --pile-gap: .14rem;          /* tiny stagger in each pile */
+  --table-gap: 2rem;
+  --corner: .6rem;
+
+  /* motion */
   --flip-ms: 600ms;
   --move-ms: 520ms;
-  --shuffle-ms: 700ms;
   --ease: cubic-bezier(.2,.7,.2,1);
 
-  /* Computed by JS */
-  --card-w: 320px;          /* fallback */
-  --card-h: 440px;          /* fallback */
-  --pile-gap: .14rem;
-  --pile-radius: .75rem;
-  --table-gap: 2rem;
-
   position: relative;
   width: 100%;
-  min-height: 22rem; /* ensures we have height to compute from */
   display: grid;
-  align-items: center;
   justify-content: center;
 }
-.tarot-stack[data-compact="true"]{ --table-gap: 1rem; }
-
 .tarot-table{
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  gap: var(--table-gap);
-  width: 100%;
-  height: 100%;
-}
-
-/* Pile “wells” */
-.t-pile{
   position: relative;
   width: 100%;
-  height: 100%;
-  border-radius: var(--pile-radius);
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--table-gap);
+  align-items: center;
+  padding: .5rem;
+}
+
+/* Pile “wells” share the same positioning context so FLIP math is stable */
+.t-pile{
+  position: relative;
+  height: calc(var(--card-h) + 1.5rem);
+  border-radius: .75rem;
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.06));
   box-shadow: inset 0 0 .25rem rgba(0,0,0,.15);
 }
 
-/* Card container: this element moves & resizes (FLIP). No rotation here. */
+/* ---------- Card anatomy (movement on .t-card, rotation on .t-flip, scale on .t-scale) */
 .t-card{
   position: absolute;
-  left: 50%;
-  top: 50%;
+  left: 1rem; top: 1rem;        /* initial; JS sets left/top via FLIP on reparent */
   width: var(--card-w);
   height: var(--card-h);
-  transform: translate(-50%, -50%);  /* center in pile */
-  will-change: transform, width, height;
-  border-radius: .6rem;
-  user-select: none;
-  cursor: pointer;
+  will-change: transform, left, top, width, height;
+  border-radius: var(--corner);
   box-shadow: 0 .25rem .7rem rgba(0,0,0,.35);
+  cursor: pointer;
 }
 
-/* Inner wrapper: this rotates for flipping, kept separate from movement */
-.t-wrap{
+/* scale wrapper (slight growth when “active front”) */
+.t-scale{
   position: absolute; inset: 0;
+  transition: transform var(--flip-ms) var(--ease);
+  transform-origin: center center;
+}
+.t-scale.is-active{ transform: scale(1.12); }
+
+/* flipper (3D rotate) */
+.t-flip{
+  position: absolute; inset: 0;
+  perspective: 1000px;
   transform-style: preserve-3d;
   transform-origin: center center;
   transition: transform var(--flip-ms) var(--ease);
 }
+.t-flip.is-flipped{ transform: rotateY(180deg); }
 
-/* Fan within piles via a tiny z-rotation on the wrapper (not the mover) */
-.t-card[data-pile="draw"] .t-wrap{    transform: rotateZ(calc(var(--rz, 0deg))); }
-.t-card[data-pile="discard"] .t-wrap{ transform: rotateZ(calc(var(--rz, 0deg))); }
-
-.t-card[aria-disabled="true"]{ cursor: default; }
-.t-card.is-top{ box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.5); }
-
-/* Faces */
+/* faces */
 .t-face{
   position: absolute; inset: 0;
+  border-radius: var(--corner);
   backface-visibility: hidden;
-  border-radius: inherit;
   overflow: hidden;
 }
 .t-back{
@@ -84,39 +82,37 @@
   background-repeat: no-repeat;
   background-color: #F7F4EC;
   border: 1px solid #726A53;
+  transform: translateZ(0.1px);    /* prevent thin seam on some GPUs */
 }
 .t-front{
-  transform: rotateY(180deg);
   background: #fff;
   border: 1px solid #c9c4b2;
+  transform: rotateY(180deg);
 }
 .t-front > .t-content{
-  padding: 1rem;
   height: 100%;
   overflow: auto;
-  font: 400 0.95rem/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+  padding: 1rem;
+  font: 400 .95rem/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
 }
 
-/* Flip state lives on the wrapper */
-.t-wrap.is-flipped{ transform: rotateY(180deg) rotateZ(var(--rz, 0deg)); }
+/* tiny visual fan in piles (applied to .t-scale so it doesn’t fight movement/flip) */
+.t-card .t-scale{ transform: rotateZ(var(--fan, 0deg)); }
+.t-card .t-scale.is-active{ transform: rotateZ(var(--fan, 0deg)) scale(1.12); }
 
-/* Expanded overlay (first click): container grows to full block size */
-.t-card.is-expanded{
-  width: 100%;
-  height: 100%;
-  z-index: 999; /* above wells */
-}
+/* accessibility / focus */
+.t-card[aria-disabled="true"]{ cursor: default; }
+.t-card.is-top{ box-shadow: 0 .6rem 1.2rem rgba(0,0,0,.5); }
 
-/* Shuffle wiggle */
+/* shuffle wiggle (on .t-flip so it doesn’t affect reflow) */
 @keyframes pile-shuffle{
-  0%{ transform: translateY(0) rotateZ(0); }
-  40%{ transform: translateY(-10%) rotateZ(4deg); }
-  100%{ transform: translateY(0) rotateZ(0); }
+  0%{ transform: rotateY(0) translateY(0) rotateZ(0); }
+  40%{ transform: rotateY(0) translateY(-8%) rotateZ(4deg); }
+  100%{ transform: rotateY(0) translateY(0) rotateZ(0); }
 }
-.t-card.shuffle .t-wrap{ animation: pile-shuffle var(--shuffle-ms) var(--ease) both; }
+.t-flip.shuffle{ animation: pile-shuffle 700ms var(--ease) both; }
 
-/* Reduced motion */
+/* reduced motion */
 @media (prefers-reduced-motion: reduce){
-  .t-wrap{ transition: none !important; }
-  .t-card.shuffle .t-wrap{ animation: none !important; }
+  .t-scale, .t-flip{ transition: none !important; animation: none !important; }
 }

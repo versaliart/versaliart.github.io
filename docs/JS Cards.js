@@ -1,12 +1,12 @@
-/* tarot-stack.js v1.4 — fix flip/move conflict; FLIP on container, rotate on inner wrap; 80% sizing; move-while-flip */
+/* tarot-piles.js v1.5 — mirrors example behavior; multiple cards; flip-in-place; flip-while-moving-to-discard */
+
 (function(){
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-  const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
-  // FLIP on the moving container (t-card); rotation stays on inner .t-wrap
-  function flipMove(el, mutate, durVar='--move-ms'){
+  // FLIP for position+size change on the moving container (.t-card)
+  function flip(el, mutate, dur='520ms', ease='cubic-bezier(.2,.7,.2,1)'){
     const first = el.getBoundingClientRect();
-    mutate();
+    mutate(); // reparent, change size/left/top, etc.
     const last  = el.getBoundingClientRect();
 
     const dx = first.left - last.left;
@@ -15,94 +15,69 @@
     const sy = first.height / last.height;
 
     el.style.transition = 'none';
+    el.style.transformOrigin = 'center center';
     el.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-    el.offsetHeight; // reflow
-    el.style.transition = `transform var(${durVar}) var(--ease)`;
+    el.offsetHeight; // force reflow
+    el.style.transition = `transform ${dur} ${ease}`;
     el.style.transform = '';
   }
 
-  // Compute card size:
-  // - two columns (each ~50% width of root)
-  // - card width = 80% of column width
-  // - card height = min( 80% of root height, width * aspect )
-  function sizeFor(root){
-    const ratio = parseFloat(root.getAttribute('data-ratio')) || 1.38; // H/W
-    const rect  = root.getBoundingClientRect();
-    const cw = Math.max(1, rect.width);
-    const ch = Math.max(1, rect.height);
-
-    const colW = cw / 2;
-    const wConstraint = colW * 0.8;
-    const hConstraint = ch * 0.8;
-
-    let w = wConstraint;
-    let h = w * ratio;
-    if (h > hConstraint){
-      h = hConstraint;
-      w = h / ratio;
-    }
-    w = Math.floor(w);
-    h = Math.floor(h);
-
-    root.style.setProperty('--card-w', w + 'px');
-    root.style.setProperty('--card-h', h + 'px');
-  }
-
-  class TarotStack {
+  class Tarot {
     constructor(root){
       this.root = root;
-      this.drawPile = root.querySelector('[data-role="draw"]');
-      this.discardPile = root.querySelector('[data-role="discard"]');
+      this.draw  = root.querySelector('[data-role="draw"]');
+      this.disc  = root.querySelector('[data-role="discard"]');
 
+      // Build cards from templates (unique backs supported)
       const defs = $$('.t-def', root);
       const frag = document.createDocumentFragment();
       this.cards = [];
 
-      defs.forEach((def, idx)=>{
-        const card = this._makeCard(def, idx);
-        frag.appendChild(card);
-        this.cards.push(card);
+      defs.forEach((def, i)=>{
+        const c = this._makeCard(def, i);
+        frag.appendChild(c);
+        this.cards.push(c);
       });
-      this.drawPile.appendChild(frag);
+      this.draw.appendChild(frag);
 
-      sizeFor(this.root);
       this._layoutAll();
       this._updateTop();
-
       this._bind();
-
-      // keep sizing responsive
-      const ro = new ResizeObserver(()=> sizeFor(this.root));
-      ro.observe(this.root);
-      this._ro = ro;
     }
 
-    _makeCard(def, idx){
-      const back = def.getAttribute('data-back') || '';
+    _makeCard(def, i){
+      const backURL = def.getAttribute('data-back') || '';
       const card = document.createElement('div');
       card.className = 't-card';
-      card.dataset.index = String(idx);
-      card.dataset.pile  = 'draw';
+      card.dataset.pile = 'draw';
       card.setAttribute('role','button');
       card.setAttribute('aria-pressed','false');
 
-      const wrap = document.createElement('div');
-      wrap.className = 't-wrap';
-      wrap.style.setProperty('--rz', `${(idx % 7 - 3) * 0.3}deg`);
+      // movement left/top: stagger in each pile
+      card.style.left = `calc(1rem + ${i} * var(--pile-gap))`;
+      card.style.top  = `calc(1rem + ${i} * var(--pile-gap))`;
 
-      const backEl = document.createElement('div');
-      backEl.className = 't-face t-back';
-      backEl.style.backgroundImage = back ? `url("${back}")` : 'none';
+      const scale = document.createElement('div');
+      scale.className = 't-scale';
+      scale.style.setProperty('--fan', `${(i % 7 - 3) * 0.3}deg`);
 
-      const frontEl = document.createElement('div');
-      frontEl.className = 't-face t-front';
+      const flipWrap = document.createElement('div');
+      flipWrap.className = 't-flip';
+
+      const back = document.createElement('div');
+      back.className = 't-face t-back';
+      if (backURL) back.style.backgroundImage = `url("${backURL}")`;
+
+      const front = document.createElement('div');
+      front.className = 't-face t-front';
       const content = document.createElement('div');
       content.className = 't-content';
       content.innerHTML = def.innerHTML || '';
-      frontEl.appendChild(content);
+      front.appendChild(content);
 
-      wrap.append(backEl, frontEl);
-      card.appendChild(wrap);
+      flipWrap.append(back, front);
+      scale.appendChild(flipWrap);
+      card.appendChild(scale);
       return card;
     }
 
@@ -111,37 +86,39 @@
         const card = e.target.closest('.t-card');
         if (!card) return;
 
-        const top = this._topOf('draw');
-        const wrap = card.querySelector('.t-wrap');
-        const expanded = card.classList.contains('is-expanded');
+        const top = this._top(this.draw);
+        const flipWrap = card.querySelector('.t-flip');
+        const scaler   = card.querySelector('.t-scale');
 
-        // Only top card in draw pile OR the expanded card is interactive
-        if (!expanded && card !== top) return;
-        if (card.getAttribute('aria-disabled') === 'true') return;
+        // Only the top draw card is interactive (or ignore clicks in discard)
+        if (card.dataset.pile !== 'draw' || card !== top) return;
 
-        if (!wrap.classList.contains('is-flipped') && !expanded){
-          // 1) Expand to full block (FLIP), 2) then flip to front (wrapper)
-          flipMove(card, ()=> card.classList.add('is-expanded'));
-          wrap.classList.add('is-flipped');
+        const isFront = flipWrap.classList.contains('is-flipped') === false;
+
+        if (isFront){
+          // FIRST CLICK: flip to front in place + slight scale (like example)
+          scaler.classList.add('is-active');
+          flipWrap.classList.add('is-flipped');
           card.setAttribute('aria-pressed','true');
-          card.style.zIndex = 999;
+          // keep it visually top-most
+          card.style.zIndex = 300 + $$('.t-card', this.draw).length;
         } else {
-          // Flip back WHILE flying to discard:
-          // - start wrapper unflip immediately
-          // - in the same frame, shrink + reparent the mover via FLIP
-          flipMove(card, ()=>{
-            wrap.classList.remove('is-flipped');
-            card.classList.remove('is-expanded');
-            card.setAttribute('aria-disabled','true');
-            this.discardPile.appendChild(card);
+          // SECOND CLICK: unflip WHILE flying to discard (single FLIP)
+          // Rotation happens on .t-flip; movement on .t-card. Apply both together.
+          flipWrap.classList.remove('is-flipped');
+          scaler.classList.remove('is-active');
+
+          flip(card, ()=>{
+            // reparent to discard and restagger
+            this.disc.appendChild(card);
             card.dataset.pile = 'discard';
-            this._layoutPile('discard');
-          });
+            this._restagger(this.disc);
+          }, getComputedStyle(this.root).getPropertyValue('--move-ms').trim(), getComputedStyle(this.root).getPropertyValue('--ease').trim());
 
           const onDone = () => {
             card.removeEventListener('transitionend', onDone);
-            card.style.zIndex = 100 + $$('.t-card', this.discardPile).length;
-            this._layoutAll();
+            card.setAttribute('aria-pressed','false');
+            card.setAttribute('aria-disabled','true'); // discard is inert
             this._updateTop();
             this._maybeShuffle();
           };
@@ -151,54 +128,54 @@
     }
 
     _maybeShuffle(){
-      if (this.drawPile.querySelector('.t-card')) return;
-      const cards = $$('.t-card', this.discardPile);
-      cards.forEach((c,i)=> c.classList.add('shuffle'));
+      if (this.draw.querySelector('.t-card')) return;
+
+      const cards = $$('.t-card', this.disc);
+      // wiggle for feedback
+      cards.forEach((c,i)=> c.querySelector('.t-flip').classList.add('shuffle'));
 
       setTimeout(()=>{
+        // randomize order
         const shuffled = cards.sort(()=>Math.random() - 0.5);
-        shuffled.forEach(c=>{
-          c.classList.remove('shuffle');
-          c.querySelector('.t-wrap').classList.remove('is-flipped');
-          c.classList.remove('is-expanded');
+        shuffled.forEach((c,i)=>{
+          const wrap = c.querySelector('.t-flip');
+          wrap.classList.remove('shuffle', 'is-flipped');
+          c.querySelector('.t-scale').classList.remove('is-active');
           c.setAttribute('aria-disabled','false');
-          c.setAttribute('aria-pressed','false');
 
-          flipMove(c, ()=>{
-            this.drawPile.appendChild(c);
+          flip(c, ()=>{
+            this.draw.appendChild(c);
             c.dataset.pile = 'draw';
-            this._layoutPile('draw');
-          });
+            this._restagger(this.draw);
+          }, getComputedStyle(this.root).getPropertyValue('--move-ms').trim(), getComputedStyle(this.root).getPropertyValue('--ease').trim());
         });
 
-        requestAnimationFrame(()=>{ this._layoutAll(); this._updateTop(); });
+        requestAnimationFrame(()=> this._updateTop());
       }, 220);
     }
 
-    _topOf(which){
-      const parent = which === 'draw' ? this.drawPile : this.discardPile;
-      const cards = $$('.t-card', parent);
-      return cards[cards.length - 1] || null;
-    }
+    _top(container){ const list = $$('.t-card', container); return list[list.length-1] || null; }
 
     _updateTop(){
-      $$('.t-card', this.drawPile).forEach(c=>c.classList.remove('is-top'));
-      const top = this._topOf('draw');
-      if (top) top.classList.add('is-top');
+      $$('.t-card', this.draw).forEach(c=>c.classList.remove('is-top'));
+      const t = this._top(this.draw);
+      if (t) t.classList.add('is-top');
     }
 
-    _layoutPile(which){
-      const parent = which === 'draw' ? this.drawPile : this.discardPile;
-      $$('.t-card', parent).forEach((c,i)=>{
-        c.style.setProperty('--i', i);
-        const wrap = c.querySelector('.t-wrap');
-        wrap && wrap.style.setProperty('--rz', `${(i % 7 - 3) * 0.3}deg`);
+    _restagger(container){
+      $$('.t-card', container).forEach((c,i)=>{
+        c.style.left = `calc(1rem + ${i} * var(--pile-gap))`;
+        c.style.top  = `calc(1rem + ${i} * var(--pile-gap))`;
+        c.querySelector('.t-scale').style.setProperty('--fan', `${(i % 7 - 3) * 0.3}deg`);
+        c.style.zIndex = 100 + i;
       });
     }
-    _layoutAll(){ this._layoutPile('draw'); this._layoutPile('discard'); }
+
+    _layoutAll(){ this._restagger(this.draw); this._restagger(this.disc); }
   }
 
-  const initAll = () => $$('.tarot-stack').forEach(root => new TarotStack(root));
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAll);
-  else initAll();
+  // auto-init
+  const init = () => $$('.tarot-stack').forEach(node => new Tarot(node));
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
