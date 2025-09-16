@@ -6,7 +6,7 @@
   --flip-duration: .6s;
   --move-duration: .5s;
   --perspective: 80rem;
-  --gap: 3rem;              /* space between piles */
+  --gap: 2rem;              /* space between piles */
   --pile-pad: 1rem;         /* breathing room inside each half */
   --flip-scale: 1.15;       /* slight grow while front is shown */
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);

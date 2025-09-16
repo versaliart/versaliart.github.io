@@ -68,7 +68,7 @@ whenSelector('[data-snap-scroll]', function () {
     .catch(err => console.warn('[Loader] SnapScroll failed', err)); 
 });
 
-  whenSelector(".tarot-stack", function () {
+  whenSelector(".card-table", function () {
     loadScript("https://versaliart.github.io/JS%20Cards.js")
       .then(()=>console.log("[Loader] TarotStack loaded"))
       .catch(console.warn);
