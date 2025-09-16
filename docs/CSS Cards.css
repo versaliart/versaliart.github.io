@@ -8,7 +8,7 @@
   --perspective: 80rem;
   --gap: 2rem;              /* space between piles */
   --pile-pad: 1rem;         /* breathing room inside each half */
-  --flip-scale: 1.15;       /* slight grow while front is shown */
+  --flip-scale: 1.25;       /* slight grow while front is shown */
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
   --shadow-strong: 0 .6rem 1.6rem rgba(0,0,0,.35);
 }
@@ -102,7 +102,25 @@
   cursor: default;
 }
 
+/* Make the grid gap take effect reliably */
+.sqs-block-code .sqs-block-content .card-table{
+  gap: var(--gap) !important;         /* row + column gap */
+  column-gap: var(--gap) !important;  /* belt + suspenders */
+  justify-content: center;            /* keep the two tracks centered */
+  height: 100%;
+  min-height: unset;                  /* we’ll derive from the block height */
+  padding-block: 0;                   /* optional: remove extra air */
+}
+
+/* Let piles size to a sensible max so the gap is visible */
+.card-table .pile{
+  width: clamp(14rem, 42%, 28rem);    /* was min(90%, 28rem) */
+    height: calc(100% - 2 * var(--pile-pad));
+}
+
+
 /* motion safety */
 @media (prefers-reduced-motion: reduce){
   .card .flipper{ transition: none; }
 }
+
