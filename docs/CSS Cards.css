@@ -1,49 +1,68 @@
-/* ---------- Configurable variables ---------- */
+<style>
+/* ===========================
+   Card Draw/Discard — CSS
+   =========================== */
+
+/* Configure once here */
 .card-table{
-  --card-w: 9rem;          /* base size of a card back */
-  --card-h: 16rem;
+  --card-w: 12rem;           /* back size */
+  --card-h: 16.5rem;
   --radius: .6rem;
   --flip-duration: .6s;
   --move-duration: .5s;
   --perspective: 80rem;
-  --gap: 2rem;              /* space between piles */
-  --pile-pad: 1rem;         /* breathing room inside each half */
-  --flip-scale: 1.25;       /* slight grow while front is shown */
+  --gap: 3rem;               /* space between piles */
+  --pile-pad: 1rem;          /* inner breathing room */
+  --flip-scale: 1.15;        /* slight grow while flipped */
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
   --shadow-strong: 0 .6rem 1.6rem rgba(0,0,0,.35);
 }
 
-/* ---------- Layout ---------- */
+/* Layout for the two piles */
 .card-table{
   position: relative;
   width: 100%;
-  min-height: calc(var(--card-h) * 1.6);
+  height: 100%;                     /* fill the FE block vertically */
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
   align-items: center;
   justify-items: center;
+  gap: var(--gap);
 }
 
+/* FE sometimes ignores gap; enforce it with extra specificity */
+.sqs-block-code .sqs-block-content .card-table{
+  gap: var(--gap) !important;
+  column-gap: var(--gap) !important;
+  row-gap: var(--gap) !important;
+}
+
+/* Each pile */
 .pile{
   position: relative;
-  width: min(90%, 28rem);
-  height: min(90%, calc(var(--card-h) * 1.1));
+  width: clamp(14rem, 42%, 28rem);
+  height: calc(100% - 2 * var(--pile-pad));
   padding: var(--pile-pad);
   box-sizing: border-box;
   perspective: var(--perspective);
   border-radius: .75rem;
-  /* faint frame so users see the two halves even when empty */
-  outline: 1px dashed rgba(0,0,0,.1);
-  outline-offset: .25rem;
+  outline: 1px dashed rgba(0,0,0,.15);
+  outline-offset: .4rem;
 }
 
-/* ---------- Card 3D structure ---------- */
+/* Hide the seed container */
+.cards-seed{ display:none; }
+
+/* --- Card 3D structure --- */
 .card{
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
+  top: 50%;
+  left: 50%;
+  /* Baseline centering — do not remove */
+  transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+  transform-origin: center center;
   transform-style: preserve-3d;
+
   width: var(--card-w);
   height: var(--card-h);
   border-radius: var(--radius);
@@ -53,12 +72,14 @@
   user-select: none;
 }
 
+/* Wrapper that flips */
 .card .flipper{
   position: absolute; inset: 0;
   transform-style: preserve-3d;
   transition: transform var(--flip-duration);
 }
 
+/* Faces */
 .card .face{
   position: absolute; inset: 0;
   border-radius: var(--radius);
@@ -66,11 +87,14 @@
   backface-visibility: hidden;
 }
 
+/* Back (image) */
 .card .back{
   background-size: 102% 102%;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
+/* Front (text card) */
 .card .front{
   transform: rotateY(180deg);
   background: #f7f4ec;
@@ -79,7 +103,6 @@
   place-items: center;
   padding: 1rem;
 }
-
 .card .front .front-content{
   max-width: calc(var(--card-w) * .9);
   max-height: calc(var(--card-h) * .85);
@@ -88,39 +111,20 @@
   font-size: 1rem;
 }
 
+/* Flipped state */
 .card.is-flipped .flipper{
   transform: rotateY(180deg) scale(var(--flip-scale));
   box-shadow: var(--shadow-strong);
 }
 
-/* random-ish small tilt assigned by JS via style="--r:deg" */
-.card{ rotate: var(--r, 0deg); }
-
-/* disable clicks when discarded */
+/* Discarded = no clicks */
 .card.is-discarded{
   pointer-events: none;
   cursor: default;
 }
 
-/* Make the grid gap take effect reliably */
-.sqs-block-code .sqs-block-content .card-table{
-  gap: var(--gap) !important;         /* row + column gap */
-  column-gap: var(--gap) !important;  /* belt + suspenders */
-  justify-content: center;            /* keep the two tracks centered */
-  height: 100%;
-  min-height: unset;                  /* we’ll derive from the block height */
-  padding-block: 0;                   /* optional: remove extra air */
-}
-
-/* Let piles size to a sensible max so the gap is visible */
-.card-table .pile{
-  width: clamp(14rem, 42%, 28rem);    /* was min(90%, 28rem) */
-    height: calc(100% - 2 * var(--pile-pad));
-}
-
-
-/* motion safety */
+/* Motion safety */
 @media (prefers-reduced-motion: reduce){
   .card .flipper{ transition: none; }
 }
-
+</style>

@@ -1,6 +1,7 @@
-/* deck-piles.js — vanilla JS card draw/discard with flip & shuffle
-   Author: ChatGPT for Joshua — 2025-09
-*/
+/* ===========================
+   Card Draw/Discard — JS
+   Vanilla, Squarespace-friendly
+   =========================== */
 (() => {
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
@@ -10,17 +11,18 @@
 
   const drawPile    = $('#drawPile', table);
   const discardPile = $('#discardPile', table);
-  const seed = $('.cards-seed');
+  const seedRoot    = $('.cards-seed');
 
-  // ----- Build card DOM for each seed <article> -----
-  const makeCard = (node, idx) => {
-    const backURL = node.getAttribute('data-back') || '';
-    const textHTML = $('.front-content', node)?.innerHTML || '';
+  /* Build a live card from a seed <article class="card" data-back=…> */
+  const makeCard = (seedNode, idx) => {
+    const backURL  = seedNode.getAttribute('data-back') || '';
+    const textHTML = $('.front-content', seedNode)?.innerHTML || '';
+
     const card = document.createElement('div');
     card.className = 'card';
     card.dataset.index = String(idx);
 
-    // Slight, repeatable tilt
+    // Gentle, repeatable tilt so stacks look organic
     const tilt = ((idx * 37) % 9) - 4; // -4..+4 deg
     card.style.setProperty('--r', tilt + 'deg');
 
@@ -44,100 +46,116 @@
     return card;
   };
 
-  // Move card between piles with FLIP animation
-  const moveCard = (card, toPile, {delay=0}={}) => new Promise(res => {
-    const fromRect = card.getBoundingClientRect();
-    toPile.appendChild(card); // reparent
-    const toRect = card.getBoundingClientRect();
+  /* FLIP technique move: keep baseline translate(-50%,-50%) */
+  const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
+    const from = card.getBoundingClientRect();
+    toPile.appendChild(card); // reparent to new pile
+    const to = card.getBoundingClientRect();
 
-    // FLIP: compute inverse transform then animate to identity
-    const dx = fromRect.left - toRect.left;
-    const dy = fromRect.top  - toRect.top;
+    // use centers to avoid skew from rotation/scale
+    const fromCx = from.left + from.width / 2;
+    const fromCy = from.top  + from.height / 2;
+    const toCx   = to.left   + to.width  / 2;
+    const toCy   = to.top    + to.height / 2;
+
+    const dx = fromCx - toCx;
+    const dy = fromCy - toCy;
+
+    // 1) jump to inverse delta on top of baseline center
     card.style.transition = 'none';
-    card.style.transform = `translate(${dx}px, ${dy}px) rotate(var(--r,0))`;
+    card.style.transform =
+      `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(var(--r,0))`;
     // force reflow
-    card.offsetHeight; // eslint-disable-line no-unused-expressions
+    // eslint-disable-next-line no-unused-expressions
+    card.offsetHeight;
+
+    // 2) animate back to centered baseline
     requestAnimationFrame(() => {
       card.style.transition = `transform var(--move-duration) ease`;
       if (delay) card.style.transitionDelay = `${delay}ms`;
-      card.style.transform = `translate(-50%,-50%) rotate(var(--r,0))`;
+      card.style.transform = `translate(-50%, -50%) rotate(var(--r,0))`;
     });
 
     const done = () => {
       card.style.transition = '';
       card.style.transitionDelay = '';
-      res();
+      resolve();
     };
-    card.addEventListener('transitionend', function onEnd(e){
-      if (e.propertyName === 'transform'){ card.removeEventListener('transitionend', onEnd); done(); }
-    });
+    const onEnd = (e) => {
+      if (e.propertyName === 'transform') {
+        card.removeEventListener('transitionend', onEnd);
+        done();
+      }
+    };
+    card.addEventListener('transitionend', onEnd);
   });
 
-  // Only the top (visually last child) of draw pile is clickable
+  /* Only top card in draw pile is clickable */
   const refreshInteractivity = () => {
-    // disable all
     $$('.card', drawPile).forEach(c => c.style.pointerEvents = 'none');
     const top = $$('.card', drawPile).at(-1);
     if (top) top.style.pointerEvents = '';
   };
 
-  // Clicking logic: first click flips; second click flips back & send to discard
+  /* Click behavior:
+     - First click: flip open.
+     - Second click: flip back, send to discard, disable clicks.
+  */
   const onCardClick = (ev) => {
     const card = ev.currentTarget;
-    // Only act if it's the current top of draw pile
+
+    // only act if this is the top card of the draw pile
     if ($$('.card', drawPile).at(-1) !== card) return;
 
     if (!card.classList.contains('is-flipped')) {
       card.classList.add('is-flipped');
-    } else {
-      // flip back then move to discard
-      const afterFlip = () => {
-        card.removeEventListener('transitionend', afterFlip);
-        card.classList.remove('is-flipped');
-        // Wait one frame so the scale retract begins, feels snappier
-        requestAnimationFrame(async () => {
-          card.classList.add('is-discarded');
-          await moveCard(card, discardPile);
-          refreshInteractivity();
-          maybeReshuffle();
-        });
-      };
-      // If transition already finished (fast click), move immediately
-      card.addEventListener('transitionend', afterFlip);
-      // Trigger the retract if not already doing so
-      card.classList.remove('is-flipped');
+      return;
     }
+
+    // Flip shut then move to discard
+    const afterFlip = () => {
+      card.removeEventListener('transitionend', afterFlip);
+      // wait a frame so the retract starts visually, then move
+      requestAnimationFrame(async () => {
+        card.classList.add('is-discarded');
+        await moveCard(card, discardPile);
+        refreshInteractivity();
+        maybeReshuffle();
+      });
+    };
+
+    // ensure we have a listener even if timing is tight
+    card.addEventListener('transitionend', afterFlip, {once:true});
+    card.classList.remove('is-flipped');
   };
 
-  // Reshuffle: when draw is empty, stream discard -> draw with stagger
+  /* When draw is empty: stream discard -> draw with a small stagger */
   const maybeReshuffle = async () => {
     if ($$('.card', drawPile).length) return;
     const cards = $$('.card', discardPile);
     if (!cards.length) return;
 
-    // Send back one-by-one, last-in first-out feels natural
     const stepDelay = 110; // ms between cards
-    for (let i = cards.length - 1, k = 0; i >= 0; i--, k++){
+    for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
       const card = cards[i];
       card.classList.remove('is-discarded');
-      // fresh tiny tilt so the stack feels shuffled
-      const tilt = (((Date.now()+i)*13) % 9) - 4;
+      // fresh micro-tilt so it feels shuffled
+      const tilt = (((Date.now()+i) * 13) % 9) - 4;
       card.style.setProperty('--r', tilt + 'deg');
       await moveCard(card, drawPile, {delay: k * stepDelay});
     }
     refreshInteractivity();
   };
 
-  // ----- Initialize -----
-  // Seed the draw pile with cards from the hidden .cards-seed block.
-  const cards = $$('.cards-seed .card').map(makeCard);
-  cards.forEach(c => {
+  /* ------ Init from .cards-seed ------ */
+  const seedCards = $$('.cards-seed .card').map(makeCard);
+  seedCards.forEach(c => {
     drawPile.appendChild(c);
     c.addEventListener('click', onCardClick);
   });
   refreshInteractivity();
 
-  // Public helper (optional): programmatically add a card later
+  /* Optional public API */
   window.CardDeckPiles = {
     addCard: ({back, html}) => {
       const stub = document.createElement('article');
@@ -147,7 +165,8 @@
       fc.className = 'front-content';
       fc.innerHTML = html;
       stub.appendChild(fc);
-      const card = makeCard(stub, Date.now()%1000);
+
+      const card = makeCard(stub, Date.now() % 1000);
       drawPile.appendChild(card);
       card.addEventListener('click', onCardClick);
       refreshInteractivity();
