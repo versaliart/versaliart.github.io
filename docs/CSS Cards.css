@@ -1,7 +1,7 @@
 /* ---------- Configurable variables ---------- */
 .card-table{
-  --card-w: 12rem;          /* base size of a card back */
-  --card-h: 16.5rem;
+  --card-w: 9rem;          /* base size of a card back */
+  --card-h: 16rem;
   --radius: .6rem;
   --flip-duration: .6s;
   --move-duration: .5s;
