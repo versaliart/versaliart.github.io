@@ -1,28 +1,24 @@
 <style>
-/* ===========================
-   Card Draw/Discard — CSS
-   =========================== */
-
-/* Configure once here */
+/* ===== FE-SAFE SIZING (no % heights) ===== */
 .card-table{
-  --card-w: 12rem;           /* back size */
+  /* Tunables */
+  --card-w: 12rem;
   --card-h: 16.5rem;
   --radius: .6rem;
   --flip-duration: .6s;
   --move-duration: .5s;
   --perspective: 80rem;
-  --gap: 3rem;               /* space between piles */
-  --pile-pad: 1rem;          /* inner breathing room */
-  --flip-scale: 1.15;        /* slight grow while flipped */
+  --gap: 3rem;          /* space between piles */
+  --pile-pad: 1rem;     /* inner breathing room */
+  --flip-scale: 1.15;
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
   --shadow-strong: 0 .6rem 1.6rem rgba(0,0,0,.35);
-}
 
-/* Layout for the two piles */
-.card-table{
   position: relative;
   width: 100%;
-  height: 100%;                     /* fill the FE block vertically */
+  /* Reserve enough height for a flipped card + padding */
+  min-height: calc(var(--card-h) * var(--flip-scale) + 2 * var(--pile-pad) + 1rem);
+  padding-block: .25rem;               /* tiny breathing room */
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
@@ -30,18 +26,18 @@
   gap: var(--gap);
 }
 
-/* FE sometimes ignores gap; enforce it with extra specificity */
+/* enforce gap in FE */
 .sqs-block-code .sqs-block-content .card-table{
   gap: var(--gap) !important;
   column-gap: var(--gap) !important;
   row-gap: var(--gap) !important;
 }
 
-/* Each pile */
 .pile{
   position: relative;
+  /* Intrinsic, not %: sized to card height */
+  height: calc(var(--card-h) * 1.1);
   width: clamp(14rem, 42%, 28rem);
-  height: calc(100% - 2 * var(--pile-pad));
   padding: var(--pile-pad);
   box-sizing: border-box;
   perspective: var(--perspective);
@@ -50,17 +46,15 @@
   outline-offset: .4rem;
 }
 
-/* Hide the seed container */
 .cards-seed{ display:none; }
 
-/* --- Card 3D structure --- */
+/* ===== Card 3D structure ===== */
 .card{
   position: absolute;
   top: 50%;
   left: 50%;
-  /* Baseline centering — do not remove */
   transform: translate(-50%, -50%) rotate(var(--r, 0deg));
-  transform-origin: center center;
+  transform-origin: center;
   transform-style: preserve-3d;
 
   width: var(--card-w);
@@ -72,14 +66,12 @@
   user-select: none;
 }
 
-/* Wrapper that flips */
 .card .flipper{
   position: absolute; inset: 0;
   transform-style: preserve-3d;
   transition: transform var(--flip-duration);
 }
 
-/* Faces */
 .card .face{
   position: absolute; inset: 0;
   border-radius: var(--radius);
@@ -87,14 +79,14 @@
   backface-visibility: hidden;
 }
 
-/* Back (image) */
+/* Back artwork */
 .card .back{
   background-size: 102% 102%;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-/* Front (text card) */
+/* Front content */
 .card .front{
   transform: rotateY(180deg);
   background: #f7f4ec;
@@ -111,19 +103,13 @@
   font-size: 1rem;
 }
 
-/* Flipped state */
 .card.is-flipped .flipper{
   transform: rotateY(180deg) scale(var(--flip-scale));
   box-shadow: var(--shadow-strong);
 }
 
-/* Discarded = no clicks */
-.card.is-discarded{
-  pointer-events: none;
-  cursor: default;
-}
+.card.is-discarded{ pointer-events: none; cursor: default; }
 
-/* Motion safety */
 @media (prefers-reduced-motion: reduce){
   .card .flipper{ transition: none; }
 }
