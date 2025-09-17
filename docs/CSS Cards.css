@@ -126,7 +126,8 @@
   cursor: default;
 }
 
-#cardTable .cdp-shuttle{ transform: rotate(var(--r, 0deg)); }
+#cardTable { isolation: isolate; }
+
 
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){

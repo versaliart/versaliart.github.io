@@ -1,4 +1,5 @@
-/* ===== Card Deck Piles — v1.1 ===== */
+/* ===== Card Deck Piles — v1.2 ===== */
+
 (() => {
   const $  = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
@@ -40,8 +41,9 @@ const makeCard = (seedNode, idx) => {
 
   const shuttle = document.createElement('div');
   shuttle.className = 'cdp-shuttle';
-  const initTilt = ((idx * 37) % 9) - 4;     // -4..+4deg
-  shuttle.style.transform = `rotate(${initTilt}deg)`;  // <-- inline, not CSS var
+  const initTilt = ((idx * 37) % 9) - 4;  // -4..+4
+  card.dataset.tilt = String(initTilt);
+  shuttle.style.transform = `rotate(${initTilt}deg)`;
 
   const flipper = document.createElement('div');
   flipper.className = 'cdp-flipper';
@@ -63,6 +65,7 @@ const makeCard = (seedNode, idx) => {
   card.appendChild(shuttle);
   return card;
 };
+
 
 
 // read a CSS time (e.g., "0.5s" or "500ms") → ms number
@@ -108,46 +111,48 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   const moveMs  = (typeof _getMoveMs === 'function') ? _getMoveMs() : 350;
   const shuttle = card.querySelector('.cdp-shuttle');
 
-  // Raise during travel
+  // target tilt (if provided) and precise numeric start tilt
+  const startTilt = Number(card.dataset.tilt || 0);
+  const endTilt   = (tilt == null) ? startTilt : Number(tilt);
+
+  // raise during travel so nothing draws over it
   const prevZ = card.style.zIndex;
   card.style.zIndex = '9999';
 
-  // ---- STAGE (no transitions, set exact starting transforms for BOTH) ----
+  // Stage start states (no transitions)
   card.style.transition = 'none';
   card.style.transform  = 'translate(-50%, -50%)';
-
   if (shuttle) {
-    // lock the current computed rotation as the explicit start
-    const current = getComputedStyle(shuttle).transform;
     shuttle.style.transition = 'none';
-    shuttle.style.transform  = (current && current !== 'none') ? current : 'rotate(0deg)';
+    shuttle.style.transform  = `rotate(${startTilt}deg)`;
   }
-
-  // one reflow to commit staged styles
+  // commit staged styles
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
-  // ---- COMPLETE / CLEANUP ----
+  // Complete/cleanup
   let finished = false;
   const end = () => {
     if (finished) return;
     finished = true;
 
-    // reparent & reset baseline
+    // reparent and reset baseline
     card.style.transition = 'none';
     toPile.appendChild(card);
     card.style.transform = 'translate(-50%, -50%)';
 
-    // top-of-discard stacking
+    // newest discard on top
     if (toPile.id === 'discardPile') {
-      // 'discardZ' is defined in your init() scope
       discardZ += 1;
       card.style.zIndex = String(1000 + discardZ);
     } else {
       card.style.zIndex = '';
     }
 
-    // clear inline transition controls
+    // persist the new tilt so next move starts from the correct angle
+    if (tilt != null) card.dataset.tilt = String(endTilt);
+
+    // clear inline transitions
     card.style.transition = '';
     if (shuttle) shuttle.style.transition = '';
 
@@ -161,23 +166,24 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   };
   card.addEventListener('transitionend', onEnd);
 
-  // ---- FIRE BOTH ANIMATIONS IN THE SAME FRAME ----
+  // Fire both animations in the same frame with the same timing
   requestAnimationFrame(() => {
     card.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
     card.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
-    if (shuttle && tilt != null) {
+    if (shuttle && endTilt !== startTilt) {
       shuttle.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
-      shuttle.style.transform  = `rotate(${tilt}deg)`;
+      shuttle.style.transform  = `rotate(${endTilt}deg)`;
     }
   });
 
-  // safety in case transitionend is swallowed
+  // safety
   setTimeout(() => {
     card.removeEventListener('transitionend', onEnd);
     end();
   }, moveMs + delay + 100);
 });
+
 
 
     const refreshInteractivity = () => {
@@ -213,17 +219,14 @@ const maybeReshuffle = async () => {
   const cards = $$('.cdp-card', discardPile);
   if (!cards.length) return;
 
-  const stepDelay = 25; // fast
+  const stepDelay = 25;
   const moves = [];
-
   for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
     const card = cards[i];
     card.classList.remove('is-discarded');
-
-    const newTilt = (((Date.now() + i) * 13) % 9) - 4;  // pick a fresh angle
-    moves.push( moveCard(card, drawPile, { delay: k * stepDelay, tilt: newTilt }) );
+    const newTilt = (((Date.now() + i) * 13) % 9) - 4;
+    moves.push(moveCard(card, drawPile, { delay: k * stepDelay, tilt: newTilt }));
   }
-
   await Promise.all(moves);
   refreshInteractivity();
 };
