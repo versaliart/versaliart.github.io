@@ -129,14 +129,16 @@
 }
 
 #cardTable { isolation: isolate; }
-/* Overlay that sits above both piles during motion */
+
+/* Overlay above both piles for z-order-safe motion */
 #cardTable #cdpOverlay{
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2147483647;          /* top of the world */
-  perspective: var(--perspective); /* keep 3D flip looking the same */
+  z-index: 2147483647;
+  perspective: var(--perspective);
 }
+
 
 
 /* Motion safety */

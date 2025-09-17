@@ -94,83 +94,81 @@ const _getMoveMs = (() => {
 
 // ===== Z-order safe move: animate in a top overlay, then reparent =====
 const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise((resolve) => {
-  // ensure overlay exists (once)
+  // Ensure overlay exists once (inside init(table) so `table` is in scope)
   const overlay = (() => {
     let el = document.getElementById('cdpOverlay');
     if (!el) {
       el = document.createElement('div');
       el.id = 'cdpOverlay';
-      // 'table' is in scope (from init(table))
       table.appendChild(el);
     }
     return el;
   })();
 
-  // centers in viewport space
-  const center = (rect) => [rect.left + rect.width / 2, rect.top + rect.height / 2];
+  // Helper: rect center in viewport space
+  const center = (r) => [r.left + r.width / 2, r.top + r.height / 2];
 
-  // 1) Measure BEFORE anything moves
+  // 1) Measure BEFORE anything moves (viewport coords)
   const fromRect = card.getBoundingClientRect();
   const [fromCx, fromCy] = center(fromRect);
 
   const toRect = toPile.getBoundingClientRect();
   const [toCx, toCy] = center(toRect);
 
-  // Optional: choose resting tilt for after the move (no rotation during slide)
+  const shuttle     = card.querySelector('.cdp-shuttle');
   const currentTilt = Number(card.dataset.tilt || 0);
   const endTilt     = (tilt == null) ? currentTilt : Number(tilt);
-  const shuttle     = card.querySelector('.cdp-shuttle');
 
-  // 2) Put the card into the overlay, but visually keep it where it was (FLIP)
-  //    (a) reparent to overlay
+  // 2) Reparent into overlay first (so it stays above both piles while moving)
   overlay.appendChild(card);
 
-  //    (b) compute the card's position *after* reparent
+  // After reparent, the card's baseline is relative to the overlay center.
   const midRect = card.getBoundingClientRect();
   const [midCx, midCy] = center(midRect);
 
-  //    (c) stage: no transitions; place card at its previous screen position
-  card.style.transition = 'none';
-  // start exactly where it was: baseline translate + inverse delta
-  const invDx = fromCx - midCx;
-  const invDy = fromCy - midCy;
-  card.style.transform =
-    `translate(calc(-50% + ${invDx}px), calc(-50% + ${invDy}px))`;
+  // Compute overlay-relative offsets:
+  // Start at (from - overlayCenter) → End at (to - overlayCenter)
+  const startDx = fromCx - midCx;
+  const startDy = fromCy - midCy;
+  const endDx   = toCx   - midCx;
+  const endDy   = toCy   - midCy;
 
-  // freeze shuttle tilt *during* travel to avoid any perceived tilt jump
+  // 3) Stage: no transitions; put card at its original screen position
+  card.style.transition = 'none';
+  card.style.transform  = `translate(calc(-50% + ${startDx}px), calc(-50% + ${startDy}px))`;
+
+  // Freeze tilt during travel to avoid any perceived angle pop
   if (shuttle) {
     shuttle.style.transition = 'none';
-    shuttle.style.transform  = `rotate(${currentTilt}deg)`;
+    shuttle.style.transform  = 'none'; // no rotate during motion
   }
 
-  // commit staged styles
+  // Commit staged styles
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
-  // 3) Animate in the overlay straight to the discard center
+  // 4) Animate in the overlay straight to the target offset
   const moveMs = (typeof _getMoveMs === 'function') ? _getMoveMs() : 350;
   let finished = false;
-
   const finish = () => {
     if (finished) return;
     finished = true;
 
-    // Reparent into the target pile on the next frame to avoid same-paint snap
+    // Reparent into the target pile on the next frame (avoid same-paint snap)
     requestAnimationFrame(() => {
-      // clear transition to avoid an extra slide on reparent
       card.style.transition = 'none';
-      // reset to baseline centering for pile layout
+      // Reset baseline centering for pile layout, then reparent
       card.style.transform = 'translate(-50%, -50%)';
       toPile.appendChild(card);
 
-      // set final resting tilt (no transition)
+      // Restore resting tilt (no transition) now that it's in the pile
       if (shuttle) {
         shuttle.style.transition = 'none';
         shuttle.style.transform  = `rotate(${endTilt}deg)`;
+        card.dataset.tilt = String(endTilt);
       }
-      card.dataset.tilt = String(endTilt);
 
-      // top-of-discard stacking (draw resets to default)
+      // Top-of-discard stacking (draw resets)
       if (toPile.id === 'discardPile') {
         discardZ = (typeof discardZ === 'number') ? discardZ + 1 : 1;
         card.style.zIndex = String(1000 + discardZ);
@@ -178,7 +176,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
         card.style.zIndex = '';
       }
 
-      // clean
+      // Cleanup inline transitions
       card.style.transition = '';
       if (shuttle) shuttle.style.transition = '';
       resolve();
@@ -192,13 +190,10 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   };
   card.addEventListener('transitionend', onEnd);
 
-  // Kick the move: go from "old screen position" → "discard center"
+  // Fire the slide (overlay-relative end offsets)
   requestAnimationFrame(() => {
-    const travelDx = toCx - fromCx;
-    const travelDy = toCy - fromCy;
     card.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
-    card.style.transform =
-      `translate(calc(-50% + ${travelDx}px), calc(-50% + ${travelDy}px))`;
+    card.style.transform  = `translate(calc(-50% + ${endDx}px), calc(-50% + ${endDy}px))`;
   });
 
   // Safety fallback
@@ -207,6 +202,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
     finish();
   }, moveMs + delay + 120);
 });
+
 
 
 
