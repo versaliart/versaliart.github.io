@@ -64,7 +64,30 @@ const makeCard = (seedNode, idx) => {
   return card;
 };
 
-const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
+// read a CSS time (e.g., "0.5s" or "500ms") → ms number
+const _parseMs = (t) => {
+  if (!t) return 500;
+  const s = String(t).trim();
+  if (s.endsWith('ms')) return parseFloat(s) || 0;
+  if (s.endsWith('s'))  return (parseFloat(s) || 0) * 1000;
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : 500;
+};
+
+// cache the move duration from #cardTable
+const _getMoveMs = (() => {
+  let cached;
+  return () => {
+    if (cached != null) return cached;
+    const table = document.getElementById('cardTable');
+    const cs = table ? getComputedStyle(table) : null;
+    cached = _parseMs(cs?.getPropertyValue('--move-duration') || '.5s');
+    return cached;
+  };
+})();
+
+// Move by animating the CARD’s transform; reparent only after it finishes
+const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
   const from = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
 
@@ -76,32 +99,62 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
   const dx = toCx - fromCx;
   const dy = toCy - fromCy;
 
-  // raise during travel so nothing overlays it
-  const prevZ = card.style.zIndex;
-  card.style.zIndex = '9999';
+  // start from the baseline center
+  card.style.transitionProperty = 'transform';
+  card.style.transitionTimingFunction = 'ease';
+  card.style.transitionDuration = '0ms';
+  card.style.transitionDelay = '0ms';
+  card.style.transform = 'translate(-50%, -50%)';
 
-  // 1) animate the CARD’s transform (axes are unrotated), flip continues on .cdp-flipper
-  card.style.transition = 'transform var(--move-duration) ease';
-  if (delay) card.style.transitionDelay = `${delay}ms`;
-  card.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  // force reflow, then animate to the offset
+  // eslint-disable-next-line no-unused-expressions
+  card.offsetHeight;
 
-  const onEnd = (e) => {
-    if (e.propertyName !== 'transform') return;
-    card.removeEventListener('transitionend', onEnd);
+  const moveMs = _getMoveMs();
+  let finished = false;
 
-    // 2) reparent, snap back to baseline center (no visual jump)
-    card.style.transition = 'none';
+  const end = () => {
+    if (finished) return;
+    finished = true;
+
+    // freeze, reparent, reset baseline
+    card.style.transitionDuration = '0ms';
     toPile.appendChild(card);
     card.style.transform = 'translate(-50%, -50%)';
-    // cleanup
-    void card.offsetHeight; // reflow
-    card.style.transition = '';
+
+    // cleanup (let future moves use var duration again)
+    card.style.transitionProperty = '';
+    card.style.transitionTimingFunction = '';
+    card.style.transitionDuration = '';
     card.style.transitionDelay = '';
-    card.style.zIndex = prevZ || '';
+
     resolve();
   };
+
+  const onEnd = (e) => {
+    // only accept THIS card’s transform end (ignore bubbled child transitions)
+    if (e.target !== card || e.propertyName !== 'transform') return;
+    card.removeEventListener('transitionend', onEnd);
+    end();
+  };
   card.addEventListener('transitionend', onEnd);
+
+  // kick the animation
+  requestAnimationFrame(() => {
+    card.style.transitionDuration = `${moveMs}ms`;
+    if (delay) card.style.transitionDelay = `${delay}ms`;
+    // travel toward the other pile; tilt (on shuttle) can change simultaneously
+    card.style.transform =
+      `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+  });
+
+  // safety fallback: if the browser never fires transitionend, still finish
+  setTimeout(() => {
+    card.removeEventListener('transitionend', onEnd);
+    end();
+  }, moveMs + delay + 60);
 });
+
 
 
 
