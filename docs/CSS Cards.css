@@ -1,4 +1,4 @@
-/* ===== Namespaced: CDP (Card Deck Piles) v1.1 ===== */
+/* ===== Namespaced: CDP (Card Deck Piles) v1.3 ===== */
 
 #cardTable{
   --card-w: 18rem;
@@ -129,6 +129,14 @@
 }
 
 #cardTable { isolation: isolate; }
+/* Overlay that sits above both piles during motion */
+#cardTable #cdpOverlay{
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2147483647;          /* top of the world */
+  perspective: var(--perspective); /* keep 3D flip looking the same */
+}
 
 
 /* Motion safety */
