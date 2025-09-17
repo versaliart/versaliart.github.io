@@ -41,8 +41,8 @@
   box-sizing: border-box;
   perspective: var(--perspective);
   border-radius: .75rem;
-  outline: 1px dashed rgba(0,0,0,.15);
-  outline-offset: .4rem;
+  outline: none;
+  outline-offset: none;
 }
 
 /* Hide the seed container */
