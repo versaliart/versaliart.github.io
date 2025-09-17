@@ -131,4 +131,4 @@
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
   #cardTable .cdp-flipper{ transition: none; }
-}`
+}
