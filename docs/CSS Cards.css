@@ -68,7 +68,6 @@
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  transform: rotate(var(--r, 0deg));
   box-shadow: var(--shadow);
   will-change: transform;
 }
