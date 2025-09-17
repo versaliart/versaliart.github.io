@@ -71,7 +71,6 @@
   transform: rotate(var(--r, 0deg));
   box-shadow: var(--shadow);
   will-change: transform;
-  transition: transform var(--move-duration) ease; 
 }
 
 /* Stronger depth while flipped */
@@ -132,4 +131,4 @@
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
   #cardTable .cdp-flipper{ transition: none; }
-}
+}`

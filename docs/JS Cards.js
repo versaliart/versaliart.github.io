@@ -91,56 +91,63 @@ const _getMoveMs = (() => {
 // Move the CARD (translate) and optionally animate TILT on the SHUTTLE in perfect sync.
 // Also ensures newly discarded cards land visually on top.
 // Move the CARD (translate) and, if tilt!=null, animate the SHUTTLE tilt in the same frame.
+// Move the CARD (translate) and, if tilt!=null, rotate the SHUTTLE in the same tick.
+// Also keeps newest discard on top.
 const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise((resolve) => {
-  const from = card.getBoundingClientRect();
+  const from   = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
 
-  const fromCx = from.left + from.width / 2;
+  const fromCx = from.left + from.width  / 2;
   const fromCy = from.top  + from.height / 2;
-  const toCx   = toRect.left + toRect.width / 2;
+  const toCx   = toRect.left + toRect.width  / 2;
   const toCy   = toRect.top  + toRect.height / 2;
 
   const dx = toCx - fromCx;
   const dy = toCy - fromCy;
 
-  const moveMs = (typeof _getMoveMs === 'function') ? _getMoveMs() : 350; // you said .35s
+  const moveMs  = (typeof _getMoveMs === 'function') ? _getMoveMs() : 350;
   const shuttle = card.querySelector('.cdp-shuttle');
 
-  // Raise while traveling
+  // Raise during travel
   const prevZ = card.style.zIndex;
   card.style.zIndex = '9999';
 
-  // Reset transitions to a known state (CARD + SHUTTLE)
+  // ---- STAGE (no transitions, set exact starting transforms for BOTH) ----
   card.style.transition = 'none';
-  if (shuttle) shuttle.style.transition = 'none';
+  card.style.transform  = 'translate(-50%, -50%)';
 
-  // Baseline center for CARD
-  card.style.transform = 'translate(-50%, -50%)';
+  if (shuttle) {
+    // lock the current computed rotation as the explicit start
+    const current = getComputedStyle(shuttle).transform;
+    shuttle.style.transition = 'none';
+    shuttle.style.transform  = (current && current !== 'none') ? current : 'rotate(0deg)';
+  }
 
-  // Force styles to take effect
+  // one reflow to commit staged styles
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
-  // Prepare end cleanup
+  // ---- COMPLETE / CLEANUP ----
   let finished = false;
   const end = () => {
     if (finished) return;
     finished = true;
 
-    // Freeze, reparent, reset baseline
+    // reparent & reset baseline
     card.style.transition = 'none';
     toPile.appendChild(card);
     card.style.transform = 'translate(-50%, -50%)';
 
-    // Top-of-discard stacking
+    // top-of-discard stacking
     if (toPile.id === 'discardPile') {
+      // 'discardZ' is defined in your init() scope
       discardZ += 1;
       card.style.zIndex = String(1000 + discardZ);
     } else {
       card.style.zIndex = '';
     }
 
-    // Clear inline transitions
+    // clear inline transition controls
     card.style.transition = '';
     if (shuttle) shuttle.style.transition = '';
 
@@ -154,33 +161,23 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   };
   card.addEventListener('transitionend', onEnd);
 
-  // Kick BOTH animations in the same animation frame
+  // ---- FIRE BOTH ANIMATIONS IN THE SAME FRAME ----
   requestAnimationFrame(() => {
-    // CARD travel
     card.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
-    card.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    card.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
-    // SHUTTLE tilt (only if changing tilt); start FROM computed current transform
     if (shuttle && tilt != null) {
-      const current = getComputedStyle(shuttle).transform;   // matrix(...) from whatever state
-      shuttle.style.transition = 'none';
-      shuttle.style.transform = current;                     // lock the exact start
-      // reflow to lock start value without transition
-      // eslint-disable-next-line no-unused-expressions
-      shuttle.offsetHeight;
-      // now animate to the new tilt with SAME duration/delay
       shuttle.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
-      shuttle.style.transform = `rotate(${tilt}deg)`;
+      shuttle.style.transform  = `rotate(${tilt}deg)`;
     }
   });
 
-  // Failsafe (transitionend can be flaky with FE)
+  // safety in case transitionend is swallowed
   setTimeout(() => {
     card.removeEventListener('transitionend', onEnd);
     end();
   }, moveMs + delay + 100);
 });
-
 
 
     const refreshInteractivity = () => {
@@ -211,8 +208,6 @@ const onCardClick = (ev) => {
   });
 };
 
-
-
 const maybeReshuffle = async () => {
   if ($$('.cdp-card', drawPile).length) return;
   const cards = $$('.cdp-card', discardPile);
@@ -232,10 +227,6 @@ const maybeReshuffle = async () => {
   await Promise.all(moves);
   refreshInteractivity();
 };
-
-
-
-
 
     // Seed from your hidden articles (still use your <article class="card"> seeds)
     const seeds = $$('.cards-seed .card');
