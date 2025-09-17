@@ -24,16 +24,17 @@
   gap: var(--gap);
 }
 
-/* enforce gap inside FE */
+/* Enforce grid gaps inside Squarespace Fluid Engine */
 .sqs-block-code .sqs-block-content #cardTable{
   gap: var(--gap) !important;
   column-gap: var(--gap) !important;
   row-gap: var(--gap) !important;
 }
 
+/* Piles */
 #cardTable .pile{
   position: relative;
-  height: calc(var(--card-h) * 1.1);
+  height: calc(var(--card-h) * 1.1);     /* intrinsic; not % */
   width: clamp(14rem, 42%, 28rem);
   padding: var(--pile-pad);
   box-sizing: border-box;
@@ -43,45 +44,66 @@
   outline-offset: .4rem;
 }
 
-/* ----- CARD (namespaced) ----- */
+/* Hide the seed container */
+.cards-seed{ display:none; }
+
+/* ---------- Card structure (namespaced) ---------- */
+/* The card element travels (translate only); no tilt/shadow here */
 #cardTable .cdp-card{
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+  transform: translate(-50%, -50%);
   transform-origin: center;
-  transform-style: preserve-3d;
-
   width: var(--card-w);
   height: var(--card-h);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  cursor: pointer;
   user-select: none;
+  cursor: pointer;
 }
 
-/* flipper + faces */
-#cardTable .cdp-card .cdp-flipper{
-  position: absolute; inset: 0;
+/* Shuttle holds tilt + outer shadow so travel axes stay unrotated */
+#cardTable .cdp-shuttle{
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  transform: rotate(var(--r, 0deg));
+  box-shadow: var(--shadow);
+  will-change: transform;
+}
+
+/* Stronger depth while flipped */
+#cardTable .cdp-card.is-flipped .cdp-shuttle{
+  box-shadow: var(--shadow-strong);
+}
+
+/* 3D flipper lives inside shuttle */
+#cardTable .cdp-flipper{
+  position: absolute;
+  inset: 0;
   transform-style: preserve-3d;
   transition: transform var(--flip-duration);
 }
-#cardTable .cdp-card .cdp-face{
-  position: absolute; inset: 0;
+
+/* Flip state */
+#cardTable .cdp-card.is-flipped .cdp-flipper{
+  transform: rotateY(180deg) scale(var(--flip-scale));
+}
+
+/* Faces */
+#cardTable .cdp-face{
+  position: absolute;
+  inset: 0;
   border-radius: var(--radius);
   overflow: hidden;
   backface-visibility: hidden;
 }
-
-/* back artwork */
-#cardTable .cdp-card .cdp-back{
+#cardTable .cdp-back{
   background-size: 102% 102%;
   background-position: center;
   background-repeat: no-repeat;
 }
-
-/* front content */
-#cardTable .cdp-card .cdp-front{
+#cardTable .cdp-front{
   transform: rotateY(180deg);
   background: #f7f4ec;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
@@ -89,7 +111,7 @@
   place-items: center;
   padding: 1rem;
 }
-#cardTable .cdp-card .front-content{
+#cardTable .front-content{
   max-width: calc(var(--card-w) * .9);
   max-height: calc(var(--card-h) * .85);
   overflow: auto;
@@ -97,16 +119,13 @@
   font-size: 1rem;
 }
 
-/* states */
-#cardTable .cdp-card.is-flipped .cdp-flipper{
-  transform: rotateY(180deg) scale(var(--flip-scale));
-  box-shadow: var(--shadow-strong);
-}
+/* Discarded cards don’t accept clicks */
 #cardTable .cdp-card.is-discarded{
   pointer-events: none;
   cursor: default;
 }
 
+/* Motion safety */
 @media (prefers-reduced-motion: reduce){
-  #cardTable .cdp-card .cdp-flipper{ transition: none; }
+  #cardTable .cdp-flipper{ transition: none; }
 }
