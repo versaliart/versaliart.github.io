@@ -1,4 +1,4 @@
-/* ===== Card Deck Piles — Namespaced, Squarespace-safe ===== */
+/* ===== Card Deck Piles — v1.0 ===== */
 (() => {
   const $  = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
@@ -59,41 +59,51 @@
       return card;
     };
 
-    const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
-      const from = card.getBoundingClientRect();
-      toPile.appendChild(card);
-      const to = card.getBoundingClientRect();
+const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
+  // Measure current card center and target pile center
+  const from = card.getBoundingClientRect();
+  const toRect = toPile.getBoundingClientRect();
 
-      const fromCx = from.left + from.width / 2;
-      const fromCy = from.top  + from.height / 2;
-      const toCx   = to.left   + to.width  / 2;
-      const toCy   = to.top    + to.height / 2;
+  const fromCx = from.left + from.width / 2;
+  const fromCy = from.top  + from.height / 2;
+  const toCx   = toRect.left + toRect.width / 2;
+  const toCy   = toRect.top  + toRect.height / 2;
 
-      const dx = fromCx - toCx;
-      const dy = fromCy - toCy;
+  const dx = toCx - fromCx;   // move distance in viewport space
+  const dy = toCy - fromCy;
 
-      card.style.transition = 'none';
-      card.style.transform =
-        `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(var(--r,0))`;
-      // force reflow
-      // eslint-disable-next-line no-unused-expressions
-      card.offsetHeight;
+  // Prepare: ensure baseline transform, then animate to target offset
+  card.style.zIndex = '999';                 // keep above other cards/shadows
+  card.style.transition = 'none';
+  card.style.transform  = `translate(-50%, -50%) rotate(var(--r,0))`;
+  // force reflow
+  // eslint-disable-next-line no-unused-expressions
+  card.offsetHeight;
 
-      requestAnimationFrame(() => {
-        card.style.transition = `transform var(--move-duration) ease`;
-        if (delay) card.style.transitionDelay = `${delay}ms`;
-        card.style.transform = `translate(-50%, -50%) rotate(var(--r,0))`;
-      });
+  requestAnimationFrame(() => {
+    card.style.transition = `transform var(--move-duration) ease`;
+    if (delay) card.style.transitionDelay = `${delay}ms`;
+    card.style.transform =
+      `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(var(--r,0))`;
+  });
 
-      const onEnd = (e) => {
-        if (e.propertyName !== 'transform') return;
-        card.removeEventListener('transitionend', onEnd);
-        card.style.transition = '';
-        card.style.transitionDelay = '';
-        resolve();
-      };
-      card.addEventListener('transitionend', onEnd);
-    });
+  const onEnd = (e) => {
+    if (e.propertyName !== 'transform') return;
+    card.removeEventListener('transitionend', onEnd);
+
+    // Freeze, reparent, and reset instantly to the new pile's centered baseline
+    card.style.transition = 'none';
+    toPile.appendChild(card);                              // reparent AFTER the move
+    card.style.transform = `translate(-50%, -50%) rotate(var(--r,0))`;
+    // cleanup
+    card.style.transition = '';
+    card.style.transitionDelay = '';
+    card.style.zIndex = '';
+    resolve();
+  };
+  card.addEventListener('transitionend', onEnd);
+});
+
 
     const refreshInteractivity = () => {
       $$('.cdp-card', drawPile).forEach(c => c.style.pointerEvents = 'none');
@@ -104,20 +114,19 @@
 const onCardClick = (ev) => {
   const card = ev.currentTarget;
 
-  // only the top card in draw can act
+  // only the top card in draw acts
   if ($$('.cdp-card', drawPile).at(-1) !== card) return;
 
-  // first click → open
+  // First click → open
   if (!card.classList.contains('is-flipped')) {
     card.classList.add('is-flipped');
     return;
   }
 
-  // second click → flip shut + move to discard SIMULTANEOUSLY
-  card.classList.add('is-discarded');   // disables pointer events
-  card.classList.remove('is-flipped');  // flipper rotates back (0.6s)
+  // Second click → flip shut + move to discard simultaneously
+  card.classList.add('is-discarded');   // disable future clicks
+  card.classList.remove('is-flipped');  // triggers .cdp-flipper rotation (0.6s default)
 
-  // move animation on the card element happens concurrently with the flip
   moveCard(card, discardPile).then(() => {
     refreshInteractivity();
     maybeReshuffle();
@@ -125,21 +134,21 @@ const onCardClick = (ev) => {
 };
 
 
+
 const maybeReshuffle = async () => {
   if ($$('.cdp-card', drawPile).length) return;
   const cards = $$('.cdp-card', discardPile);
   if (!cards.length) return;
 
-  const stepDelay = 35; // was ~110ms → much faster now
+  const stepDelay = 35;  // much shorter stagger
 
-  // stream back right-to-left, re-tilt and move in the same frame
   const moves = [];
-  for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
+  for (let i = cards.length - 1, k = 0; i >= 0; i--, k++){
     const card = cards[i];
     card.classList.remove('is-discarded');
 
-    // set a fresh tilt BEFORE starting the move (so rotation + translation animate together)
-    const tilt = (((Date.now() + i) * 13) % 9) - 4;
+    // Re-angle NOW so rotation and translation animate together
+    const tilt = (((Date.now()+i) * 13) % 9) - 4;
     card.style.setProperty('--r', tilt + 'deg');
 
     moves.push(moveCard(card, drawPile, { delay: k * stepDelay }));
@@ -147,6 +156,7 @@ const maybeReshuffle = async () => {
   await Promise.all(moves);
   refreshInteractivity();
 };
+
 
 
     // Seed from your hidden articles (still use your <article class="card"> seeds)
