@@ -2,12 +2,12 @@
 
 #cardTable{
   --card-w: 12rem;
-  --card-h: 16.5rem;
+  --card-h: 21.33rem;
   --radius: .6rem;
   --flip-duration: .6s;
   --move-duration: .5s;
   --perspective: 80rem;
-  --gap: 3rem;
+  --gap: 2rem;
   --pile-pad: 1rem;
   --flip-scale: 1.15;
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
