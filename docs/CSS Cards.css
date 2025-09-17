@@ -1,8 +1,8 @@
 /* ===== Namespaced: CDP (Card Deck Piles) ===== */
 
 #cardTable{
-  --card-w: 12rem;
-  --card-h: 21.33rem;
+  --card-w: 18rem;
+  --card-h: 32rem;
   --radius: .6rem;
   --flip-duration: .6s;
   --move-duration: .5s;
