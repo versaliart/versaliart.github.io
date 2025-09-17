@@ -1,4 +1,4 @@
-/* ===== Card Deck Piles — v1.3 ===== */
+/* ===== Card Deck Piles — v1.5 ===== */
 
 (() => {
   const $  = (sel, root=document) => root.querySelector(sel);
@@ -91,84 +91,83 @@ const _getMoveMs = (() => {
 })();
 
 
-
-// ===== Z-order safe move: animate in a top overlay, then reparent =====
+// Z-order safe move in overlay; tilt stays visible during motion.
+// Pass { tilt: newAngle } only for reshuffle moves.
+// For discards, call without `tilt` so the current angle stays constant.
 const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise((resolve) => {
-  // Ensure overlay exists once (inside init(table) so `table` is in scope)
+  // Ensure a top overlay exists (once per table)
   const overlay = (() => {
     let el = document.getElementById('cdpOverlay');
     if (!el) {
       el = document.createElement('div');
       el.id = 'cdpOverlay';
-      table.appendChild(el);
+      table.appendChild(el); // `table` is the #cardTable element in scope
     }
     return el;
   })();
 
-  // Helper: rect center in viewport space
   const center = (r) => [r.left + r.width / 2, r.top + r.height / 2];
 
-  // 1) Measure BEFORE anything moves (viewport coords)
+  // 1) Measure before any move (viewport coordinates)
   const fromRect = card.getBoundingClientRect();
   const [fromCx, fromCy] = center(fromRect);
 
   const toRect = toPile.getBoundingClientRect();
   const [toCx, toCy] = center(toRect);
 
-  const shuttle     = card.querySelector('.cdp-shuttle');
+  const shuttle = card.querySelector('.cdp-shuttle');
   const currentTilt = Number(card.dataset.tilt || 0);
   const endTilt     = (tilt == null) ? currentTilt : Number(tilt);
+  const changeTilt  = (tilt != null) && (endTilt !== currentTilt);
 
-  // 2) Reparent into overlay first (so it stays above both piles while moving)
+  // 2) Reparent into overlay so it renders above both piles while moving
   overlay.appendChild(card);
 
-  // After reparent, the card's baseline is relative to the overlay center.
+  // Compute overlay-relative start/end offsets
   const midRect = card.getBoundingClientRect();
-  const [midCx, midCy] = center(midRect);
+  const [overlayCx, overlayCy] = center(midRect);
+  const startDx = fromCx - overlayCx;
+  const startDy = fromCy - overlayCy;
+  const endDx   = toCx   - overlayCx;
+  const endDy   = toCy   - overlayCy;
 
-  // Compute overlay-relative offsets:
-  // Start at (from - overlayCenter) → End at (to - overlayCenter)
-  const startDx = fromCx - midCx;
-  const startDy = fromCy - midCy;
-  const endDx   = toCx   - midCx;
-  const endDy   = toCy   - midCy;
-
-  // 3) Stage: no transitions; put card at its original screen position
+  // 3) Stage start states WITHOUT transitions
   card.style.transition = 'none';
   card.style.transform  = `translate(calc(-50% + ${startDx}px), calc(-50% + ${startDy}px))`;
 
-  // Freeze tilt during travel to avoid any perceived angle pop
   if (shuttle) {
+    // Keep the current tilt visible during motion
     shuttle.style.transition = 'none';
-    shuttle.style.transform  = 'none'; // no rotate during motion
+    shuttle.style.transform  = `rotate(${currentTilt}deg)`;
   }
 
   // Commit staged styles
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
-  // 4) Animate in the overlay straight to the target offset
+  // 4) Animate slide (and optionally the tilt) in the SAME frame
   const moveMs = (typeof _getMoveMs === 'function') ? _getMoveMs() : 350;
+
   let finished = false;
   const finish = () => {
     if (finished) return;
     finished = true;
 
-    // Reparent into the target pile on the next frame (avoid same-paint snap)
+    // Reparent to the target pile on the next frame (avoid same-paint snap)
     requestAnimationFrame(() => {
+      // Stop animating; reset to pile baseline
       card.style.transition = 'none';
-      // Reset baseline centering for pile layout, then reparent
-      card.style.transform = 'translate(-50%, -50%)';
+      card.style.transform  = 'translate(-50%, -50%)';
       toPile.appendChild(card);
 
-      // Restore resting tilt (no transition) now that it's in the pile
+      // Ensure the final tilt is set and persisted (no transition)
       if (shuttle) {
         shuttle.style.transition = 'none';
         shuttle.style.transform  = `rotate(${endTilt}deg)`;
-        card.dataset.tilt = String(endTilt);
       }
+      card.dataset.tilt = String(endTilt);
 
-      // Top-of-discard stacking (draw resets)
+      // Newest on top in discard
       if (toPile.id === 'discardPile') {
         discardZ = (typeof discardZ === 'number') ? discardZ + 1 : 1;
         card.style.zIndex = String(1000 + discardZ);
@@ -176,7 +175,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
         card.style.zIndex = '';
       }
 
-      // Cleanup inline transitions
+      // Cleanup
       card.style.transition = '';
       if (shuttle) shuttle.style.transition = '';
       resolve();
@@ -190,10 +189,17 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   };
   card.addEventListener('transitionend', onEnd);
 
-  // Fire the slide (overlay-relative end offsets)
+  // Fire animations together
   requestAnimationFrame(() => {
+    // Slide
     card.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
     card.style.transform  = `translate(calc(-50% + ${endDx}px), calc(-50% + ${endDy}px))`;
+
+    // Only during reshuffle: rotate tilt in sync with the slide
+    if (shuttle && changeTilt) {
+      shuttle.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
+      shuttle.style.transform  = `rotate(${endTilt}deg)`;
+    }
   });
 
   // Safety fallback
@@ -202,6 +208,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
     finish();
   }, moveMs + delay + 120);
 });
+
 
 
 

@@ -1,4 +1,4 @@
-/* ===== Namespaced: CDP (Card Deck Piles) v1.3 ===== */
+/* ===== Namespaced: CDP (Card Deck Piles) v1.5 ===== */
 
 #cardTable{
   --card-w: 18rem;
@@ -68,12 +68,10 @@
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  transition: none !important;      /* stop theme/global transitions */
+  transition: none;          /* allow inline transitions to override when needed */
   box-shadow: var(--shadow);
   will-change: transform;
 }
-
-
 
 /* Stronger depth while flipped */
 #cardTable .cdp-card.is-flipped .cdp-shuttle{
