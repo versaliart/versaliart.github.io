@@ -59,50 +59,70 @@
       return card;
     };
 
+// Move a card by animating in viewport coordinates, then reparent at the end
 const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
-  // Measure current card center and target pile center
+  // measure current card box and target pile center
   const from = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
 
-  const fromCx = from.left + from.width / 2;
-  const fromCy = from.top  + from.height / 2;
-  const toCx   = toRect.left + toRect.width / 2;
-  const toCy   = toRect.top  + toRect.height / 2;
+  const targetLeft = toRect.left + toRect.width  / 2 - from.width  / 2;
+  const targetTop  = toRect.top  + toRect.height / 2 - from.height / 2;
 
-  const dx = toCx - fromCx;   // move distance in viewport space
-  const dy = toCy - fromCy;
+  // elevate above everything so shadows/text never overlay incorrectly
+  const prev = {
+    position: card.style.position,
+    left:     card.style.left,
+    top:      card.style.top,
+    transform:card.style.transform,
+    zIndex:   card.style.zIndex,
+    transition: card.style.transition,
+    delay:      card.style.transitionDelay
+  };
 
-  // Prepare: ensure baseline transform, then animate to target offset
-  card.style.zIndex = '999';                 // keep above other cards/shadows
+  // Freeze in place visually
+  card.style.zIndex = '999';
   card.style.transition = 'none';
-  card.style.transform  = `translate(-50%, -50%) rotate(var(--r,0))`;
-  // force reflow
+  // Put it in viewport space exactly where it is now
+  card.style.position = 'fixed';
+  card.style.left = `${from.left}px`;
+  card.style.top  = `${from.top}px`;
+  // Drop the baseline translate; keep rotation (tilt)
+  card.style.transform = `rotate(var(--r,0))`;
+
+  // ensure styles apply
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
   requestAnimationFrame(() => {
-    card.style.transition = `transform var(--move-duration) ease`;
+    card.style.transition = `left var(--move-duration) ease, top var(--move-duration) ease, transform var(--move-duration) ease`;
     if (delay) card.style.transitionDelay = `${delay}ms`;
-    card.style.transform =
-      `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) rotate(var(--r,0))`;
+    // animate to the other pile's center; rotation animates concurrently if --r changed
+    card.style.left = `${targetLeft}px`;
+    card.style.top  = `${targetTop}px`;
   });
 
   const onEnd = (e) => {
-    if (e.propertyName !== 'transform') return;
+    // wait for the 'top' or 'left' transition to finish
+    if (e.propertyName !== 'top' && e.propertyName !== 'left') return;
     card.removeEventListener('transitionend', onEnd);
 
-    // Freeze, reparent, and reset instantly to the new pile's centered baseline
+    // Reparent AFTER the move, then restore baseline centering style
     card.style.transition = 'none';
-    toPile.appendChild(card);                              // reparent AFTER the move
+    toPile.appendChild(card);
+    // restore original inline props and baseline transform used in piles
+    card.style.position  = prev.position || '';
+    card.style.left      = prev.left || '';
+    card.style.top       = prev.top || '';
     card.style.transform = `translate(-50%, -50%) rotate(var(--r,0))`;
-    // cleanup
-    card.style.transition = '';
-    card.style.transitionDelay = '';
-    card.style.zIndex = '';
+    card.style.zIndex    = prev.zIndex || '';
+    card.style.transitionDelay = prev.delay || '';
+    card.style.transition = prev.transition || '';
+
     resolve();
   };
   card.addEventListener('transitionend', onEnd);
 });
+
 
 
     const refreshInteractivity = () => {
@@ -140,15 +160,15 @@ const maybeReshuffle = async () => {
   const cards = $$('.cdp-card', discardPile);
   if (!cards.length) return;
 
-  const stepDelay = 35;  // much shorter stagger
+  const stepDelay = 25; // much shorter stagger
 
   const moves = [];
-  for (let i = cards.length - 1, k = 0; i >= 0; i--, k++){
+  for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
     const card = cards[i];
     card.classList.remove('is-discarded');
 
-    // Re-angle NOW so rotation and translation animate together
-    const tilt = (((Date.now()+i) * 13) % 9) - 4;
+    // set new tilt BEFORE starting move so rotation + translation animate together
+    const tilt = (((Date.now() + i) * 13) % 9) - 4;
     card.style.setProperty('--r', tilt + 'deg');
 
     moves.push(moveCard(card, drawPile, { delay: k * stepDelay }));
@@ -156,6 +176,7 @@ const maybeReshuffle = async () => {
   await Promise.all(moves);
   refreshInteractivity();
 };
+
 
 
 
