@@ -87,9 +87,10 @@ const _getMoveMs = (() => {
   };
 })();
 
-// Move by animating the CARD’s transform; reparent only after it finishes
-// Move by animating the CARD's translate; reparent after, and set top-of-discard z-index
-const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
+
+// Move the CARD (translate) and optionally animate TILT on the SHUTTLE in perfect sync.
+// Also ensures newly discarded cards land visually on top.
+const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise((resolve) => {
   const from = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
 
@@ -101,20 +102,29 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
   const dx = toCx - fromCx;
   const dy = toCy - fromCy;
 
-  // robust duration read (matches your existing helper)
   const moveMs = (typeof _getMoveMs === 'function') ? _getMoveMs() : 500;
 
-  // raise while traveling so nothing overlays it
+  // Raise while traveling so nothing overlays it
   const prevZ = card.style.zIndex;
   card.style.zIndex = '9999';
 
-  // baseline → animate offset
+  // Prepare baseline translate for the CARD
   card.style.transitionProperty = 'transform';
   card.style.transitionTimingFunction = 'ease';
   card.style.transitionDuration = '0ms';
   card.style.transitionDelay = '0ms';
   card.style.transform = 'translate(-50%, -50%)';
-  // force reflow
+
+  // Prepare the SHUTTLE tilt (explicitly control duration/delay inline)
+  const shuttle = card.querySelector('.cdp-shuttle');
+  if (shuttle) {
+    shuttle.style.transitionProperty = 'transform';
+    shuttle.style.transitionTimingFunction = 'ease';
+    shuttle.style.transitionDuration = `${moveMs}ms`;
+    shuttle.style.transitionDelay = delay ? `${delay}ms` : '0ms';
+  }
+
+  // Force reflow so 0ms styles take effect
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
@@ -123,12 +133,12 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
     if (finished) return;
     finished = true;
 
-    // freeze, reparent, reset baseline
+    // Freeze, reparent, reset baseline
     card.style.transitionDuration = '0ms';
     toPile.appendChild(card);
     card.style.transform = 'translate(-50%, -50%)';
 
-    // set final z: top of discard, or reset in draw
+    // Top-of-discard: ensure latest is on top
     if (toPile.id === 'discardPile') {
       discardZ += 1;
       card.style.zIndex = String(1000 + discardZ);
@@ -136,15 +146,18 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
       card.style.zIndex = '';
     }
 
-    // cleanup transition props
+    // Cleanup transition props
     card.style.transitionProperty = '';
     card.style.transitionTimingFunction = '';
     card.style.transitionDuration = '';
     card.style.transitionDelay = '';
 
-    // also clear any shuttle delay we may have applied
-    const shuttle = $('.cdp-shuttle', card);
-    if (shuttle) shuttle.style.transitionDelay = '';
+    if (shuttle) {
+      shuttle.style.transitionProperty = '';
+      shuttle.style.transitionTimingFunction = '';
+      shuttle.style.transitionDuration = '';
+      shuttle.style.transitionDelay = '';
+    }
 
     resolve();
   };
@@ -156,19 +169,25 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
   };
   card.addEventListener('transitionend', onEnd);
 
-  // kick the animation
+  // Kick both animations in the same frame
   requestAnimationFrame(() => {
     card.style.transitionDuration = `${moveMs}ms`;
     if (delay) card.style.transitionDelay = `${delay}ms`;
     card.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+
+    if (shuttle && tilt != null) {
+      // rotate the shuttle at the same time as the move (no jitter)
+      shuttle.style.transform = `rotate(${tilt}deg)`;
+    }
   });
 
-  // safety fallback
+  // Safety fallback
   setTimeout(() => {
     card.removeEventListener('transitionend', onEnd);
     end();
-  }, moveMs + delay + 60);
+  }, moveMs + delay + 80);
 });
+
 
 
     const refreshInteractivity = () => {
@@ -199,16 +218,6 @@ const onCardClick = (ev) => {
   });
 };
 
-// Animate the shuttle's tilt in sync with the move
-const animateTilt = (card, tiltDeg, delayMs=0) => {
-  const shuttle = $('.cdp-shuttle', card);
-  if (!shuttle) return;
-  shuttle.style.transitionDelay = delayMs ? `${delayMs}ms` : '0ms';
-  // set in the same rAF tick as movement for perfect sync
-  requestAnimationFrame(() => {
-    shuttle.style.setProperty('--r', tiltDeg + 'deg');
-  });
-};
 
 
 const maybeReshuffle = async () => {
@@ -216,26 +225,25 @@ const maybeReshuffle = async () => {
   const cards = $$('.cdp-card', discardPile);
   if (!cards.length) return;
 
-  const stepDelay = 25; // fast stagger
+  const stepDelay = 25; // fast, per your request
   const moves = [];
 
   for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
     const card = cards[i];
     card.classList.remove('is-discarded');
 
-    // choose a fresh tilt and animate it in sync with the move
-    const tilt = (((Date.now() + i) * 13) % 9) - 4;
-    animateTilt(card, tilt, k * stepDelay);
+    // Choose a fresh tilt; animate it IN SYNC with the move
+    const newTilt = (((Date.now() + i) * 13) % 9) - 4;
 
     moves.push(
-      moveCard(card, drawPile, { delay: k * stepDelay })
+      moveCard(card, drawPile, { delay: k * stepDelay, tilt: newTilt })
     );
   }
 
   await Promise.all(moves);
-  // back in draw: no z-index stacking needed
   refreshInteractivity();
 };
+
 
 
 
