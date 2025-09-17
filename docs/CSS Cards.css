@@ -1,24 +1,22 @@
-<style>
-/* ===== FE-SAFE SIZING (no % heights) ===== */
-.card-table{
-  /* Tunables */
+/* ===== Namespaced: CDP (Card Deck Piles) ===== */
+
+#cardTable{
   --card-w: 12rem;
   --card-h: 16.5rem;
   --radius: .6rem;
   --flip-duration: .6s;
   --move-duration: .5s;
   --perspective: 80rem;
-  --gap: 3rem;          /* space between piles */
-  --pile-pad: 1rem;     /* inner breathing room */
+  --gap: 3rem;
+  --pile-pad: 1rem;
   --flip-scale: 1.15;
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
   --shadow-strong: 0 .6rem 1.6rem rgba(0,0,0,.35);
 
   position: relative;
   width: 100%;
-  /* Reserve enough height for a flipped card + padding */
   min-height: calc(var(--card-h) * var(--flip-scale) + 2 * var(--pile-pad) + 1rem);
-  padding-block: .25rem;               /* tiny breathing room */
+
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
@@ -26,16 +24,15 @@
   gap: var(--gap);
 }
 
-/* enforce gap in FE */
-.sqs-block-code .sqs-block-content .card-table{
+/* enforce gap inside FE */
+.sqs-block-code .sqs-block-content #cardTable{
   gap: var(--gap) !important;
   column-gap: var(--gap) !important;
   row-gap: var(--gap) !important;
 }
 
-.pile{
+#cardTable .pile{
   position: relative;
-  /* Intrinsic, not %: sized to card height */
   height: calc(var(--card-h) * 1.1);
   width: clamp(14rem, 42%, 28rem);
   padding: var(--pile-pad);
@@ -46,10 +43,8 @@
   outline-offset: .4rem;
 }
 
-.cards-seed{ display:none; }
-
-/* ===== Card 3D structure ===== */
-.card{
+/* ----- CARD (namespaced) ----- */
+#cardTable .cdp-card{
   position: absolute;
   top: 50%;
   left: 50%;
@@ -61,33 +56,32 @@
   height: var(--card-h);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  will-change: transform;
   cursor: pointer;
   user-select: none;
 }
 
-.card .flipper{
+/* flipper + faces */
+#cardTable .cdp-card .cdp-flipper{
   position: absolute; inset: 0;
   transform-style: preserve-3d;
   transition: transform var(--flip-duration);
 }
-
-.card .face{
+#cardTable .cdp-card .cdp-face{
   position: absolute; inset: 0;
   border-radius: var(--radius);
   overflow: hidden;
   backface-visibility: hidden;
 }
 
-/* Back artwork */
-.card .back{
+/* back artwork */
+#cardTable .cdp-card .cdp-back{
   background-size: 102% 102%;
   background-position: center;
   background-repeat: no-repeat;
 }
 
-/* Front content */
-.card .front{
+/* front content */
+#cardTable .cdp-card .cdp-front{
   transform: rotateY(180deg);
   background: #f7f4ec;
   box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
@@ -95,7 +89,7 @@
   place-items: center;
   padding: 1rem;
 }
-.card .front .front-content{
+#cardTable .cdp-card .front-content{
   max-width: calc(var(--card-w) * .9);
   max-height: calc(var(--card-h) * .85);
   overflow: auto;
@@ -103,14 +97,16 @@
   font-size: 1rem;
 }
 
-.card.is-flipped .flipper{
+/* states */
+#cardTable .cdp-card.is-flipped .cdp-flipper{
   transform: rotateY(180deg) scale(var(--flip-scale));
   box-shadow: var(--shadow-strong);
 }
-
-.card.is-discarded{ pointer-events: none; cursor: default; }
+#cardTable .cdp-card.is-discarded{
+  pointer-events: none;
+  cursor: default;
+}
 
 @media (prefers-reduced-motion: reduce){
-  .card .flipper{ transition: none; }
+  #cardTable .cdp-card .cdp-flipper{ transition: none; }
 }
-</style>
