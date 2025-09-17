@@ -243,19 +243,31 @@ const onCardClick = (ev) => {
   });
 };
 
+// Reshuffle so BOTTOM cards go first and the TOP card returns LAST.
+// That way, no post-animation "pop" is needed and stacking stays correct.
 const maybeReshuffle = async () => {
   if ($$('.cdp-card', drawPile).length) return;
-  const cards = $$('.cdp-card', discardPile);
-  if (!cards.length) return;
 
-  const stepDelay = 25;
+  const cards = $$('.cdp-card', discardPile); // DOM order: bottom..top (last = topmost)
+  const n = cards.length;
+  if (!n) return;
+
+  const stepDelay = 25; // keep the nice flowing look
   const moves = [];
-  for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
-    const card = cards[i];
+
+  // Move bottom → top. Top card gets the largest delay, so it arrives last.
+  for (let j = 0; j < n; j++) {
+    const card = cards[j];
     card.classList.remove('is-discarded');
-    const newTilt = (((Date.now() + i) * 13) % 9) - 4;
-    moves.push(moveCard(card, drawPile, { delay: k * stepDelay, tilt: newTilt }));
+
+    // (Optional) give each a fresh resting tilt; animates in sync during reshuffle
+    const newTilt = (((Date.now() + j) * 13) % 9) - 4;
+
+    moves.push(
+      moveCard(card, drawPile, { delay: j * stepDelay, tilt: newTilt })
+    );
   }
+
   await Promise.all(moves);
   refreshInteractivity();
 };
