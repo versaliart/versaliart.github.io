@@ -101,43 +101,53 @@
       if (top) top.style.pointerEvents = '';
     };
 
-    const onCardClick = (ev) => {
-      const card = ev.currentTarget;
-      if ($$('.cdp-card', drawPile).at(-1) !== card) return;
+const onCardClick = (ev) => {
+  const card = ev.currentTarget;
 
-      if (!card.classList.contains('is-flipped')){
-        card.classList.add('is-flipped');
-        return;
-      }
+  // only the top card in draw can act
+  if ($$('.cdp-card', drawPile).at(-1) !== card) return;
 
-      card.addEventListener('transitionend', async function afterFlip(e){
-        if (e.propertyName !== 'transform') return;
-        card.removeEventListener('transitionend', afterFlip);
-        requestAnimationFrame(async () => {
-          card.classList.add('is-discarded');
-          await moveCard(card, discardPile);
-          refreshInteractivity();
-          maybeReshuffle();
-        });
-      }, {once:true});
-      card.classList.remove('is-flipped');
-    };
+  // first click → open
+  if (!card.classList.contains('is-flipped')) {
+    card.classList.add('is-flipped');
+    return;
+  }
 
-    const maybeReshuffle = async () => {
-      if ($$('.cdp-card', drawPile).length) return;
-      const cards = $$('.cdp-card', discardPile);
-      if (!cards.length) return;
+  // second click → flip shut + move to discard SIMULTANEOUSLY
+  card.classList.add('is-discarded');   // disables pointer events
+  card.classList.remove('is-flipped');  // flipper rotates back (0.6s)
 
-      const stepDelay = 110;
-      for (let i = cards.length - 1, k = 0; i >= 0; i--, k++){
-        const card = cards[i];
-        card.classList.remove('is-discarded');
-        const tilt = (((Date.now()+i) * 13) % 9) - 4;
-        card.style.setProperty('--r', tilt + 'deg');
-        await moveCard(card, drawPile, {delay: k * stepDelay});
-      }
-      refreshInteractivity();
-    };
+  // move animation on the card element happens concurrently with the flip
+  moveCard(card, discardPile).then(() => {
+    refreshInteractivity();
+    maybeReshuffle();
+  });
+};
+
+
+const maybeReshuffle = async () => {
+  if ($$('.cdp-card', drawPile).length) return;
+  const cards = $$('.cdp-card', discardPile);
+  if (!cards.length) return;
+
+  const stepDelay = 35; // was ~110ms → much faster now
+
+  // stream back right-to-left, re-tilt and move in the same frame
+  const moves = [];
+  for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
+    const card = cards[i];
+    card.classList.remove('is-discarded');
+
+    // set a fresh tilt BEFORE starting the move (so rotation + translation animate together)
+    const tilt = (((Date.now() + i) * 13) % 9) - 4;
+    card.style.setProperty('--r', tilt + 'deg');
+
+    moves.push(moveCard(card, drawPile, { delay: k * stepDelay }));
+  }
+  await Promise.all(moves);
+  refreshInteractivity();
+};
+
 
     // Seed from your hidden articles (still use your <article class="card"> seeds)
     const seeds = $$('.cards-seed .card');

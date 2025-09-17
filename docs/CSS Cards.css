@@ -4,8 +4,8 @@
   --card-w: 18rem;
   --card-h: 32rem;
   --radius: .6rem;
-  --flip-duration: .6s;
-  --move-duration: .5s;
+  --flip-duration: .35s;
+  --move-duration: .35s;
   --perspective: 80rem;
   --gap: 2rem;
   --pile-pad: 1rem;
