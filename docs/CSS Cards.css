@@ -68,12 +68,9 @@
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
-  /* kill the root cause */
-  transform: none !important;
-  transition: none !important;
-
+  transition: none !important;      /* stop theme/global transitions */
   box-shadow: var(--shadow);
-  will-change: transform; /* fine to keep */
+  will-change: transform;
 }
 
 
