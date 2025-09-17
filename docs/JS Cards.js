@@ -29,99 +29,80 @@
     const seedRoot    = $('.cards-seed');
     if (!drawPile || !discardPile || !seedRoot) return;
 
-    const makeCard = (seedNode, idx) => {
-      const backURL  = seedNode.getAttribute('data-back') || '';
-      const textHTML = $('.front-content', seedNode)?.innerHTML || '';
+const makeCard = (seedNode, idx) => {
+  const backURL  = seedNode.getAttribute('data-back') || '';
+  const textHTML = $('.front-content', seedNode)?.innerHTML || '';
 
-      const card = document.createElement('div');
-      card.className = 'cdp-card';
-      card.dataset.index = String(idx);
-      const tilt = ((idx * 37) % 9) - 4;
-      card.style.setProperty('--r', tilt + 'deg');
+  const card = document.createElement('div');
+  card.className = 'cdp-card';
+  card.dataset.index = String(idx);
 
-      const flipper = document.createElement('div');
-      flipper.className = 'cdp-flipper';
+  // shuttle = holds tilt + shadow, isolates travel axes from rotation
+  const shuttle = document.createElement('div');
+  shuttle.className = 'cdp-shuttle';
+  const tilt = ((idx * 37) % 9) - 4; // -4..+4deg
+  shuttle.style.setProperty('--r', tilt + 'deg');
 
-      const back = document.createElement('div');
-      back.className = 'cdp-face cdp-back';
-      back.style.backgroundImage = `url("${backURL}")`;
+  const flipper = document.createElement('div');
+  flipper.className = 'cdp-flipper';
 
-      const front = document.createElement('div');
-      front.className = 'cdp-face cdp-front';
-      const frontBox = document.createElement('div');
-      frontBox.className = 'front-content';
-      frontBox.innerHTML = textHTML;
-      front.appendChild(frontBox);
+  const back = document.createElement('div');
+  back.className = 'cdp-face cdp-back';
+  back.style.backgroundImage = `url("${backURL}")`;
 
-      flipper.appendChild(back);
-      flipper.appendChild(front);
-      card.appendChild(flipper);
-      return card;
-    };
+  const front = document.createElement('div');
+  front.className = 'cdp-face cdp-front';
+  const frontBox = document.createElement('div');
+  frontBox.className = 'front-content';
+  frontBox.innerHTML = textHTML;
+  front.appendChild(frontBox);
 
-// Move a card by animating in viewport coordinates, then reparent at the end
+  flipper.appendChild(back);
+  flipper.appendChild(front);
+  shuttle.appendChild(flipper);
+  card.appendChild(shuttle);
+  return card;
+};
+
 const moveCard = (card, toPile, {delay=0} = {}) => new Promise(resolve => {
-  // measure current card box and target pile center
   const from = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
 
-  const targetLeft = toRect.left + toRect.width  / 2 - from.width  / 2;
-  const targetTop  = toRect.top  + toRect.height / 2 - from.height / 2;
+  const fromCx = from.left + from.width / 2;
+  const fromCy = from.top  + from.height / 2;
+  const toCx   = toRect.left + toRect.width / 2;
+  const toCy   = toRect.top  + toRect.height / 2;
 
-  // elevate above everything so shadows/text never overlay incorrectly
-  const prev = {
-    position: card.style.position,
-    left:     card.style.left,
-    top:      card.style.top,
-    transform:card.style.transform,
-    zIndex:   card.style.zIndex,
-    transition: card.style.transition,
-    delay:      card.style.transitionDelay
-  };
+  const dx = toCx - fromCx;
+  const dy = toCy - fromCy;
 
-  // Freeze in place visually
-  card.style.zIndex = '999';
-  card.style.transition = 'none';
-  // Put it in viewport space exactly where it is now
-  card.style.position = 'fixed';
-  card.style.left = `${from.left}px`;
-  card.style.top  = `${from.top}px`;
-  // Drop the baseline translate; keep rotation (tilt)
-  card.style.transform = `rotate(var(--r,0))`;
+  // raise during travel so nothing overlays it
+  const prevZ = card.style.zIndex;
+  card.style.zIndex = '9999';
 
-  // ensure styles apply
-  // eslint-disable-next-line no-unused-expressions
-  card.offsetHeight;
-
-  requestAnimationFrame(() => {
-    card.style.transition = `left var(--move-duration) ease, top var(--move-duration) ease, transform var(--move-duration) ease`;
-    if (delay) card.style.transitionDelay = `${delay}ms`;
-    // animate to the other pile's center; rotation animates concurrently if --r changed
-    card.style.left = `${targetLeft}px`;
-    card.style.top  = `${targetTop}px`;
-  });
+  // 1) animate the CARD’s transform (axes are unrotated), flip continues on .cdp-flipper
+  card.style.transition = 'transform var(--move-duration) ease';
+  if (delay) card.style.transitionDelay = `${delay}ms`;
+  card.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
 
   const onEnd = (e) => {
-    // wait for the 'top' or 'left' transition to finish
-    if (e.propertyName !== 'top' && e.propertyName !== 'left') return;
+    if (e.propertyName !== 'transform') return;
     card.removeEventListener('transitionend', onEnd);
 
-    // Reparent AFTER the move, then restore baseline centering style
+    // 2) reparent, snap back to baseline center (no visual jump)
     card.style.transition = 'none';
     toPile.appendChild(card);
-    // restore original inline props and baseline transform used in piles
-    card.style.position  = prev.position || '';
-    card.style.left      = prev.left || '';
-    card.style.top       = prev.top || '';
-    card.style.transform = `translate(-50%, -50%) rotate(var(--r,0))`;
-    card.style.zIndex    = prev.zIndex || '';
-    card.style.transitionDelay = prev.delay || '';
-    card.style.transition = prev.transition || '';
-
+    card.style.transform = 'translate(-50%, -50%)';
+    // cleanup
+    void card.offsetHeight; // reflow
+    card.style.transition = '';
+    card.style.transitionDelay = '';
+    card.style.zIndex = prevZ || '';
     resolve();
   };
   card.addEventListener('transitionend', onEnd);
 });
+
 
 
 
@@ -160,22 +141,24 @@ const maybeReshuffle = async () => {
   const cards = $$('.cdp-card', discardPile);
   if (!cards.length) return;
 
-  const stepDelay = 25; // much shorter stagger
-
+  const stepDelay = 25; // fast
   const moves = [];
+
   for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
     const card = cards[i];
     card.classList.remove('is-discarded');
 
-    // set new tilt BEFORE starting move so rotation + translation animate together
+    // re-tilt on the SHUTTLE so translation axes aren’t rotated
+    const shuttle = $('.cdp-shuttle', card);
     const tilt = (((Date.now() + i) * 13) % 9) - 4;
-    card.style.setProperty('--r', tilt + 'deg');
+    shuttle.style.setProperty('--r', tilt + 'deg');
 
     moves.push(moveCard(card, drawPile, { delay: k * stepDelay }));
   }
   await Promise.all(moves);
   refreshInteractivity();
 };
+
 
 
 
