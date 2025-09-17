@@ -68,9 +68,13 @@
   position: absolute;
   inset: 0;
   border-radius: var(--radius);
+  /* Own the transform entirely in JS; don't declare it here */
+  transform: none;              /* ensures no stylesheet transform is applied */
+  transition-property: none;    /* prevents theme/global transitions */
   box-shadow: var(--shadow);
   will-change: transform;
 }
+
 
 /* Stronger depth while flipped */
 #cardTable .cdp-card.is-flipped .cdp-shuttle{

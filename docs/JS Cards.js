@@ -91,11 +91,7 @@ const _getMoveMs = (() => {
 })();
 
 
-// Move the CARD (translate) and optionally animate TILT on the SHUTTLE in perfect sync.
-// Also ensures newly discarded cards land visually on top.
-// Move the CARD (translate) and, if tilt!=null, animate the SHUTTLE tilt in the same frame.
-// Move the CARD (translate) and, if tilt!=null, rotate the SHUTTLE in the same tick.
-// Also keeps newest discard on top.
+
 const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise((resolve) => {
   const from   = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
@@ -111,78 +107,71 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   const moveMs  = (typeof _getMoveMs === 'function') ? _getMoveMs() : 350;
   const shuttle = card.querySelector('.cdp-shuttle');
 
-  // target tilt (if provided) and precise numeric start tilt
-  const startTilt = Number(card.dataset.tilt || 0);
-  const endTilt   = (tilt == null) ? startTilt : Number(tilt);
-
-  // raise during travel so nothing draws over it
-  const prevZ = card.style.zIndex;
-  card.style.zIndex = '9999';
-
-  // Stage start states (no transitions)
+  // --- Stage: no transitions; baseline center for the CARD ---
   card.style.transition = 'none';
   card.style.transform  = 'translate(-50%, -50%)';
+
+  // Apply the target tilt immediately (no transition) and persist it
+  const startTilt  = Number(card.dataset.tilt || 0);
+  const targetTilt = (tilt == null) ? startTilt : Number(tilt);
   if (shuttle) {
     shuttle.style.transition = 'none';
-    shuttle.style.transform  = `rotate(${startTilt}deg)`;
+    shuttle.style.transform  = `rotate(${targetTilt}deg)`;
   }
-  // commit staged styles
+  card.dataset.tilt = String(targetTilt);
+
+  // Ensure card stays above everything while traveling
+  card.style.zIndex = '9999';
+
+  // Commit staged styles
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
-  // Complete/cleanup
+  // --- Finish helper (reparent on next frame to avoid same-paint snap) ---
   let finished = false;
-  const end = () => {
+  const finish = () => {
     if (finished) return;
     finished = true;
+    requestAnimationFrame(() => {
+      card.style.transition = 'none';
+      toPile.appendChild(card);
+      card.style.transform = 'translate(-50%, -50%)';
 
-    // reparent and reset baseline
-    card.style.transition = 'none';
-    toPile.appendChild(card);
-    card.style.transform = 'translate(-50%, -50%)';
+      // Place newest on top in discard; reset in draw
+      if (toPile.id === 'discardPile') {
+        discardZ += 1;
+        card.style.zIndex = String(1000 + discardZ);
+      } else {
+        card.style.zIndex = '';
+      }
 
-    // newest discard on top
-    if (toPile.id === 'discardPile') {
-      discardZ += 1;
-      card.style.zIndex = String(1000 + discardZ);
-    } else {
-      card.style.zIndex = '';
-    }
-
-    // persist the new tilt so next move starts from the correct angle
-    if (tilt != null) card.dataset.tilt = String(endTilt);
-
-    // clear inline transitions
-    card.style.transition = '';
-    if (shuttle) shuttle.style.transition = '';
-
-    resolve();
+      // Cleanup inline transition controls
+      card.style.transition = '';
+      if (shuttle) shuttle.style.transition = '';
+      resolve();
+    });
   };
 
   const onEnd = (e) => {
     if (e.target !== card || e.propertyName !== 'transform') return;
     card.removeEventListener('transitionend', onEnd);
-    end();
+    finish();
   };
   card.addEventListener('transitionend', onEnd);
 
-  // Fire both animations in the same frame with the same timing
+  // --- Fire the slide (tilt already set) ---
   requestAnimationFrame(() => {
     card.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
     card.style.transform  = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-
-    if (shuttle && endTilt !== startTilt) {
-      shuttle.style.transition = `transform ${moveMs}ms ease ${delay}ms`;
-      shuttle.style.transform  = `rotate(${endTilt}deg)`;
-    }
   });
 
-  // safety
+  // Safety fallback (in case transitionend is swallowed)
   setTimeout(() => {
     card.removeEventListener('transitionend', onEnd);
-    end();
-  }, moveMs + delay + 100);
+    finish();
+  }, moveMs + delay + 120);
 });
+
 
 
 
