@@ -27,6 +27,7 @@
     const drawPile    = $('#drawPile', table);
     const discardPile = $('#discardPile', table);
     const seedRoot    = $('.cards-seed');
+    let discardZ = 0;
     if (!drawPile || !discardPile || !seedRoot) return;
 
 const makeCard = (seedNode, idx) => {
@@ -87,6 +88,7 @@ const _getMoveMs = (() => {
 })();
 
 // Move by animating the CARD’s transform; reparent only after it finishes
+// Move by animating the CARD's translate; reparent after, and set top-of-discard z-index
 const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
   const from = card.getBoundingClientRect();
   const toRect = toPile.getBoundingClientRect();
@@ -99,20 +101,24 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
   const dx = toCx - fromCx;
   const dy = toCy - fromCy;
 
-  // start from the baseline center
+  // robust duration read (matches your existing helper)
+  const moveMs = (typeof _getMoveMs === 'function') ? _getMoveMs() : 500;
+
+  // raise while traveling so nothing overlays it
+  const prevZ = card.style.zIndex;
+  card.style.zIndex = '9999';
+
+  // baseline → animate offset
   card.style.transitionProperty = 'transform';
   card.style.transitionTimingFunction = 'ease';
   card.style.transitionDuration = '0ms';
   card.style.transitionDelay = '0ms';
   card.style.transform = 'translate(-50%, -50%)';
-
-  // force reflow, then animate to the offset
+  // force reflow
   // eslint-disable-next-line no-unused-expressions
   card.offsetHeight;
 
-  const moveMs = _getMoveMs();
   let finished = false;
-
   const end = () => {
     if (finished) return;
     finished = true;
@@ -122,17 +128,28 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
     toPile.appendChild(card);
     card.style.transform = 'translate(-50%, -50%)';
 
-    // cleanup (let future moves use var duration again)
+    // set final z: top of discard, or reset in draw
+    if (toPile.id === 'discardPile') {
+      discardZ += 1;
+      card.style.zIndex = String(1000 + discardZ);
+    } else {
+      card.style.zIndex = '';
+    }
+
+    // cleanup transition props
     card.style.transitionProperty = '';
     card.style.transitionTimingFunction = '';
     card.style.transitionDuration = '';
     card.style.transitionDelay = '';
 
+    // also clear any shuttle delay we may have applied
+    const shuttle = $('.cdp-shuttle', card);
+    if (shuttle) shuttle.style.transitionDelay = '';
+
     resolve();
   };
 
   const onEnd = (e) => {
-    // only accept THIS card’s transform end (ignore bubbled child transitions)
     if (e.target !== card || e.propertyName !== 'transform') return;
     card.removeEventListener('transitionend', onEnd);
     end();
@@ -143,20 +160,15 @@ const moveCard = (card, toPile, {delay=0} = {}) => new Promise((resolve) => {
   requestAnimationFrame(() => {
     card.style.transitionDuration = `${moveMs}ms`;
     if (delay) card.style.transitionDelay = `${delay}ms`;
-    // travel toward the other pile; tilt (on shuttle) can change simultaneously
-    card.style.transform =
-      `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+    card.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
   });
 
-  // safety fallback: if the browser never fires transitionend, still finish
+  // safety fallback
   setTimeout(() => {
     card.removeEventListener('transitionend', onEnd);
     end();
   }, moveMs + delay + 60);
 });
-
-
-
 
 
     const refreshInteractivity = () => {
@@ -187,6 +199,16 @@ const onCardClick = (ev) => {
   });
 };
 
+// Animate the shuttle's tilt in sync with the move
+const animateTilt = (card, tiltDeg, delayMs=0) => {
+  const shuttle = $('.cdp-shuttle', card);
+  if (!shuttle) return;
+  shuttle.style.transitionDelay = delayMs ? `${delayMs}ms` : '0ms';
+  // set in the same rAF tick as movement for perfect sync
+  requestAnimationFrame(() => {
+    shuttle.style.setProperty('--r', tiltDeg + 'deg');
+  });
+};
 
 
 const maybeReshuffle = async () => {
@@ -194,25 +216,26 @@ const maybeReshuffle = async () => {
   const cards = $$('.cdp-card', discardPile);
   if (!cards.length) return;
 
-  const stepDelay = 25; // fast
+  const stepDelay = 25; // fast stagger
   const moves = [];
 
   for (let i = cards.length - 1, k = 0; i >= 0; i--, k++) {
     const card = cards[i];
     card.classList.remove('is-discarded');
 
-    // re-tilt on the SHUTTLE so translation axes aren’t rotated
-    const shuttle = $('.cdp-shuttle', card);
+    // choose a fresh tilt and animate it in sync with the move
     const tilt = (((Date.now() + i) * 13) % 9) - 4;
-    shuttle.style.setProperty('--r', tilt + 'deg');
+    animateTilt(card, tilt, k * stepDelay);
 
-    moves.push(moveCard(card, drawPile, { delay: k * stepDelay }));
+    moves.push(
+      moveCard(card, drawPile, { delay: k * stepDelay })
+    );
   }
+
   await Promise.all(moves);
+  // back in draw: no z-index stacking needed
   refreshInteractivity();
 };
-
-
 
 
 

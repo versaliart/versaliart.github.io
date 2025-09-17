@@ -12,6 +12,7 @@
   --flip-scale: 1.15;
   --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
   --shadow-strong: 0 .6rem 1.6rem rgba(0,0,0,.35);
+  
 
   position: relative;
   width: 100%;
@@ -70,6 +71,7 @@
   transform: rotate(var(--r, 0deg));
   box-shadow: var(--shadow);
   will-change: transform;
+  transition: transform var(--move-duration) ease; 
 }
 
 /* Stronger depth while flipped */
