@@ -1,4 +1,4 @@
-/* Mystic Munson — Header v2.6 */
+/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) v2.5 */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
   function isHome(){ return normalizePath(location.pathname) === '/'; }
@@ -12,6 +12,17 @@
     });
     mo.observe(document.documentElement, {childList:true, subtree:true});
   }
+
+  // Inject centered logo once header exists (keeps buttons/layout untouched)
+  onceHeader(function(hdr){
+    if (!hdr.querySelector('.mm-logo-center')){
+      hdr.insertAdjacentHTML('afterbegin', `
+        <img class="mm-logo-center"
+             src="https://www.mysticmunson.design/s/MMlogoSHORTpng.png"
+             alt="Mystic Munson logo">
+      `);
+    }
+  });
 
   function selectSections(){
     const root = document.getElementById('page') || document.body;
@@ -29,15 +40,13 @@
     onceHeader(function(hdr){
       const STICKY = pxVar('--mm-sticky-top', 12);
 
-      // Park the header (no animation)
+      // Park the header; let CSS own the Y-drop (transform Y)
       Object.assign(hdr.style, {
         position: 'fixed',
         left: '50%',
         top: STICKY + 'px',
-        // Let CSS control the Y drop; we only center on X here:
         transform: 'translateX(-50%)'
       });
-
 
       // Visibility helpers (make hidden truly inert)
       function hideHeader(){
@@ -55,26 +64,22 @@
         hdr.style.visibility = 'visible';
       }
 
-      // Page top padding (none on home, space elsewhere)
-      const page = document.getElementById('page');
-      function applyPagePadding(){
-        if (!page) return;
-        if (isHome()){
-          page.style.paddingTop = '0px';
-        } else {
-          const h = parseFloat(getComputedStyle(hdr).height) || 52;
-          page.style.paddingTop = (h + STICKY) + 'px';
-        }
-      }
-
-      // Home-only reveal threshold (top of Section 2 at viewport top)
+      // Reveal threshold: use second section top as gate (your existing logic)
+      const sections = selectSections();
       let revealAt = 0;
       function computeThreshold(){
-        if (!isHome()){ revealAt = 0; return; }
-        const sections = selectSections();
-        if (sections.length < 2){ revealAt = 0; return; }
-        const r2 = sections[1].getBoundingClientRect();
-        revealAt = window.scrollY + r2.top - STICKY;
+        if (!sections.length){
+          revealAt = window.innerHeight * 0.6;
+          return;
+        }
+        // Prefer the top of section 2 relative to the page, offset by sticky
+        if (sections[1]){
+          const r2 = sections[1].getBoundingClientRect();
+          revealAt = window.scrollY + r2.top - STICKY;
+        } else {
+          // If only 1 section, fall back to ~60% viewport
+          revealAt = window.scrollY + Math.round(window.innerHeight * 0.6) - STICKY;
+        }
         if (revealAt < 0) revealAt = 0;
       }
 
@@ -100,25 +105,19 @@
       }
 
       // Init
-      applyPagePadding();
       computeThreshold();
       syncEdgePad();
       update();
 
-      // Listeners
+      // Listen
       window.addEventListener('scroll', update, {passive:true});
-      window.addEventListener('resize', () => { applyPagePadding(); computeThreshold(); syncEdgePad(); update(); });
-
-      // Re-sync when fonts load (sizes change)
-      if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(syncEdgePad).catch(()=>{});
-      }
+      window.addEventListener('resize', () => { computeThreshold(); syncEdgePad(); update(); });
 
       // Re-measure once for late DOM shifts (lazy sections, announcement bar)
       let t = null;
       const mo = new MutationObserver(() => {
         clearTimeout(t);
-        t = setTimeout(() => { applyPagePadding(); computeThreshold(); syncEdgePad(); update(); }, 100);
+        t = setTimeout(() => { computeThreshold(); syncEdgePad(); update(); }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);
