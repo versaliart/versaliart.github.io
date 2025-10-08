@@ -402,8 +402,18 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   transition: background-color 0.3s ease;
 }
 
-button.gallery-lightbox-control-btn polyline,
-button.gallery-lightbox-close-btn-icon {
+button.gallery-lightbox-control-btn polyline
+{
     stroke: white !important;
-    fill: white !important;
 }
+
+/* Lightbox close (X) button color */
+.gallery-lightbox-close-btn-icon svg path {
+  fill: white !important;
+}
+
+/* Optional: change hover color too */
+.gallery-lightbox-close-btn-icon:hover svg path {
+  fill: var(--your-accent-color, white) !important;
+}
+
