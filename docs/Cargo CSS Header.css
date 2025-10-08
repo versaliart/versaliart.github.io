@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
-/* Mystic Munson — Glass Header (absolute pills; no animation)          */
-/* v2.5 SUCCESS - announcement bar was the culprit in margin fucking    */
+/* Mystic Munson — Glass Header v2.6                                    */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens you actually use */
@@ -30,19 +29,18 @@
   /* Make L/R inset equal the vertical “air” inside the bar */
   --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2));
 
-  /* NEW: motion + logo tokens (for fade+drop + centered logo) */
-  --mm-dur: 420ms;
+ /* animation controls   */
+  --mm-dur:      420ms;
   --mm-ease-out: cubic-bezier(.2,.7,.2,1);
-  --mm-drop: 22px;
-  --mm-logo-h: 1.8rem;
+  --mm-drop:     22px;  /* how far the bar starts above the top before dropping */
 }
 
-/* Glass bar: fixed, already parked; visibility toggled by JS */
+/* Glass bar: fixed, parked offscreen slightly; visibility toggled by JS */
 header#header[data-test="header"]{
   position: fixed;
   left: 50%;
   top: var(--mm-sticky-top);
-  transform: translateX(-50%) translateY(calc(-1 * var(--mm-drop)));
+  transform: translateX(-50%) translateY(calc(-1 * var(--mm-drop))); /* start above */
   z-index: 1200;
 
   height: var(--mm-header-h);
@@ -56,17 +54,19 @@ header#header[data-test="header"]{
   box-sizing: border-box;
   overflow: visible;
 
+  /* fade+drop animation */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-
-  /* NEW: animate drop + fade with ease-out */
-  transition: transform var(--mm-dur) var(--mm-ease-out), opacity var(--mm-dur) var(--mm-ease-out);
+  transition:
+    transform var(--mm-dur) var(--mm-ease-out),
+    opacity   var(--mm-dur) var(--mm-ease-out);
   will-change: transform, opacity;
 }
+
 header#header[data-test="header"].mm-visible{
-  transform: translateX(-50%) translateY(0);
   opacity: 1;
+  transform: translateX(-50%) translateY(0); /* dropped into place */
   pointer-events: auto;
   visibility: visible;
 }
@@ -87,60 +87,58 @@ header#header .header-nav,
 header#header .header-nav-wrapper,
 header#header .header-nav-list{
   position: static !important;
-  left: auto !important; right: auto !important; top: auto !important; bottom: auto !important;
-  inset: auto !important;
-  transform: none !important;
-  clip-path: none !important;
-  filter: none !important;
-  mix-blend-mode: normal !important;
-  box-shadow: none !important;
-  background: none !important;
-  border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-}
-
-/* Make the nav list a simple flex row and force our min widths */
-header#header .header-nav-list{
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  gap: .5rem !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  margin: 0 !important;
-  width: auto !important;
-}
-
-/* Our three columns: Left, (gap), Right */
-header#header .header-title-nav-wrapper{
-  display: grid !important;
-  grid-template-columns: 1fr var(--mm-gap-fixed) 1fr !important;
-  align-items: center !important;
-  gap: 0 !important;
-  height: 100% !important;
+  min-height: 0 !important;
   width: 100% !important;
-  padding-left: var(--mm-edge-pad) !important;
-  padding-right: var(--mm-edge-pad) !important;
-}
-header#header .header-title-nav-wrapper > *{ min-width: 0 !important; }
-
-/* Left column: nav */
-header#header .header-nav{
-  grid-column: 1 / 2 !important;
-  display: flex !important;
-  justify-content: flex-start !important;
-}
-/* Right column: nav */
-header#header .header-actions{
-  grid-column: 3 / 4 !important;
-  display: flex !important;
-  justify-content: flex-end !important;
+  height: 100% !important;
+  max-width: none !important;
+  line-height: normal !important;
+  box-sizing: border-box !important;
 }
 
-/* Middle column reserved as empty spacer so buttons never collide */
-header#header .header-title{ grid-column: 2 / 3 !important; }
+/* Keep only FIRST and LAST nav items */
+header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
+  display: none !important;
+}
 
-/* Buttons: pill look, equal min width */
+/* Center spacer for your decorative image / gap */
+header#header::before{
+  content:"";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: var(--mm-gap-fixed);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* === Place the two pills directly inside the bar edges =============== */
+/* Vertically center via top:0; bottom:0; margin-block:auto; */
+/* Left pill */
+header#header .header-nav-list > .header-nav-item:first-child > a{
+  position: absolute !important;
+  left: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0;              /* vertical centering without translate */
+  margin-block: auto;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 2;
+}
+/* Right pill */
+header#header .header-nav-list > .header-nav-item:last-child > a{
+  position: absolute !important;
+  right: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0;              /* vertical centering without translate */
+  margin-block: auto;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 2;
+}
+
+/* Pill visuals (unchanged) */
 header#header .header-nav-list > .header-nav-item > a{
   min-width: var(--mm-btn-min);
   padding-block: var(--mm-btn-pad-y);
@@ -171,7 +169,58 @@ header#header[data-test="header"]{
   padding-right: 0 !important;
 }
 
-/* ... (your other existing helper/comment blocks remain unchanged) ... */
+/* Neutralize the wrapper that creates a new positioning context */
+header#header .header-nav-item{
+  position: static !important;         /* was relative in the theme */
+  transform: none !important;          /* transforms also create containing blocks */
+  filter: none !important;             /* so does filter/backdrop-filter on the wrapper */
+  perspective: none !important;
+}
+
+/* Belt-and-suspenders: no other nav wrappers should be positioned */
+header#header .header-title-nav-wrapper,
+header#header .header-nav,
+header#header .header-nav-wrapper,
+header#header .header-nav-list{
+  position: static !important;
+  transform: none !important;
+  filter: none !important;
+  perspective: none !important;
+}
+
+/* Absolutely anchor the two pills to the bar’s edges (vertical center sans translate) */
+header#header .header-nav-list > .header-nav-item:first-child > a{
+  position: absolute !important;
+  left: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0; margin-block: auto;
+  z-index: 2;
+}
+header#header .header-nav-list > .header-nav-item:last-child > a{
+  position: absolute !important;
+  right: var(--mm-edge-pad) !important;
+  top: 0; bottom: 0; margin-block: auto;
+  z-index: 2;
+}
+/* Fix the positioning context: pills should anchor to the GLASS BAR, not this wrapper */
+header#header[data-test="header"] > .header-announcement-bar-wrapper{
+  position: static !important;     /* was relative — steals absolute children */
+  inset: auto !important;          /* neutralize any offsets if present */
+  transform: none !important;      /* belt/suspenders: avoid creating a containing block */
+  filter: none !important;
+  perspective: none !important;
+
+  /* also kill stray gutters so the inner box matches the bar width */
+  width: 100% !important;
+  max-width: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+header#header .header-nav-list > .header-nav-item > a{
+  font-size: var(--mm-pill-font);
+  line-height: var(--mm-pill-line);
+}
 
 /* Restore pill sizing inside the glass header (beats Fonts.css !important) */
 header#header .header-nav-list > .header-nav-item > a{
@@ -183,30 +232,6 @@ header#header .header-nav-list > .header-nav-item > a{
   justify-content: center !important;
 }
 
+
 /* Remove the injected "Skip to Content" link inside the header */
 header#header .header-skip-link{ display:none !important; }
-
-/* === NEW: Centered logo (independent of buttons) =================== */
-header#header[data-test="header"] .mm-logo-center{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: var(--mm-logo-h);
-  opacity: 0;                /* synced with header reveal */
-  pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
-  transition: opacity var(--mm-dur) var(--mm-ease-out);
-}
-header#header[data-test="header"].mm-visible .mm-logo-center{
-  opacity: 0.95;
-}
-
-/* Reduced motion (optional) */
-@media (prefers-reduced-motion: reduce){
-  header#header[data-test="header"],
-  header#header[data-test="header"] .mm-logo-center{
-    transition: none !important;
-  }
-}
