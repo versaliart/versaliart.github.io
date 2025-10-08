@@ -402,6 +402,6 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   transition: background-color 0.3s ease;
 }
 button.gallery-lightbox-control-btn polyline,
-button.gallery-lightbox-close-btn polyline {
+button.gallery-lightbox-close-btn {
     stroke: white !important;
 }
