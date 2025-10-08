@@ -401,10 +401,8 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   background-color: rgba(28, 24, 41, 0.85) !important;  /* change color + opacity here */
   transition: background-color 0.3s ease;
 }
-button.gallery-lightbox-control-btn polyline,
+button.gallery-lightbox-control-btn polyline
 button.gallery-lightbox-close-btn-icon {
     stroke: white !important;
-}
-.yui3-lightbox2 .sqs-lightbox-close {
-	color: white !important; // the colour you want
+    color: white !important;
 }
