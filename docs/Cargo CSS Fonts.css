@@ -375,11 +375,40 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   display: none !important;
 }
 
-/* Rounded corners for Gallery thumbnails */
-.sqs-gallery-design-grid .sqs-gallery-design-grid-slide img,
-.sqs-gallery-design-carousel .slide img,
-.sqs-gallery-design-slideshow .sqs-gallery-image img,
-.sqs-gallery-design-stacked .sqs-gallery-image img {
+/* === Gallery thumbnails: force 8px rounded corners (all layouts) === */
+
+/* 1) Clip at the slide/card level so overlays are rounded too */
+.sqs-gallery-design-grid .sqs-gallery-design-grid-slide,
+.sqs-gallery-design-carousel .slide,
+.sqs-gallery-design-slideshow .slide,
+.sqs-gallery-design-stacked .sqs-gallery-image-container,
+.gallery-grid .gallery-grid-item {             /* Gallery SECTIONS */
   border-radius: 8px !important;
-  overflow: hidden;
+  overflow: hidden !important;
+  -webkit-mask-image: -webkit-radial-gradient(white, black); /* iOS overflow fix */
+}
+
+/* 2) Make inner elements inherit the rounding */
+.sqs-gallery-design-grid .sqs-gallery-design-grid-slide a,
+.sqs-gallery-design-grid .sqs-gallery-design-grid-slide img,
+.sqs-gallery-design-carousel .slide a,
+.sqs-gallery-design-carousel .slide img,
+.sqs-gallery-design-slideshow .slide a,
+.sqs-gallery-design-slideshow .slide img,
+.sqs-gallery-design-stacked .sqs-gallery-image-container img,
+.gallery-grid .gallery-grid-item .gallery-grid-item-wrapper,
+.gallery-grid .gallery-grid-item img {
+  border-radius: inherit !important;
+}
+
+/* 3) Ensure hover/metadata/cover layers are clipped as well */
+.sqs-gallery .meta,
+.sqs-gallery .sqs-gallery-meta-container,
+.gallery-grid .gallery-grid-item .meta,
+.sqs-gallery .content-fill,
+.sqs-gallery .content-fit,
+.gallery-grid .gallery-grid-item .gallery-grid-item-image {
+  border-radius: inherit !important;
+  overflow: hidden !important;
+  clip-path: inset(0 round 8px);  /* bulletproof fallback for stubborn wrappers */
 }
