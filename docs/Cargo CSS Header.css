@@ -36,34 +36,40 @@
 }
 
 /* Glass bar: fixed, parked offscreen slightly; visibility toggled by JS */
-header#header[data-test="header"] .mm-logo-center{
-  position: absolute;
-  top: 50%;
+header#header[data-test="header"]{
+  position: fixed;
   left: 50%;
-  transform: translate(-50%, -50%); /* rides with header's own drop */
-  height: 1.8rem;
-  opacity: 0;                       /* hidden until header reveals */
+  top: var(--mm-sticky-top);
+  transform: translateX(-50%) translateY(calc(-1 * var(--mm-drop))); /* start above */
+  z-index: 1200;
+
+  height: var(--mm-header-h);
+  width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
+  border-radius: var(--mm-radius);
+  background: var(--mm-bg);
+  -webkit-backdrop-filter: blur(var(--mm-blur));
+  backdrop-filter: blur(var(--mm-blur));
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: var(--mm-shadow);
+  box-sizing: border-box;
+  overflow: visible;
+
+  /* fade+drop animation */
+  opacity: 0;
   pointer-events: none;
-  user-select: none;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
-
-  /* match header timing & easing */
+  visibility: hidden;
   transition:
-    opacity var(--mm-dur) var(--mm-ease-out);
+    transform var(--mm-dur) var(--mm-ease-out),
+    opacity   var(--mm-dur) var(--mm-ease-out);
+  will-change: transform, opacity;
 }
 
-/* When header becomes visible, fade the logo in with the same curve */
-header#header[data-test="header"].mm-visible .mm-logo-center{
-  opacity: 0.95;
+header#header[data-test="header"].mm-visible{
+  opacity: 1;
+  transform: translateX(-50%) translateY(0); /* dropped into place */
+  pointer-events: auto;
+  visibility: visible;
 }
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce){
-  header#header[data-test="header"] .mm-logo-center{
-    transition: opacity 1ms linear; /* essentially no animation */
-  }
-}
-
 
 /* Strip Squarespace extras inside the bar */
 header#header .header-background,
@@ -229,3 +235,38 @@ header#header .header-nav-list > .header-nav-item > a{
 
 /* Remove the injected "Skip to Content" link inside the header */
 header#header .header-skip-link{ display:none !important; }
+
+/* === Centered logo for glass header ================================== */
+:root{
+  /* optional: tweak the logo size here */
+  --mm-logo-h: 1.8rem;
+}
+
+/* Place the injected image perfectly centered inside the glass bar */
+header#header[data-test="header"] .mm-logo-center{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);   /* follows header drop/transform */
+  height: var(--mm-logo-h);
+  opacity: 0;                         /* hidden until header reveals */
+  pointer-events: none;               /* never block clicks on pills */
+  user-select: none;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+  z-index: 1;                         /* under edge pills (which are z:2) */
+
+  /* match the header’s reveal timing */
+  transition: opacity var(--mm-dur) var(--mm-ease-out);
+}
+
+/* Fade in when header becomes visible */
+header#header[data-test="header"].mm-visible .mm-logo-center{
+  opacity: .95;
+}
+
+/* Respect reduced motion users */
+@media (prefers-reduced-motion: reduce){
+  header#header[data-test="header"] .mm-logo-center{
+    transition: opacity 1ms linear;
+  }
+}
