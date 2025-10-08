@@ -1,7 +1,18 @@
-/* ===== Custom Cursor ===== */
-/* Applies sitewide; you can also scope it with .flip-top or .page-section */
+/* === Custom Cursor: Normal === */
 body {
   cursor:
     url("https://www.mysticmunson.design/s/planchette.svg") 1 1,
     auto;
+}
+
+/* === Custom Cursor: Pointer === */
+a,
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+.gallery-lightbox-close-btn {
+  cursor:
+    url("https://www.mysticmunson.design/s/planchetteLink.svg") 1 1,
+    pointer; /* fallback if image fails */
 }
