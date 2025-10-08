@@ -412,11 +412,13 @@ button.gallery-lightbox-control-btn polyline
   fill: white !important;
 }
 
-/* Optional: change hover color too */
-.gallery-lightbox-close-btn-icon:hover svg path {
-  fill: var(--your-accent-color, white) !important;
+/* === Squarespace Lightbox Close Button Color Override === */
+button.gallery-lightbox-close-btn .gallery-lightbox-close-btn-icon svg path {
+  stroke: white !important;     /* sets line color of the X */
+  stroke-width: 2 !important;   /* optional: thickens the lines slightly */
 }
 
-button.gallery-lightbox-close-btn .gallery-lightbox-close-btn-icon svg * {
-  fill: white !important;
+/* Optional hover color */
+button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg path {
+  stroke: var(--your-accent-color, white) !important;
 }
