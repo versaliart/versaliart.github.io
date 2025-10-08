@@ -1,4 +1,4 @@
-/* === Custom Cursor: Normal === */
+/* === Custom Cursor: Default === */
 body {
   cursor:
     url("https://www.mysticmunson.design/s/planchette.svg") 1 1,
@@ -13,6 +13,25 @@ input[type="button"],
 input[type="submit"],
 .gallery-lightbox-close-btn {
   cursor:
-    url("https://www.mysticmunson.design/s/planchetteLink.svg") 1 1,
-    pointer; /* fallback if image fails */
+    url("https://www.mysticmunson.design/s/planchette-pointer.svg") 1 1,
+    pointer;
+}
+
+/* === Custom Cursor: Zoom-In === */
+.zoom-in,
+[data-action="zoom-in"],
+.gallery-lightbox-control-next,
+.gallery-lightbox-control-prev {
+  cursor:
+    url("https://www.mysticmunson.design/s/planchetteZoomin.svg") 1 1,
+    zoom-in;
+}
+
+/* === Custom Cursor: Zoom-Out === */
+.zoom-out,
+[data-action="zoom-out"],
+.gallery-lightbox-close-btn {
+  cursor:
+    url("https://www.mysticmunson.design/s/planchetteZoomout.svg") 1 1,
+    zoom-out;
 }
