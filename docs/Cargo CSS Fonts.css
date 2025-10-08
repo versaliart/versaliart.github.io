@@ -397,7 +397,7 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
 }
 
 /* Squarespace Lightbox overlay color */
-.gallery-lightbox {
+.gallery-lightbox-background {
   background-color: rgba(28, 24, 41, 0.85) !important;  /* change color + opacity here */
   transition: background-color 0.3s ease;
 }
