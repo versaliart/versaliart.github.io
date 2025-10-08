@@ -405,5 +405,5 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
 button.gallery-lightbox-control-btn polyline,
 button.gallery-lightbox-close-btn-icon {
     stroke: white !important;
-    color: white !important;
+    fill: white !important;
 }
