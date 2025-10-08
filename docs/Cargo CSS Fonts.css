@@ -377,3 +377,11 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
 
 
 
+/* Rounded corners for Gallery thumbnails */
+.sqs-gallery-design-grid .sqs-gallery-design-grid-slide img,
+.sqs-gallery-design-carousel .slide img,
+.sqs-gallery-design-slideshow .sqs-gallery-image img,
+.sqs-gallery-design-stacked .sqs-gallery-image img {
+  border-radius: 8px !important;
+  overflow: hidden;
+}
