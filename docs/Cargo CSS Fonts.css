@@ -405,3 +405,6 @@ button.gallery-lightbox-control-btn polyline,
 button.gallery-lightbox-close-btn-icon {
     stroke: white !important;
 }
+.yui3-lightbox2 .sqs-lightbox-close {
+	color: white !important; // the colour you want
+}
