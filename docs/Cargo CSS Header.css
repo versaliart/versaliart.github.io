@@ -1,6 +1,5 @@
 /*----------------------------------------------------------------------*/
-/* Mystic Munson — Glass Header (absolute pills; no animation)          */
-/* v2.5 SUCCESS - announcement bar was the culprit in margin fucking    */
+/* Mystic Munson — Glass Header v2.6                                    */
 /*----------------------------------------------------------------------*/
 
 /* Fluid tokens you actually use */
@@ -29,14 +28,19 @@
 
   /* Make L/R inset equal the vertical “air” inside the bar */
   --mm-edge-pad: max(0px, calc((var(--mm-header-h) - var(--mm-pill-h)) / 2));
+
+ /* animation controls   */
+  --mm-dur:      420ms;
+  --mm-ease-out: cubic-bezier(.2,.7,.2,1);
+  --mm-drop:     22px;  /* how far the bar starts above the top before dropping */
 }
 
-/* Glass bar: fixed, already parked; visibility toggled by JS */
+/* Glass bar: fixed, parked offscreen slightly; visibility toggled by JS */
 header#header[data-test="header"]{
   position: fixed;
   left: 50%;
   top: var(--mm-sticky-top);
-  transform: translate(-50%, 0);
+  transform: translateX(-50%) translateY(calc(-1 * var(--mm-drop))); /* start above */
   z-index: 1200;
 
   height: var(--mm-header-h);
@@ -50,12 +54,19 @@ header#header[data-test="header"]{
   box-sizing: border-box;
   overflow: visible;
 
+  /* fade+drop animation */
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
+  transition:
+    transform var(--mm-dur) var(--mm-ease-out),
+    opacity   var(--mm-dur) var(--mm-ease-out);
+  will-change: transform, opacity;
 }
+
 header#header[data-test="header"].mm-visible{
   opacity: 1;
+  transform: translateX(-50%) translateY(0); /* dropped into place */
   pointer-events: auto;
   visibility: visible;
 }

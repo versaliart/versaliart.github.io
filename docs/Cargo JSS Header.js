@@ -1,4 +1,4 @@
-/* Mystic Munson — Header behavior (parked at top; Home reveals at Section 2) v2.5 */
+/* Mystic Munson — Header v2.6 */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
   function isHome(){ return normalizePath(location.pathname) === '/'; }
@@ -34,8 +34,10 @@
         position: 'fixed',
         left: '50%',
         top: STICKY + 'px',
-        transform: 'translate(-50%, 0)'
+        // Let CSS control the Y drop; we only center on X here:
+        transform: 'translateX(-50%)'
       });
+
 
       // Visibility helpers (make hidden truly inert)
       function hideHeader(){
