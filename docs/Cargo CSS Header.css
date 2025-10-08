@@ -239,7 +239,7 @@ header#header .header-skip-link{ display:none !important; }
 /* === Centered logo for glass header ================================== */
 :root{
   /* optional: tweak the logo size here */
-  --mm-logo-h: 1.8rem;
+  --mm-logo-h: 2rem;
 }
 
 /* Place the injected image perfectly centered inside the glass bar */
