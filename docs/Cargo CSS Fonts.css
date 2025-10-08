@@ -417,3 +417,6 @@ button.gallery-lightbox-control-btn polyline
   fill: var(--your-accent-color, white) !important;
 }
 
+button.gallery-lightbox-close-btn .gallery-lightbox-close-btn-icon svg * {
+  fill: white !important;
+}
