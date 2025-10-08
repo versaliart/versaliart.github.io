@@ -375,8 +375,6 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   display: none !important;
 }
 
-
-
 /* Rounded corners for Gallery thumbnails */
 .sqs-gallery-design-grid .sqs-gallery-design-grid-slide img,
 .sqs-gallery-design-carousel .slide img,
