@@ -36,40 +36,34 @@
 }
 
 /* Glass bar: fixed, parked offscreen slightly; visibility toggled by JS */
-header#header[data-test="header"]{
-  position: fixed;
+header#header[data-test="header"] .mm-logo-center{
+  position: absolute;
+  top: 50%;
   left: 50%;
-  top: var(--mm-sticky-top);
-  transform: translateX(-50%) translateY(calc(-1 * var(--mm-drop))); /* start above */
-  z-index: 1200;
-
-  height: var(--mm-header-h);
-  width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
-  border-radius: var(--mm-radius);
-  background: var(--mm-bg);
-  -webkit-backdrop-filter: blur(var(--mm-blur));
-  backdrop-filter: blur(var(--mm-blur));
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow: var(--mm-shadow);
-  box-sizing: border-box;
-  overflow: visible;
-
-  /* fade+drop animation */
-  opacity: 0;
+  transform: translate(-50%, -50%); /* rides with header's own drop */
+  height: 1.8rem;
+  opacity: 0;                       /* hidden until header reveals */
   pointer-events: none;
-  visibility: hidden;
+  user-select: none;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+
+  /* match header timing & easing */
   transition:
-    transform var(--mm-dur) var(--mm-ease-out),
-    opacity   var(--mm-dur) var(--mm-ease-out);
-  will-change: transform, opacity;
+    opacity var(--mm-dur) var(--mm-ease-out);
 }
 
-header#header[data-test="header"].mm-visible{
-  opacity: 1;
-  transform: translateX(-50%) translateY(0); /* dropped into place */
-  pointer-events: auto;
-  visibility: visible;
+/* When header becomes visible, fade the logo in with the same curve */
+header#header[data-test="header"].mm-visible .mm-logo-center{
+  opacity: 0.95;
 }
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  header#header[data-test="header"] .mm-logo-center{
+    transition: opacity 1ms linear; /* essentially no animation */
+  }
+}
+
 
 /* Strip Squarespace extras inside the bar */
 header#header .header-background,
