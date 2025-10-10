@@ -10,14 +10,13 @@ a,
 button,
 [role="button"],
 input[type="button"],
-input[type="submit"],
-.gallery-lightbox-close-btn {
+input[type="submit"] {
   cursor:
     url("https://www.mysticmunson.design/s/planchette-pointer.svg") 1 1,
     pointer;
 }
 
-/* === Custom Cursor: Zoom-In ===
+=== Custom Cursor: Zoom-In ===
 .zoom-in,
 [data-action="zoom-in"],
 .gallery-lightbox-control-next,
@@ -34,4 +33,4 @@ input[type="submit"],
   cursor:
     url("https://www.mysticmunson.design/s/planchetteZoomout.svg") 1 1,
     zoom-out;
-} */
+}
