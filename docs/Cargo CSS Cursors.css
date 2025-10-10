@@ -17,7 +17,7 @@ input[type="submit"],
     pointer;
 }
 
-/* === Custom Cursor: Zoom-In === */
+/* === Custom Cursor: Zoom-In ===
 .zoom-in,
 [data-action="zoom-in"],
 .gallery-lightbox-control-next,
@@ -27,11 +27,11 @@ input[type="submit"],
     zoom-in;
 }
 
-/* === Custom Cursor: Zoom-Out === */
+=== Custom Cursor: Zoom-Out ===
 .zoom-out,
 [data-action="zoom-out"],
 .gallery-lightbox-close-btn {
   cursor:
     url("https://www.mysticmunson.design/s/planchetteZoomout.svg") 1 1,
     zoom-out;
-}
+} */
