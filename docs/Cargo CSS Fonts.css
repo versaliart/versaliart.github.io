@@ -375,9 +375,9 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   display: none !important;
 }
 
-/* Squarespace Gallery — Masonry thumbnails: 8px radius */
-.gallery-masonry .gallery-masonry-item-wrapper,
-.gallery-masonry .gallery-masonry-item-wrapper > a {
+/* Squarespace Gallery — strips thumbnails: 8px radius */
+.gallery-strips .gallery-strips-item-wrapper,
+.gallery-strips .gallery-strips-item-wrapper > a {
   border-radius: 8px !important;
   overflow: hidden !important;
   /* iOS/Safari overflow clipping fix */
@@ -385,14 +385,14 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
 }
 
 /* Make the image follow the radius too */
-.gallery-masonry .gallery-masonry-item-wrapper img {
+.gallery-strips .gallery-strips-item-wrapper img {
   border-radius: inherit !important;
   display: block;
 }
 
 /* If any hover/cover layers exist, clip them as well */
-.gallery-masonry .gallery-masonry-item,
-.gallery-masonry .gallery-masonry-lightbox-link {
+.gallery-strips .gallery-strips-item,
+.gallery-strips .gallery-strips-lightbox-link {
   clip-path: inset(0 round 8px);
 }
 
