@@ -57,7 +57,7 @@
     const group  = el.dataset.group  || "default";
     const count  = Number(el.dataset.count || 12);
     const prefix = el.dataset.prefix || "/s/zodiac";
-    const ext    = el.dataset.ext    || ".jpg";
+    const ext    = (el.dataset.ext || '.jpg').toLowerCase();
     const alt    = el.dataset.alt    || "Zodiac image";
     const padW   = el.dataset.pad    || "";
 
