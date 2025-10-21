@@ -381,7 +381,8 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
   border-radius: 8px !important;
   overflow: hidden !important;
   /* iOS/Safari overflow clipping fix */
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
+mask-image: radial-gradient(white, black);
+-webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 /* Make the image follow the radius too */
