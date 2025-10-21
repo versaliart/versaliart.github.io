@@ -45,3 +45,23 @@ Opt-out only a section: drop a tiny Code Block inside that section:
 ></div>
 
 
+
+ZODIAC #1
+<div
+  class="zodiac-slot"
+  data-group="zodiac-pair"
+  data-prefix="https://www.mysticmunson.design/s/zodiacAsset"
+  data-ext=".jpg"
+  data-count="12"
+  data-alt="Zodiac artwork">
+</div>
+
+ZODIAC #2
+<div
+  class="zodiac-slot"
+  data-group="zodiac-pair"
+  data-prefix="https://www.mysticmunson.design/s/zodiacAsset"
+  data-ext=".jpg"
+  data-count="12"
+  data-alt="Zodiac artwork">
+</div>

@@ -74,5 +74,11 @@ whenSelector('[data-snap-scroll]', function () {
       .catch(console.warn);
   });
 
+  whenSelector(".zodiac-slot", function () {
+    loadScript("https://versaliart.github.io/JS%20Zodiac.js")
+      .then(()=>console.log("[Loader] Zodiac loaded"))
+      .catch(console.warn);
+  });
+  
 })();
 </script>
