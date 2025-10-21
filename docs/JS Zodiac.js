@@ -31,7 +31,7 @@
     const group  = toStr(el.dataset.group)  || "default";
     const count  = toNum(el.dataset.count)  || 12;
     const prefix = toStr(el.dataset.prefix) || "/s/zodiac";
-    const extRaw = toStr(el.dataset.ext)    || ".jpg";
+    const extRaw = toStr(el.dataset.ext)    || ".png";
     const padW   = toStr(el.dataset.pad)    || "";
 
     // force lowercase extension & strip stray spaces
@@ -77,7 +77,7 @@
         i,
         group: toStr(el.dataset.group)||"default",
         prefix: toStr(el.dataset.prefix)||"/s/zodiac",
-        ext: (toStr(el.dataset.ext)||".jpg").toLowerCase(),
+        ext: (toStr(el.dataset.ext)||".png").toLowerCase(),
         count: toNum(el.dataset.count)||12,
         pad: toStr(el.dataset.pad)||"",
         debug: toStr(el.dataset.debug)||"0"

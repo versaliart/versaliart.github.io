@@ -51,8 +51,7 @@ ZODIAC
   class="zodiac-slot"
   data-group="zodiac-pair"
   data-prefix="https://www.mysticmunson.design/s/zodiacAsset"
-  data-ext=".jpg"
+  data-ext=".png"
   data-count="12"
-  data-alt="Zodiac artwork"
-  data-debug="1">
+  data-alt="Zodiac artwork">
 </div>
