@@ -424,4 +424,17 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
   stroke: var(--your-accent-color, white) !important;
 }
 
-.zodiac-slot { min-height: 6rem; }
+/* Zodiac fit rules */
+.zodiac-slot{
+  display: grid;           /* easy centering */
+  place-items: center;
+  width: 100%;
+  /* you control height via aspect-ratio or explicit height (see below) */
+  min-height: 0;           /* override the script’s 1rem guard if you set a real size */
+}
+.zodiac-img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;     /* keep full image visible inside the slot */
+  display: block;
+}
