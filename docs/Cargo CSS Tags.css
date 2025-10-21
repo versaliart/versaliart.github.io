@@ -39,20 +39,24 @@
 }
 
 .tag-pills__list{
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
+  /* same display + wrap */
   display:flex;
   flex-wrap:wrap;
-  row-gap: var(--pill-gap);
-  column-gap: 0;
-  justify-content: var(--pill-justify, space-evenly);
+
+  /* use real gaps for pill-to-pill spacing */
+  gap: var(--pill-gap);
+
+  /* left-align each row; we’ll use a stretcher to fill the last line */
+  justify-content:flex-start;
 }
 
+/* “stretcher” that soaks up remaining width only on the final line */
 .tag-pills__list::after{
   content:"";
-  flex: 1 1 var(--pill-fill, 12rem); /* set to 0 to disable last-row spread */
+  /* grow a lot, but keep a minimum width so the last row doesn’t look cramped */
+  flex: 999 1 var(--pill-fill, 12rem);
+  /* optional: ensure it doesn’t collapse to zero */
+  min-width: var(--pill-fill, 12rem);
 }
 
 .tag-pills .tag-pill{
