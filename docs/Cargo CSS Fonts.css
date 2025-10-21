@@ -425,16 +425,29 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
 }
 
 /* Zodiac fit rules */
-.zodiac-slot{
-  display: grid;           /* easy centering */
-  place-items: center;
-  width: 100%;
-  /* you control height via aspect-ratio or explicit height (see below) */
-  min-height: 0;           /* override the script’s 1rem guard if you set a real size */
-}
-.zodiac-img{
-  width: 100%;
+/* Container uses whatever height the Code Block already has */
+.zodiac-slot {
   height: 100%;
-  object-fit: contain;     /* keep full image visible inside the slot */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* Proportional scaling — never distorts, never exceeds block */
+.zodiac-img {
   display: block;
+  max-width: 90%;   /* scale proportionally inside block width */
+  max-height: 90%;  /* scale proportionally inside block height */
+  height: auto;
+  width: auto;
+  object-fit: contain;
+  margin: auto;     /* center if parent has extra space */
+  transition: transform .3s ease; /* optional smooth resize on hover */
+}
+
+/* Optional gentle hover grow (remove if you don’t want it) */
+.zodiac-slot:hover .zodiac-img {
+  transform: scale(1.03);
 }
