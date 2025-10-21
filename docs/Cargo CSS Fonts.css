@@ -425,29 +425,29 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
 }
 
 /* Zodiac fit rules */
-/* Container uses whatever height the Code Block already has */
-.zodiac-slot {
+.fluid-engine .fe-block[data-block-type="code"],
+.fluid-engine .fe-block[data-block-type="code"] .sqs-block-code,
+.fluid-engine .fe-block[data-block-type="code"] .sqs-block-content {
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 0;
-  overflow: visible;
 }
 
-/* Proportional scaling — never distorts, never exceeds block */
-.zodiac-img {
+/* Constrain the zodiac container to the drawn block */
+.fluid-engine .fe-block[data-block-type="code"] .zodiac-slot {
+  position: relative;
+  height: 100%;
+  min-height: 0;          /* override any tiny guard */
+  overflow: hidden;       /* prevent spill */
+}
+
+/* Center the image and let it scale proportionally within the block */
+.fluid-engine .fe-block[data-block-type="code"] .zodiac-slot > .zodiac-img {
+  position: absolute;     /* removes intrinsic size from layout */
+  inset: 0;               /* center via auto margins */
+  margin: auto;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;            /* keep aspect ratio */
+  height: auto;           /* keep aspect ratio */
+  object-fit: contain;    /* scale down, never distort or crop */
   display: block;
-  max-width: 90%;   /* scale proportionally inside block width */
-  max-height: 90%;  /* scale proportionally inside block height */
-  height: auto;
-  width: auto;
-  object-fit: contain;
-  margin: auto;     /* center if parent has extra space */
-  transition: transform .3s ease; /* optional smooth resize on hover */
-}
-
-/* Optional gentle hover grow (remove if you don’t want it) */
-.zodiac-slot:hover .zodiac-img {
-  transform: scale(1.03);
 }
