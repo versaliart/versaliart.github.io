@@ -53,5 +53,6 @@ ZODIAC
   data-prefix="https://www.mysticmunson.design/s/zodiacAsset"
   data-ext=".jpg"
   data-count="12"
-  data-alt="Zodiac artwork">
+  data-alt="Zodiac artwork"
+  data-debug="1">
 </div>

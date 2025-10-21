@@ -26,7 +26,6 @@
     })
     .catch(function(err){ console.warn('[Loader] Borderlines failed', err); });
 
-  // keep your other loaders as-is (just fix the duplicate log label below)
   function whenSelector(sel, cb){
     var el = document.querySelector(sel);
     if (el) return cb(el);
@@ -61,7 +60,6 @@
       .catch(console.warn);
   });
 
-// Snap-Scroll (loads only if a marker exists anywhere on the page)
 whenSelector('[data-snap-scroll]', function () {
   loadScript('https://versaliart.github.io/JS%20Scroll.js')
     .then(() => console.log('[Loader] SnapScroll loaded'))
