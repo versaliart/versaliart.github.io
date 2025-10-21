@@ -425,29 +425,36 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
 }
 
 /* Zodiac fit rules */
+/* 1) Make the FE Code Block actually honor the cell height */
 .fluid-engine .fe-block[data-block-type="code"],
 .fluid-engine .fe-block[data-block-type="code"] .sqs-block-code,
 .fluid-engine .fe-block[data-block-type="code"] .sqs-block-content {
   height: 100%;
 }
 
-/* Constrain the zodiac container to the drawn block */
-.fluid-engine .fe-block[data-block-type="code"] .zodiac-slot {
+/* 2) Anchor the content so children can absolutely fill without expanding layout */
+.fluid-engine .fe-block[data-block-type="code"] .sqs-block-code .sqs-block-content {
   position: relative;
-  height: 100%;
-  min-height: 0;          /* override any tiny guard */
-  overflow: hidden;       /* prevent spill */
+  overflow: hidden; /* clip anything oversized */
 }
 
-/* Center the image and let it scale proportionally within the block */
+/* 3) The zodiac container fills the block you drew, never taller */
+.fluid-engine .fe-block[data-block-type="code"] .zodiac-slot {
+  position: absolute;  /* << prevents the slot (and its img) from growing the block */
+  inset: 0;            /* fill the block */
+  min-height: 0 !important;  /* kill the 1rem guard */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;    /* safety */
+}
+
+/* 4) Proportional fit: scale down to fit BOTH width & height, never distort or overflow */
 .fluid-engine .fe-block[data-block-type="code"] .zodiac-slot > .zodiac-img {
-  position: absolute;     /* removes intrinsic size from layout */
-  inset: 0;               /* center via auto margins */
-  margin: auto;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;            /* keep aspect ratio */
-  height: auto;           /* keep aspect ratio */
-  object-fit: contain;    /* scale down, never distort or crop */
   display: block;
+  width: auto !important;      /* keep aspect ratio */
+  height: auto !important;     /* keep aspect ratio */
+  max-width: 100% !important;  /* fit width */
+  max-height: 100% !important; /* fit height */
+  object-fit: contain;         /* show whole image inside the box */
 }
