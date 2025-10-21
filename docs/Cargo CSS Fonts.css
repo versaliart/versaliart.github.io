@@ -423,3 +423,5 @@ button.gallery-lightbox-close-btn .gallery-lightbox-close-btn-icon svg path {
 button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg path {
   stroke: var(--your-accent-color, white) !important;
 }
+
+.zodiac-slot { min-height: 6rem; }
