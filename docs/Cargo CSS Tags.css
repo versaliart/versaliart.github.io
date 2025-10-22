@@ -47,7 +47,7 @@
   gap: var(--pill-gap);
 
   /* left-align each row; we’ll use a stretcher to fill the last line */
-  justify-content:flex-start;
+  justify-content: var(--pill-justify);
 }
 
 /* “stretcher” that soaks up remaining width only on the final line */
