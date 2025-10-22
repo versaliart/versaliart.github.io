@@ -423,38 +423,3 @@ button.gallery-lightbox-close-btn .gallery-lightbox-close-btn-icon svg path {
 button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg path {
   stroke: var(--your-accent-color, white) !important;
 }
-
-/* Zodiac fit rules */
-/* 1) Make the FE Code Block actually honor the cell height */
-.fluid-engine .fe-block[data-block-type="code"],
-.fluid-engine .fe-block[data-block-type="code"] .sqs-block-code,
-.fluid-engine .fe-block[data-block-type="code"] .sqs-block-content {
-  height: 100%;
-}
-
-/* 2) Anchor the content so children can absolutely fill without expanding layout */
-.fluid-engine .fe-block[data-block-type="code"] .sqs-block-code .sqs-block-content {
-  position: relative;
-  overflow: hidden; /* clip anything oversized */
-}
-
-/* 3) The zodiac container fills the block you drew, never taller */
-.fluid-engine .fe-block[data-block-type="code"] .zodiac-slot {
-  position: absolute;  /* << prevents the slot (and its img) from growing the block */
-  inset: 0;            /* fill the block */
-  min-height: 0 !important;  /* kill the 1rem guard */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;    /* safety */
-}
-
-/* 4) Proportional fit: scale down to fit BOTH width & height, never distort or overflow */
-.fluid-engine .fe-block[data-block-type="code"] .zodiac-slot > .zodiac-img {
-  display: block;
-  width: auto !important;      /* keep aspect ratio */
-  height: auto !important;     /* keep aspect ratio */
-  max-width: 100% !important;  /* fit width */
-  max-height: 100% !important; /* fit height */
-  object-fit: contain;         /* show whole image inside the box */
-}
