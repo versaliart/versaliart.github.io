@@ -4,7 +4,7 @@
   --pill-gap:.5rem;
   --pill-py:.25rem;
   --pill-px:.5rem;
-  --pill-radius:9999rem;
+  --pill-radius:9rem;
   --pill-font-size:.9rem;
   --pill-weight:500;
   --pill-bg:rgba(0,0,0,.05);
@@ -22,7 +22,7 @@
   padding: var(--pill-container-py) var(--pill-container-px);
   display:block;
   --pill-justify: space-evenly; /* try space-between if you prefer edge-to-edge */
-  --pill-fill: 6rem;           /* adjust if last row looks too loose/tight */
+  --pill-fill: 3rem;           /* adjust if last row looks too loose/tight */
 }
 
 @media (prefers-color-scheme: dark){
