@@ -42,18 +42,9 @@
   display:flex;
   flex-wrap:wrap;
   gap: var(--pill-gap);
-  justify-content: center; /* center all tag rows */
+justify-content: var(--pill-justify, flex-start);
 }
 
-
-/* “stretcher” that soaks up remaining width only on the final line */
-.tag-pills__list::after{
-  content:"";
-  /* grow a lot, but keep a minimum width so the last row doesn’t look cramped */
-  flex: 999 1 var(--pill-fill, 12rem);
-  /* optional: ensure it doesn’t collapse to zero */
-  min-width: var(--pill-fill, 12rem);
-}
 
 .tag-pills .tag-pill{
   display:inline-flex; align-items:center; white-space:nowrap; line-height:var(--pill-line-height);
