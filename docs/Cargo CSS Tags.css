@@ -43,8 +43,8 @@
   flex-wrap: wrap;
   gap: var(--pill-gap);
   justify-content: center;        /* or var(--pill-justify, center) */
-  margin: 0.5;                      /* <-- remove UL indent */
-  padding: 0.5;                     /* <-- remove UL indent */
+  margin: 0;                      /* <-- remove UL indent */
+  padding: 0;                     /* <-- remove UL indent */
   list-style: none;               /* belt + suspenders */
 }
 
