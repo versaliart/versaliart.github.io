@@ -39,16 +39,12 @@
 }
 
 .tag-pills__list{
-  /* same display + wrap */
   display:flex;
   flex-wrap:wrap;
-
-  /* use real gaps for pill-to-pill spacing */
   gap: var(--pill-gap);
-
-  /* left-align each row; we’ll use a stretcher to fill the last line */
-  justify-content: var(--pill-justify);
+  justify-content: center; /* center all tag rows */
 }
+
 
 /* “stretcher” that soaks up remaining width only on the final line */
 .tag-pills__list::after{
