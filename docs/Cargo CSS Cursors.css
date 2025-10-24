@@ -27,6 +27,8 @@ input[type="submit"] {
 .gallery-masonry-item button,
 .gallery-grid-item a,
 .gallery-grid-item button,
+.gallery-strips-item a,
+.gallery-strips-item button,
 .gallery-masonry-image-wrapper,
 [data-test="gallery-lightbox-trigger"],
 .gallery-slideshow-image-wrapper,
