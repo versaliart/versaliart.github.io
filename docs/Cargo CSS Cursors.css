@@ -20,7 +20,17 @@ input[type="submit"] {
 .zoom-in,
 [data-action="zoom-in"],
 .gallery-lightbox-control-next,
-.gallery-lightbox-control-prev {
+.gallery-lightbox-control-prev,
+.gallery-item a,
+.gallery-item button,
+.gallery-masonry-item a,
+.gallery-masonry-item button,
+.gallery-grid-item a,
+.gallery-grid-item button,
+.gallery-masonry-image-wrapper,
+[data-test="gallery-lightbox-trigger"],
+.gallery-slideshow-image-wrapper,
+.gallery-slideshow-item {
   cursor:
     url("https://www.mysticmunson.design/s/planchetteZoomin.svg") 1 1,
     zoom-in;
