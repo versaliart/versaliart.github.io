@@ -424,31 +424,3 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
   stroke: var(--your-accent-color, white) !important;
 }
 
-
-
-/* === FIX VERTICAL ALIGNMENT ISSUES === */
-
-/* 1. Let Squarespace keep min-height when the block is being positioned
-   with vertical alignment (Fluid Engine). We detect those by data attributes
-   Squarespace adds to grid cells. */
-[data-section-id] .sqs-block.html-block.sqs-block-html {
-  /* undo the global nuke so FE can control height for centering */
-  min-height: initial !important;
-  height: initial !important;
-}
-
-/* 2. Don't inject custom inner padding on Text blocks that are being flex-aligned.
-   We'll scope your padding to "body copy" sections instead of all .sqs-block-html. 
-   Pick a wrapper you use for rich text areas, e.g. .mm-body or .case-study.
-   (If you don't have one yet, create one on sections that are just narrative text.) */
-
-.mm-body .sqs-block.html-block.sqs-block-html .sqs-html-content,
-.mm-body .sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
-  padding: var(--tb-pad-y) var(--tb-pad-x) !important;
-}
-
-/* and STOP applying that padding globally */
-.sqs-block.html-block.sqs-block-html .sqs-html-content,
-.sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
-  padding: unset !important;
-}
