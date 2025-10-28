@@ -1,6 +1,6 @@
-/* Mystic Munson • mm-marquee init v1.2 */
+/* Mystic Munson • mm-marquee init v1.3 (dynamic distance) */
 (function(){
-  // your image/alt config (global for now)
+  // ===== Your images / alts =====
   const imgs = [
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/4560e500-fb9f-4186-9887-8aa97ca42e81/Me01.jpg",
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/e6681620-e044-4531-a05e-feaa026dffde/Me02.jpg",
@@ -17,6 +17,7 @@
     "Me being playfully choked by a friend"
   ];
 
+  // build one sequence of images
   function buildSequence(){
     const frag = document.createDocumentFragment();
     imgs.forEach((url, i)=>{
@@ -24,10 +25,10 @@
       wrap.className = 'mm-marquee-item';
 
       const im = document.createElement('img');
-      im.loading = 'lazy';
+      im.loading  = 'lazy';
       im.decoding = 'async';
-      im.src = url;
-      im.alt = alts[i] || '';
+      im.src      = url;
+      im.alt      = alts[i] || '';
 
       wrap.appendChild(im);
       frag.appendChild(wrap);
@@ -35,24 +36,54 @@
     return frag;
   }
 
+  // create custom keyframes for THIS track based on pixel width
+  function applyDynamicAnimation(track){
+    // width of one sequence (the first batch of images)
+    const halfWidth = track.scrollWidth / 2;
+
+    // make a unique animation name so multiple marquees don't clash
+    const animName = 'mmScroll_' + Math.random().toString(36).slice(2);
+
+    // build a <style> tag just for this animation
+    const styleTag = document.createElement('style');
+    styleTag.textContent = `
+      @keyframes ${animName} {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-${halfWidth}px); }
+      }
+    `;
+    document.head.appendChild(styleTag);
+
+    // hook the track up to that animation name
+    // (duration still comes from --scroll-speed on the .mm-marquee)
+    track.style.animationName = animName;
+    track.style.animationTimingFunction = 'linear';
+    track.style.animationIterationCount = 'infinite';
+
+    // We do NOT set animationDuration here, because you're already
+    // controlling that with --scroll-speed in inline style.
+  }
+
   function initMarquee(m){
     const track = m.querySelector('.mm-marquee-track');
-    if (!track) return;
-
-    // only populate once, avoid duplicates if Squarespace re-runs scripts in editor
-    if (track.__mmFilled) return;
+    if (!track || track.__mmFilled) return;
     track.__mmFilled = true;
 
-    // append two copies for seamless loop
+    // populate two copies
     track.appendChild(buildSequence());
     track.appendChild(buildSequence());
 
-    // JS hover pause fallback
+    // pause on hover (JS fallback)
     m.addEventListener('mouseenter', ()=>{
       track.style.animationPlayState = 'paused';
     });
     m.addEventListener('mouseleave', ()=>{
       track.style.animationPlayState = 'running';
+    });
+
+    // wait a frame so images lay out, then measure real width
+    requestAnimationFrame(()=>{
+      applyDynamicAnimation(track);
     });
   }
 

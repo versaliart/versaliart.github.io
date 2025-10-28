@@ -1,8 +1,9 @@
 <div class="mm-marquee"
      style="
-       --scroll-speed: 40s;      /* Larger = slower. ex: 20s fast, 60s slow */
+       --scroll-speed: 5s;      /* Larger = slower. ex: 20s fast, 60s slow */
        --img-gap: 1rem;          /* space between images */
-       max-height: 100rem;
+       --img-h-max: 40rem;
+       max-height: var(--img-h-max);
        --pause-on-hover: paused; /* don't change */
 ">
   <div class="mm-marquee-track"></div>
@@ -18,34 +19,32 @@
   width: 100%;
   overflow: hidden;
   padding: 1rem 0;
-  /* IMPORTANT: no explicit height here */
+  /* no fixed height here, we're honoring the block's own height */
 }
 
 .mm-marquee-track {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
+  align-items: flex-start;   /* ⬅ anchor children to the top */
   gap: var(--img-gap);
-  animation: mm-marquee-scroll linear infinite;
   animation-duration: var(--scroll-speed);
+    animation-timing-function: linear;
+  animation-iteration-count: infinite;
   user-select: none;
   -webkit-user-drag: none;
   will-change: transform;
 }
 
-/* The wrapper for each image should not force new height */
 .mm-marquee-item {
   flex: 0 0 auto;
-  /* don't set height here anymore */
+  height: 100%;
   display: flex;
-  align-items: stretch; /* let child img define its own height */
+  align-items: flex-start;   /* ⬅ anchor img to the top inside each item */
 }
 
-/* The image will scale DOWN to fit whatever height the marquee currently is,
-   but will not push it taller. */
 .mm-marquee-item img {
-  height: 100%;
-  max-height: 100%;
+  max-height: var(--img-h-max);
+  height: auto;
   width: auto;
   object-fit: contain;
   display: block;
@@ -53,10 +52,7 @@
   box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
 }
 
-@keyframes mm-marquee-scroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
+
 
 
 /* Squarespace editor safeguard:
