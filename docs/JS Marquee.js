@@ -1,4 +1,3 @@
-(function(){
   const imgs = [
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/4560e500-fb9f-4186-9887-8aa97ca42e81/Me01.jpg",
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/e6681620-e044-4531-a05e-feaa026dffde/Me02.jpg",
@@ -74,5 +73,3 @@
   blockRoot.addEventListener('mouseleave', ()=>{
     track.style.animationPlayState = 'running';
   });
-
-})();
