@@ -2,6 +2,7 @@
      style="
        --scroll-speed: 40s;      /* Larger = slower. ex: 20s fast, 60s slow */
        --img-gap: 1rem;          /* space between images */
+       max-height: 100rem;
        --pause-on-hover: paused; /* don't change */
 ">
   <div class="mm-marquee-track"></div>
@@ -17,8 +18,7 @@
   width: 100%;
   overflow: hidden;
   padding: 1rem 0;
-  /* set your desired height here, or keep --img-h inline */
-  height: var(--img-h, 8rem); /* fallback 8rem if not defined */
+  /* IMPORTANT: no explicit height here */
 }
 
 .mm-marquee-track {
@@ -33,18 +33,20 @@
   will-change: transform;
 }
 
+/* The wrapper for each image should not force new height */
 .mm-marquee-item {
   flex: 0 0 auto;
-  height: 100%;           /* match the marquee container height */
+  /* don't set height here anymore */
   display: flex;
-  align-items: center;
+  align-items: stretch; /* let child img define its own height */
 }
 
+/* The image will scale DOWN to fit whatever height the marquee currently is,
+   but will not push it taller. */
 .mm-marquee-item img {
-  max-height: 100%;       /* respect container height */
-  height: auto;
+  height: 100%;
+  max-height: 100%;
   width: auto;
-  max-height: 810px;
   object-fit: contain;
   display: block;
   border-radius: .5rem;
