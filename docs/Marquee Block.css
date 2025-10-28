@@ -55,6 +55,23 @@
   border-radius: .5rem;
   box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
 }
+.mm-marquee {
+  height: 100%; /* allow marquee to fill the block */
+}
+
+.mm-marquee-item {
+  height: 100%; /* match container height */
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+.mm-marquee-item img {
+  height: 100%;  /* fill the wrapper vertically */
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
 
 
 /* Keyframes:
