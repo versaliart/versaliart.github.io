@@ -12,76 +12,49 @@
    Marquee base styles
    ============================ */
 
-.mm-marquee{
+.mm-marquee {
   position: relative;
   width: 100%;
-  height: 100%;
   overflow: hidden;
-  /* optional padding around the strip, edit if you want */
   padding: 1rem 0;
-  /* stop animation when hovered */
-}
-.mm-marquee:hover .mm-marquee-track{
-  animation-play-state: var(--pause-on-hover);
+  /* set your desired height here, or keep --img-h inline */
+  height: var(--img-h, 8rem); /* fallback 8rem if not defined */
 }
 
-.mm-marquee-track{
+.mm-marquee-track {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
   gap: var(--img-gap);
-
-  /* smooth scroll animation */
   animation: mm-marquee-scroll linear infinite;
   animation-duration: var(--scroll-speed);
-
-  /* prevent text-selection cursor weirdness */
   user-select: none;
   -webkit-user-drag: none;
-}
-
-.mm-marquee-item{
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-}
-.mm-marquee-item img{
-  height: 100%;
-  width: auto;
-  display: block;
-  max-height: 100%;
-  object-fit: contain;
-  /* optional aesthetic tweaks */
-  border-radius: .5rem;
-  box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
-}
-.mm-marquee {
-  height: 100%; /* allow marquee to fill the block */
+  will-change: transform;
 }
 
 .mm-marquee-item {
-  height: 100%; /* match container height */
   flex: 0 0 auto;
+  height: 100%;           /* match the marquee container height */
   display: flex;
   align-items: center;
 }
 
 .mm-marquee-item img {
-  height: 100%;  /* fill the wrapper vertically */
+  max-height: 100%;       /* respect container height */
+  height: auto;
   width: auto;
   object-fit: contain;
   display: block;
+  border-radius: .5rem;
+  box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
 }
 
-
-/* Keyframes:
-   We'll translate the whole track left by exactly 50% of its total width,
-   because we're going to duplicate the image sequence twice back-to-back.
-*/
-@keyframes mm-marquee-scroll{
+@keyframes mm-marquee-scroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
 
 /* Squarespace editor safeguard:
    When you're in the site editor sometimes it forces very small iframes,
