@@ -2,7 +2,6 @@
      style="
        --scroll-speed: 40s;      /* Larger = slower. ex: 20s fast, 60s slow */
        --img-gap: 1rem;          /* space between images */
-       --img-h: 8rem;            /* image display height */
        --pause-on-hover: paused; /* don't change */
 ">
   <div class="mm-marquee-track"></div>
@@ -16,6 +15,7 @@
 .mm-marquee{
   position: relative;
   width: 100%;
+  height: 100%;
   overflow: hidden;
   /* optional padding around the strip, edit if you want */
   padding: 1rem 0;
@@ -42,7 +42,6 @@
 
 .mm-marquee-item{
   flex: 0 0 auto;
-  height: var(--img-h);
   display: flex;
   align-items: center;
 }
@@ -56,6 +55,7 @@
   border-radius: .5rem;
   box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
 }
+
 
 /* Keyframes:
    We'll translate the whole track left by exactly 50% of its total width,
