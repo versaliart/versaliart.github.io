@@ -1,0 +1,168 @@
+<!-- =========================================================
+     Mystic Munson • Infinite marquee gallery v1.0
+     Squarespace-safe (no external deps)
+     HOW TO USE:
+       1. Paste this entire block into a Code Block.
+       2. Edit the CONFIG section (image URLs + speed vars).
+     ========================================================= -->
+
+<div class="mm-marquee"
+     style="
+       --scroll-speed: 40s;      /* Larger = slower. ex: 20s fast, 60s slow */
+       --img-gap: 1rem;          /* space between images */
+       --img-h: 8rem;            /* image display height */
+       --pause-on-hover: paused; /* don't change */
+">
+  <div class="mm-marquee-track"></div>
+</div>
+
+<style>
+/* ============================
+   Marquee base styles
+   ============================ */
+
+.mm-marquee{
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  /* optional padding around the strip, edit if you want */
+  padding: 1rem 0;
+  /* stop animation when hovered */
+}
+.mm-marquee:hover .mm-marquee-track{
+  animation-play-state: var(--pause-on-hover);
+}
+
+.mm-marquee-track{
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--img-gap);
+
+  /* smooth scroll animation */
+  animation: mm-marquee-scroll linear infinite;
+  animation-duration: var(--scroll-speed);
+
+  /* prevent text-selection cursor weirdness */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.mm-marquee-item{
+  flex: 0 0 auto;
+  height: var(--img-h);
+  display: flex;
+  align-items: center;
+}
+.mm-marquee-item img{
+  height: 100%;
+  width: auto;
+  display: block;
+  max-height: 100%;
+  object-fit: contain;
+  /* optional aesthetic tweaks */
+  border-radius: .5rem;
+  box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
+}
+
+/* Keyframes:
+   We'll translate the whole track left by exactly 50% of its total width,
+   because we're going to duplicate the image sequence twice back-to-back.
+*/
+@keyframes mm-marquee-scroll{
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Squarespace editor safeguard:
+   When you're in the site editor sometimes it forces very small iframes,
+   which can wrap flex items. Force no-wrap in those cases too.
+*/
+.sqs-block-content .mm-marquee-track{
+  flex-wrap: nowrap !important;
+}
+</style>
+
+<script>
+// ============================
+// CONFIG: edit this part only
+// ============================
+(function(){
+  const imgs = [
+    "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/4560e500-fb9f-4186-9887-8aa97ca42e81/Me01.jpg",
+    "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/e6681620-e044-4531-a05e-feaa026dffde/Me02.jpg",
+    "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/51070983-4641-4f44-806e-3b12e27e3583/Me03.jpg",
+    "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/0becf6ce-fc22-4f5c-a493-638a9813e8e0/Me04.jpg",
+    "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/db49bafa-8fbf-4f74-bda5-2f4f533b9abe/Me05.jpg"
+  ];
+
+  // OPTIONAL: If you want per-image alt text, same length as imgs.
+  // Otherwise it'll fallback to empty string.
+  const alts = [
+    "Me and my friend Celeste",
+    "Me on an inflatable peacock with my dog",
+    "Me with my dog and my friend's dog",
+    "Me walking my cat in a backpack",
+    "Me being playfully choked by a friend"
+  ];
+
+  // ============================
+  // DO NOT EDIT BELOW THIS LINE
+  // ============================
+
+  // Grab the closest .mm-marquee in THIS code block only
+  // (lets you reuse multiple times on a page)
+  const blockRoot = document.currentScript.closest('.mm-marquee');
+  const track = blockRoot.querySelector('.mm-marquee-track');
+
+  // Build one sequence of <div class="mm-marquee-item"><img></div>
+  function buildSequence(){
+    const frag = document.createDocumentFragment();
+    imgs.forEach((url, i)=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'mm-marquee-item';
+
+      const im = document.createElement('img');
+      im.loading = "lazy";
+      im.decoding = "async";
+      im.src = url;
+      im.alt = (alts[i] || "");
+
+      wrap.appendChild(im);
+      frag.appendChild(wrap);
+    });
+    return frag;
+  }
+
+  // We append the sequence twice.
+  // Why twice? When we slide left by 50%, the second half lines up
+  // perfectly after the first half, creating an endless loop.
+  track.appendChild(buildSequence());
+  track.appendChild(buildSequence());
+
+  // === Dynamic duration tuning (optional upgrade logic) ==========
+  // The animation moves -50% of the track's width.
+  // If you change number/size of images, 40s may feel too fast/slow.
+  // We can auto-scale speed based on total pixel width if you prefer.
+  // Leave commented unless you want auto.
+  
+  /*
+  requestAnimationFrame(()=>{
+    const totalWidth = track.scrollWidth / 2; // width of one sequence
+    // pixels per second target (lower = slower)
+    const pxPerSec = 40;
+    const newDur = (totalWidth / pxPerSec) + 's';
+    track.style.animationDuration = newDur;
+  });
+  */
+
+  // Pause on hover using JS fallback for older browsers (optional)
+  blockRoot.addEventListener('mouseenter', ()=>{
+    track.style.animationPlayState = 'paused';
+  });
+  blockRoot.addEventListener('mouseleave', ()=>{
+    track.style.animationPlayState = 'running';
+  });
+
+})();
+</script>
