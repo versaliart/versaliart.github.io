@@ -28,7 +28,7 @@
   align-items: flex-start;   /* ⬅ anchor children to the top */
   gap: var(--img-gap);
   animation-duration: var(--scroll-speed);
-    animation-timing-function: linear;
+  animation-timing-function: linear;
   animation-iteration-count: infinite;
   user-select: none;
   -webkit-user-drag: none;

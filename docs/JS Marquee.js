@@ -64,28 +64,40 @@
     // controlling that with --scroll-speed in inline style.
   }
 
-  function initMarquee(m){
-    const track = m.querySelector('.mm-marquee-track');
-    if (!track || track.__mmFilled) return;
-    track.__mmFilled = true;
+function initMarquee(m){
+  const track = m.querySelector('.mm-marquee-track');
+  if (!track || track.__mmFilled) return;
+  track.__mmFilled = true;
 
-    // populate two copies
-    track.appendChild(buildSequence());
-    track.appendChild(buildSequence());
+  // populate two copies
+  track.appendChild(buildSequence());
+  track.appendChild(buildSequence());
 
-    // pause on hover (JS fallback)
-    m.addEventListener('mouseenter', ()=>{
-      track.style.animationPlayState = 'paused';
-    });
-    m.addEventListener('mouseleave', ()=>{
-      track.style.animationPlayState = 'running';
-    });
+  // pause on hover (JS fallback)
+  m.addEventListener('mouseenter', ()=> track.style.animationPlayState = 'paused');
+  m.addEventListener('mouseleave', ()=> track.style.animationPlayState = 'running');
 
-    // wait a frame so images lay out, then measure real width
-    requestAnimationFrame(()=>{
+  // wait until all images load before measuring
+  const imgs = track.querySelectorAll('img');
+  let loadedCount = 0;
+
+  function finalize() {
+    requestAnimationFrame(()=> {
       applyDynamicAnimation(track);
     });
   }
+
+  imgs.forEach(img => {
+    if (img.complete) loadedCount++;
+    else img.addEventListener('load', () => {
+      loadedCount++;
+      if (loadedCount === imgs.length) finalize();
+    });
+  });
+
+  if (loadedCount === imgs.length) finalize();
+}
+
 
   function initAll(){
     document.querySelectorAll('.mm-marquee').forEach(initMarquee);
