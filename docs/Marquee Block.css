@@ -1,6 +1,6 @@
 <div class="mm-marquee"
      style="
-       --scroll-speed: 5s;      /* Larger = slower. ex: 20s fast, 60s slow */
+       --scroll-speed: 15s;      /* Larger = slower. ex: 20s fast, 60s slow */
        --img-gap: 1rem;          /* space between images */
        --img-h-max: 40rem;
        max-height: var(--img-h-max);
