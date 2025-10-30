@@ -10,8 +10,6 @@
   --gap: 2rem;
   --pile-pad: 1rem;
   --flip-scale: 1.15;
-  --shadow: 0 .25rem .6rem rgba(0,0,0,.28);
-  --shadow-strong: 0 .6rem 1.6rem rgba(0,0,0,.35);
   
 
   position: relative;
@@ -69,14 +67,9 @@
   inset: 0;
   border-radius: var(--radius);
   transition: none;          /* allow inline transitions to override when needed */
-  box-shadow: var(--shadow);
   will-change: transform;
 }
 
-/* Stronger depth while flipped */
-#cardTable .cdp-card.is-flipped .cdp-shuttle{
-  box-shadow: var(--shadow-strong);
-}
 
 /* 3D flipper lives inside shuttle */
 #cardTable .cdp-flipper{
