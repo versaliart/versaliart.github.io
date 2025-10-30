@@ -256,30 +256,37 @@ const maybeReshuffle = async () => {
   const moves = [];
 
   // Move bottom → top. Top card gets the largest delay, so it arrives last.
-  for (let j = 0; j < n; j++) {
-    const card = cards[j];
-    card.classList.remove('is-discarded');
+for (let j = 0; j < n; j++) {
+  const card = cards[j];              // DOM order: bottom..top
+  card.classList.remove('is-discarded');
 
-    // (Optional) give each a fresh resting tilt; animates in sync during reshuffle
-    const newTilt = (((Date.now() + j) * 13) % 9) - 4;
+  const newTilt = (((Date.now() + j) * 13) % 9) - 4;
 
-    moves.push(
-      moveCard(card, drawPile, { delay: j * stepDelay, tilt: newTilt })
-    );
-  }
+  // Key: bottom (j=0) should arrive LAST, so it becomes the top again.
+  const delay = (n - 1 - j) * stepDelay;
+
+  moves.push(
+    moveCard(card, drawPile, { delay, tilt: newTilt })
+  );
+}
+
 
   await Promise.all(moves);
   refreshInteractivity();
 };
 
-    // Seed from your hidden articles (still use your <article class="card"> seeds)
-    const seeds = $$('.cards-seed .card');
-    const cards = seeds.map(makeCard);
-    cards.forEach(c => {
-      drawPile.appendChild(c);
-      c.addEventListener('click', onCardClick);
-    });
-    refreshInteractivity();
+// Seed so the FIRST <article> in HTML becomes the TOP of the draw pile
+const seeds = $$('.cards-seed .card');
+const cards = seeds.map(makeCard);
+
+// Append in reverse so the earliest HTML card ends up as the last child (top)
+for (let i = cards.length - 1; i >= 0; i--) {
+  const c = cards[i];
+  drawPile.appendChild(c);
+  c.addEventListener('click', onCardClick);
+}
+refreshInteractivity();
+
 
     // Optional API
     window.CardDeckPiles = {
