@@ -17,7 +17,7 @@
     doors.appendChild(mk('right'));
     return doors;
   }
-
+ 
   // Paint geometry with sub-pixel precision
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
