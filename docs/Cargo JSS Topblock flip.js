@@ -1,6 +1,37 @@
-/* ===== Topblock Split-Flip (Doors) v2.50 — FULL JS (bare) ===== */
+/* ===== Topblock Split-Flip (Doors) v2.51 — performance-tuned =====
+   Notes:
+   - rAF batches all geometry reads/writes
+   - One-time global listeners (no N-per-block handlers)
+   - Narrow, batched DOM watching (no full-subtree churn)
+   - Passive event listeners where possible
+   (c) Mystic Munson helpers — 2025-10-30
+*/
 (function(){
-  // Build doors
+  // ---------- Utilities ----------
+  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
+  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const closestFeBlock = el => el.closest('.fe-block') || null;
+
+  function setPassThrough(block, on){
+    const outer = closestFeBlock(block);
+    if (on){
+      block.classList.add('pe-through'); outer && outer.classList.add('pe-through');
+    } else {
+      block.classList.remove('pe-through'); outer && outer.classList.remove('pe-through');
+    }
+  }
+
+  // rAF throttler per element
+  function makeRaf(fn){
+    let scheduled = false;
+    return function(...args){
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(()=>{ scheduled = false; fn.apply(this, args); });
+    };
+  }
+
+  // ---------- DOM builders ----------
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
@@ -18,7 +49,7 @@
     return doors;
   }
 
-  // Paint geometry with sub-pixel precision
+  // ---------- Layout (reads/writes batched) ----------
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
     const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
@@ -75,36 +106,20 @@
     paint(rf, (W/2) - seam); paint(rb, (W/2) - seam);
   }
 
-  // Utilities
-  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
-  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  const closestFeBlock = el => el.closest('.fe-block') || null;
-
-  function setPassThrough(block, on){
-    const outer = closestFeBlock(block);
-    if (on){
-      block.classList.add('pe-through');
-      outer && outer.classList.add('pe-through');
-    } else {
-      block.classList.remove('pe-through');
-      outer && outer.classList.remove('pe-through');
-    }
-  }
-
-  // Robust open/close with multiple fallbacks
+  // ---------- Open/Close (global, throttled) ----------
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
     block.classList.add('is-open');
     setPassThrough(block, true);
 
-    // Track last pointer; close when pointer is outside rect
+    // Pointer position tracking for “close when pointer leaves”
     const updatePt = (e) => {
       block.__lastPt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
         : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
         : block.__lastPt || null;
       if (!block.__lastPt) return;
+      // immediate check on pointer events (cheap)
       const r = block.getBoundingClientRect();
       const p = block.__lastPt;
       if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
@@ -112,31 +127,35 @@
       }
     };
 
-    const onPointerMove  = (e) => updatePt(e);
-    const onPointerOver  = (e) => updatePt(e); // covers fast transitions without move
-    const onScroll       = ()  => {
+    // Scroll-driven check (rAF-throttled, passive)
+    const checkOnScroll = makeRaf(()=>{
       if (!block.__lastPt) return;
       const r = block.getBoundingClientRect();
       const p = block.__lastPt;
       if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
         closeBlock(block);
       }
-    };
-    const onBlur         = ()  => closeBlock(block);
-    const onVisibility   = ()  => { if (document.visibilityState !== 'visible') closeBlock(block); };
+    });
 
-    document.addEventListener('pointermove', onPointerMove, true);
-    document.addEventListener('pointerover', onPointerOver, true);
-    window.addEventListener('scroll', onScroll, true);
-    window.addEventListener('blur', onBlur, true);
-    document.addEventListener('visibilitychange', onVisibility, true);
+    const onPointerMove = (e) => updatePt(e);
+    const onPointerOver = (e) => updatePt(e);
+    const onScroll      = ()  => checkOnScroll();
+    const onBlur        = ()  => closeBlock(block);
+    const onVisibility  = ()  => { if (document.visibilityState !== 'visible') closeBlock(block); };
+
+    document.addEventListener('pointermove', onPointerMove, {capture:true, passive:true});
+    document.addEventListener('pointerover', onPointerOver, {capture:true, passive:true});
+    // NOTE: no longer capture:true for scroll — capturing scroll can be expensive sitewide
+    window.addEventListener('scroll', onScroll, {passive:true});
+    window.addEventListener('blur', onBlur, {passive:true});
+    document.addEventListener('visibilitychange', onVisibility, {passive:true});
 
     block.__cleanupOpen = () => {
-      document.removeEventListener('pointermove', onPointerMove, true);
-      document.removeEventListener('pointerover', onPointerOver, true);
-      window.removeEventListener('scroll', onScroll, true);
-      window.removeEventListener('blur', onBlur, true);
-      document.removeEventListener('visibilitychange', onVisibility, true);
+      document.removeEventListener('pointermove', onPointerMove, {capture:true});
+      document.removeEventListener('pointerover', onPointerOver, {capture:true});
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('blur', onBlur);
+      document.removeEventListener('visibilitychange', onVisibility);
       block.__lastPt = null;
     };
   }
@@ -149,14 +168,13 @@
     if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
   }
 
-  // Initialize one
+  // ---------- Per-block init ----------
   function initOne(block){
     if (block.classList.contains('flip-top')) return;
 
     const container = block.querySelector('.fluid-image-container');
     const img = block.querySelector('img[data-sqsp-image-block-image]');
     if (!container || !img) return;
-
     const url = img.currentSrc || img.src;
     if (!url) return;
 
@@ -165,19 +183,19 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // Disable the marker link only while open/tapped-open (CSS also covers this)
+    // Only disable the marker link while open/tapped-open
     const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
     if (marker){
       marker.addEventListener('click', (e) => {
         if (block.classList.contains('is-open') || block.classList.contains('is-flipped')) {
           e.preventDefault(); e.stopPropagation();
         }
-      }, true);
+      }, {capture:true, passive:false});
     }
 
-    // Desktop: open with pass-through; close via robust document listeners
     if (isFine()){
-      block.addEventListener('mouseenter', () => openBlock(block));
+      block.addEventListener('mouseenter', () => openBlock(block), {passive:true});
+      block.addEventListener('mouseleave', () => closeBlock(block), {passive:true});
     }
 
     // Mobile: tap to open persistent
@@ -188,33 +206,24 @@
         block.classList.add('is-flipped');
         setPassThrough(block, true);
       }
-    }, true);
+    }, {capture:true, passive:false});
 
-    // Tap blank space to close on mobile
-    document.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (block.classList.contains('is-flipped')){
-        const actionable = e.target.closest &&
-          e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
-        if (!actionable){
-          block.classList.remove('is-flipped');
-          setPassThrough(block, false);
-        }
-      }
-    }, true);
-
-    // Layout + reactions
-    const relayout = () => layout(block);
+    // Layout + observers (rAF-batched)
+    const relayout = makeRaf(()=> layout(block));
     relayout();
 
+    // ResizeObserver per block
     const ro = new ResizeObserver(relayout);
     ro.observe(container);
+    block.__ro = ro;
 
+    // Watch only the IMG src/srcset changes (narrow)
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
+    block.__mo = mo;
 
-    if (!img.complete) img.addEventListener('load', relayout, { once: true });
-    window.addEventListener('resize', relayout);
+    if (!img.complete) img.addEventListener('load', relayout, { once: true, passive:true });
+    window.addEventListener('resize', relayout, {passive:true});
 
     // Safety: close when off-screen
     if ('IntersectionObserver' in window){
@@ -228,22 +237,59 @@
         });
       }, { threshold: 0.05 });
       io.observe(block);
+      block.__io = io;
     }
   }
 
-  // Initialize all eligible blocks
-  function initAll(){
-    document.querySelectorAll('.sqs-block.image-block').forEach(block => {
+  // ---------- Global mobile closer (single listener) ----------
+  document.addEventListener('click', function(e){
+    if (!isCoarse()) return;
+    const actionable = e.target.closest && e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
+    if (actionable) return;
+    // Close any flipped blocks if you tap blank space
+    document.querySelectorAll('.sqs-block.image-block.flip-top.is-flipped').forEach(block=>{
+      block.classList.remove('is-flipped');
+      setPassThrough(block, false);
+    });
+  }, {capture:true, passive:true});
+
+  // ---------- Init-all (idempotent, batched) ----------
+  function initAll(root=document){
+    root.querySelectorAll('.sqs-block.image-block').forEach(block => {
       const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
       if (link) initOne(block);
     });
   }
 
+  // Initial run
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initAll);
+    document.addEventListener('DOMContentLoaded', () => initAll());
   } else {
     initAll();
   }
-  const moAll = new MutationObserver(initAll);
-  moAll.observe(document.documentElement, { childList: true, subtree: true });
+
+  // Scoped, batched DOM watch: only act on new nodes, not every subtree mutation
+  let pendingInit = false;
+  const batchedInit = () => {
+    if (pendingInit) return;
+    pendingInit = true;
+    queueMicrotask(()=>{ pendingInit = false; initAll(); });
+  };
+
+  const moAll = new MutationObserver((mutList)=>{
+    let shouldRun = false;
+    for (const m of mutList){
+      if (m.type === 'childList' && (m.addedNodes && m.addedNodes.length)){
+        // Only trigger if added subtree might contain an image block
+        for (const n of m.addedNodes){
+          if (!(n instanceof Element)) continue;
+          if (n.matches && n.matches('.sqs-block.image-block')) { shouldRun = true; break; }
+          if (n.querySelector && n.querySelector('.sqs-block.image-block')) { shouldRun = true; break; }
+        }
+      }
+      if (shouldRun) break;
+    }
+    if (shouldRun) batchedInit();
+  });
+  moAll.observe(document.body || document.documentElement, { childList: true, subtree: true });
 })();
