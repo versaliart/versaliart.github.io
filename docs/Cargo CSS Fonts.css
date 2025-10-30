@@ -485,3 +485,72 @@ button.sqs-add-to-cart-button {
   font-family: "Maax", sans-serif !important;
   font-weight: 700 !important;
 }
+
+/* ===============================
+   FOOTER EXEMPTION: Text block spacing
+   Place AFTER your global spacing rules
+================================*/
+
+/* 0) Helper to target footer in all SS templates */
+:is(footer, .Footer, .footer) { /* no styles here — just the anchor */ }
+
+/* 1) Restore top/bottom margins for common children */
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-html-content   > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure){
+  margin-top: revert !important;
+  margin-bottom: revert !important;
+}
+
+/* 2) Cancel the “one predictable gap between siblings” rule */
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-block-content > * + *,
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-html-content   > * + *{
+  margin-top: revert !important;
+}
+
+/* 3) Cancel special smaller gaps after display styles */
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *,
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-html-content   > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *{
+  margin-top: revert !important;
+}
+
+/* 4) Cancel the Heading → Paragraph custom gap */
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
+:is(footer, .Footer, .footer)
+  .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
+  margin-top: revert !important;
+}
+
+/* 5) Restore internal padding on Text blocks (both wrapper variants) */
+:is(footer, .Footer, .footer)
+  .sqs-block.html-block.sqs-block-html .sqs-html-content{
+  padding: revert !important;
+}
+:is(footer, .Footer, .footer)
+  .sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
+  padding: revert !important;
+}
+
+/* 6) Undo the special grid treatment for pure p.sqsrte-large blocks */
+:is(footer, .Footer, .footer)
+  .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
+  display: revert !important;
+  row-gap: revert !important;
+  padding-block: revert !important;
+  padding-inline: revert !important;
+}
+:is(footer, .Footer, .footer)
+  .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))) > *{
+  margin: revert !important;
+}
+
+/* 7) Restore any padding-bottom that the theme expects */
+:is(footer, .Footer, .footer) .sqs-block-html .sqs-block-content{
+  padding-bottom: revert !important;
+}
