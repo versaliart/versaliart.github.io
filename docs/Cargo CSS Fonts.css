@@ -486,71 +486,154 @@ button.sqs-add-to-cart-button {
   font-weight: 700 !important;
 }
 
-/* ===============================
-   FOOTER EXEMPTION: Text block spacing
-   Place AFTER your global spacing rules
-================================*/
+/* =========================================================
+   FORMS TYPOGRAPHY OVERRIDES (Squarespace 7.1)
+   Match buttons/paragraph system: Maax for UI labels,
+   Crimson Pro for user-entered text.
+   v1.0 (2025-10-30)
+========================================================= */
 
-/* 0) Helper to target footer in all SS templates */
-:is(footer, .Footer, .footer) { /* no styles here — just the anchor */ }
-
-/* 1) Restore top/bottom margins for common children */
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-html-content   > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure){
-  margin-top: revert !important;
-  margin-bottom: revert !important;
+/* --- Titles, section headings, field labels, legends --- */
+.sqs-block-form .form-title,
+.sqs-block-form .form-subtitle,
+.sqs-block-form .field-list .title,
+.sqs-block-form .field-list label,
+.sqs-block-form legend,
+.form-wrapper .form-title,
+.form-wrapper .form-subtitle,
+.form-wrapper label,
+.form-wrapper legend,
+.newsletter-block .newsletter-form-header,
+.newsletter-block .newsletter-form-header .form-title,
+.newsletter-block .newsletter-form-header .form-subtitle {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;                 /* Medium */
+  line-height: 1.3 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+  font-size: var(--p3, 1rem) !important;       /* keep labels tidy */
+  font-synthesis-weight: none !important;
 }
 
-/* 2) Cancel the “one predictable gap between siblings” rule */
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-block-content > * + *,
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-html-content   > * + *{
-  margin-top: revert !important;
+/* --- Text inputs, textareas, selects (user-entered text) --- */
+.sqs-block-form input[type="text"],
+.sqs-block-form input[type="email"],
+.sqs-block-form input[type="tel"],
+.sqs-block-form input[type="url"],
+.sqs-block-form input[type="number"],
+.sqs-block-form input[type="password"],
+.sqs-block-form input[type="search"],
+.sqs-block-form textarea,
+.sqs-block-form select,
+.form-wrapper input[type="text"],
+.form-wrapper input[type="email"],
+.form-wrapper input[type="tel"],
+.form-wrapper input[type="url"],
+.form-wrapper input[type="number"],
+.form-wrapper input[type="password"],
+.form-wrapper input[type="search"],
+.form-wrapper textarea,
+.form-wrapper select,
+.newsletter-block .newsletter-form input,
+.newsletter-block .newsletter-form select,
+.newsletter-block .newsletter-form textarea {
+  font-family: "Crimson Pro", serif !important;
+  font-weight: 400 !important;                 /* regular reading weight */
+  font-style: normal !important;
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.4 !important;
+  font-optical-sizing: auto !important;
+  font-synthesis-weight: none !important;      /* avoid faux bold in inputs */
 }
 
-/* 3) Cancel special smaller gaps after display styles */
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *,
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-html-content   > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *{
-  margin-top: revert !important;
+/* --- Placeholder text (tone it down, keep same family) --- */
+.sqs-block-form ::placeholder,
+.form-wrapper ::placeholder,
+.newsletter-block .newsletter-form ::placeholder {
+  font-family: inherit !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  opacity: .6 !important;
 }
 
-/* 4) Cancel the Heading → Paragraph custom gap */
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
-:is(footer, .Footer, .footer)
-  .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
-  margin-top: revert !important;
+/* --- Checkbox & radio option labels --- */
+.sqs-block-form .option,
+.sqs-block-form .option label,
+.form-wrapper .option,
+.form-wrapper .option label {
+  font-family: "Maax", sans-serif !important;  /* keep UI labels consistent */
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;             /* easier to read long options */
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.3 !important;
 }
 
-/* 5) Restore internal padding on Text blocks (both wrapper variants) */
-:is(footer, .Footer, .footer)
-  .sqs-block.html-block.sqs-block-html .sqs-html-content{
-  padding: revert !important;
-}
-:is(footer, .Footer, .footer)
-  .sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
-  padding: revert !important;
-}
-
-/* 6) Undo the special grid treatment for pure p.sqsrte-large blocks */
-:is(footer, .Footer, .footer)
-  .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
-  display: revert !important;
-  row-gap: revert !important;
-  padding-block: revert !important;
-  padding-inline: revert !important;
-}
-:is(footer, .Footer, .footer)
-  .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))) > *{
-  margin: revert !important;
+/* --- Helper/description text under fields + error/success messages --- */
+.sqs-block-form .description,
+.form-wrapper .description,
+.sqs-error-message,
+.form-field-error,
+.form-wrapper .form-submission-text,
+.sqs-block-form .form-submission-text {
+  font-family: "Crimson Pro", serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.4 !important;
 }
 
-/* 7) Restore any padding-bottom that the theme expects */
-:is(footer, .Footer, .footer) .sqs-block-html .sqs-block-content{
-  padding-bottom: revert !important;
+/* --- File upload pseudo-button’s visible label (where applicable) --- */
+.sqs-block-form .file-upload .file-upload-field + label,
+.form-wrapper .file-upload .file-upload-field + label {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+}
+
+/* --- Ensure the submit button follows your global button rules --- */
+/* (Your existing button block already covers these, but this keeps forms tidy) */
+.sqs-block-form .form-button-wrapper .sqs-button-element,
+.sqs-block-form .form-button-wrapper .sqs-button-element .sqs-button-label {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+  font-size: 1rem !important;
+}
+
+/* --- Newsletter “Name/Email” labels and disclaimers --- */
+.newsletter-block .newsletter-form-field-wrapper label,
+.newsletter-block .newsletter-form-footnote,
+.newsletter-block .newsletter-form-disclaimer {
+  font-family: "Maax", sans-serif !important;  /* labels */
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+  font-size: var(--p3, 1rem) !important;
+}
+.newsletter-block .newsletter-form-description,
+.newsletter-block .newsletter-block-success,
+.newsletter-block .newsletter-block-failure {
+  font-family: "Crimson Pro", serif !important; /* body text */
+  font-weight: 400 !important;
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.4 !important;
+}
+
+/* --- Edge cases: form titles embedded inside headings in content blocks --- */
+.sqs-block-content .form-wrapper .form-title,
+.sqs-block-content .form-wrapper .form-subtitle {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+}
+
+/* --- If your Footer is exempt from spacing, still apply fonts there --- */
+:is(footer, .Footer, .footer) .sqs-block-form,
+:is(footer, .Footer, .footer) .form-wrapper,
+:is(footer, .Footer, .footer) .newsletter-block {
+  font-family: inherit !important; /* keep global font rules active */
 }
