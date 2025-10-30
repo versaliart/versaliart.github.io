@@ -1,11 +1,6 @@
-/* ===== Topblock Split-Flip (Doors) v2.52 — hover-stable ===== */
+/* ===== Topblock Split-Flip (Doors) v2.50 — FULL JS (bare) ===== */
 (function(){
-  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
-  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
-
-  // rAF throttler
-  const makeRaf = (fn)=>{ let s=false; return (...a)=>{ if(s) return; s=true; requestAnimationFrame(()=>{ s=false; fn(...a); }); }; };
-
+  // Build doors
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
@@ -20,11 +15,10 @@
     };
     doors.appendChild(mk('left'));
     doors.appendChild(mk('right'));
-    // IMPORTANT: the overlay never intercepts pointer on desktop
-    doors.style.pointerEvents = 'auto'; // default; we’ll toggle when open
     return doors;
   }
-
+ 
+  // Paint geometry with sub-pixel precision
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
     const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
@@ -81,34 +75,88 @@
     paint(rf, (W/2) - seam); paint(rb, (W/2) - seam);
   }
 
-  // Only toggle pass-through on the DOORS overlay (keeps :hover on block stable)
-  function setDoorsPassThrough(block, on){
-    const doors = block.querySelector('.flip-doors');
-    if (!doors) return;
-    doors.style.pointerEvents = on ? 'none' : 'auto';
+  // Utilities
+  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
+  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  const closestFeBlock = el => el.closest('.fe-block') || null;
+
+  function setPassThrough(block, on){
+    const outer = closestFeBlock(block);
+    if (on){
+      block.classList.add('pe-through');
+      outer && outer.classList.add('pe-through');
+    } else {
+      block.classList.remove('pe-through');
+      outer && outer.classList.remove('pe-through');
+    }
   }
 
+  // Robust open/close with multiple fallbacks
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
     block.classList.add('is-open');
-    // On desktop, let clicks fall through the visual overlay but keep hover on the block
-    if (isFine()) setDoorsPassThrough(block, true);
+    setPassThrough(block, true);
+
+    // Track last pointer; close when pointer is outside rect
+    const updatePt = (e) => {
+      block.__lastPt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
+        : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
+        : block.__lastPt || null;
+      if (!block.__lastPt) return;
+      const r = block.getBoundingClientRect();
+      const p = block.__lastPt;
+      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
+        closeBlock(block);
+      }
+    };
+
+    const onPointerMove  = (e) => updatePt(e);
+    const onPointerOver  = (e) => updatePt(e); // covers fast transitions without move
+    const onScroll       = ()  => {
+      if (!block.__lastPt) return;
+      const r = block.getBoundingClientRect();
+      const p = block.__lastPt;
+      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
+        closeBlock(block);
+      }
+    };
+    const onBlur         = ()  => closeBlock(block);
+    const onVisibility   = ()  => { if (document.visibilityState !== 'visible') closeBlock(block); };
+
+    document.addEventListener('pointermove', onPointerMove, true);
+    document.addEventListener('pointerover', onPointerOver, true);
+    window.addEventListener('scroll', onScroll, true);
+    window.addEventListener('blur', onBlur, true);
+    document.addEventListener('visibilitychange', onVisibility, true);
+
+    block.__cleanupOpen = () => {
+      document.removeEventListener('pointermove', onPointerMove, true);
+      document.removeEventListener('pointerover', onPointerOver, true);
+      window.removeEventListener('scroll', onScroll, true);
+      window.removeEventListener('blur', onBlur, true);
+      document.removeEventListener('visibilitychange', onVisibility, true);
+      block.__lastPt = null;
+    };
   }
 
   function closeBlock(block){
     if (!block.__open) return;
     block.__open = false;
     block.classList.remove('is-open');
-    setDoorsPassThrough(block, false);
+    setPassThrough(block, false);
+    if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
   }
 
+  // Initialize one
   function initOne(block){
     if (block.classList.contains('flip-top')) return;
 
     const container = block.querySelector('.fluid-image-container');
     const img = block.querySelector('img[data-sqsp-image-block-image]');
     if (!container || !img) return;
+
     const url = img.currentSrc || img.src;
     if (!url) return;
 
@@ -117,103 +165,85 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // Prevent marker navigation only while open/flipped
+    // Disable the marker link only while open/tapped-open (CSS also covers this)
     const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
     if (marker){
       marker.addEventListener('click', (e) => {
         if (block.classList.contains('is-open') || block.classList.contains('is-flipped')) {
           e.preventDefault(); e.stopPropagation();
         }
-      }, {capture:true});
+      }, true);
     }
 
-    // DESKTOP: stable hover using pointerenter/leave on the block (no doc handlers)
+    // Desktop: open with pass-through; close via robust document listeners
     if (isFine()){
-      block.addEventListener('pointerenter', () => openBlock(block), {passive:true});
-      block.addEventListener('pointerleave', () => closeBlock(block), {passive:true});
+      block.addEventListener('mouseenter', () => openBlock(block));
     }
 
-    // MOBILE: tap to open persistent
+    // Mobile: tap to open persistent
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
         e.preventDefault(); e.stopPropagation();
         block.classList.add('is-flipped');
-        // while flipped on mobile, also let taps go through the overlay
-        setDoorsPassThrough(block, true);
+        setPassThrough(block, true);
       }
-    }, {capture:true});
+    }, true);
 
-    // Relayout (rAF-batched)
-    const relayout = makeRaf(()=> layout(block));
+    // Tap blank space to close on mobile
+    document.addEventListener('click', function(e){
+      if (!isCoarse()) return;
+      if (block.classList.contains('is-flipped')){
+        const actionable = e.target.closest &&
+          e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
+        if (!actionable){
+          block.classList.remove('is-flipped');
+          setPassThrough(block, false);
+        }
+      }
+    }, true);
+
+    // Layout + reactions
+    const relayout = () => layout(block);
     relayout();
 
     const ro = new ResizeObserver(relayout);
     ro.observe(container);
-    block.__ro = ro;
 
     const mo = new MutationObserver(relayout);
     mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
-    block.__mo = mo;
 
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
+    window.addEventListener('resize', relayout);
 
-    // Close when off-screen
+    // Safety: close when off-screen
     if ('IntersectionObserver' in window){
       const io = new IntersectionObserver((entries)=>{
         entries.forEach((entry)=>{
           if (!entry.isIntersecting){
             closeBlock(block);
             block.classList.remove('is-flipped');
-            setDoorsPassThrough(block, false);
+            setPassThrough(block, false);
           }
         });
       }, { threshold: 0.05 });
       io.observe(block);
-      block.__io = io;
     }
   }
 
-  // Global mobile blank-space closer (single listener)
-  document.addEventListener('click', function(e){
-    if (!isCoarse()) return;
-    const actionable = e.target.closest && e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
-    if (actionable) return;
-    document.querySelectorAll('.sqs-block.image-block.flip-top.is-flipped').forEach(block=>{
-      block.classList.remove('is-flipped');
-      setDoorsPassThrough(block, false);
-    });
-  }, {capture:true, passive:true});
-
-  function initAll(root=document){
-    root.querySelectorAll('.sqs-block.image-block').forEach(block => {
+  // Initialize all eligible blocks
+  function initAll(){
+    document.querySelectorAll('.sqs-block.image-block').forEach(block => {
       const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
       if (link) initOne(block);
     });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => initAll());
+    document.addEventListener('DOMContentLoaded', initAll);
   } else {
     initAll();
   }
-
-  // Narrow, batched watcher for newly-added image blocks
-  let pendingInit = false;
-  const batchedInit = () => {
-    if (pendingInit) return; pendingInit = true;
-    queueMicrotask(()=>{ pendingInit = false; initAll(); });
-  };
-  const moAll = new MutationObserver((mutList)=>{
-    for (const m of mutList){
-      if (m.type !== 'childList' || !m.addedNodes?.length) continue;
-      for (const n of m.addedNodes){
-        if (!(n instanceof Element)) continue;
-        if (n.matches?.('.sqs-block.image-block') || n.querySelector?.('.sqs-block.image-block')){
-          batchedInit(); return;
-        }
-      }
-    }
-  });
-  moAll.observe(document.body || document.documentElement, { childList: true, subtree: true });
+  const moAll = new MutationObserver(initAll);
+  moAll.observe(document.documentElement, { childList: true, subtree: true });
 })();
