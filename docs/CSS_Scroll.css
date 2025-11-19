@@ -4,13 +4,15 @@ body {
   scroll-behavior: smooth;
 }
 
-/* TEMP TEST: make the viewport a snap container */
-html {
-  scroll-snap-type: y mandatory; /* strong snap for testing */
+/* Scope as desired: homepage only, etc. */
+body {
+  scroll-snap-type: y proximity;
 }
 
-/* TEMP TEST: snap every Squarespace section */
-section.page-section {
+/* Invisible anchor that acts as the snap point */
+.snap-anchor {
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  height: 0;            /* so it doesn't add visible space */
+  margin: 0;
 }
