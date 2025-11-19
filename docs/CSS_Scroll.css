@@ -4,15 +4,15 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Scope as desired: homepage only, etc. */
-body {
-  scroll-snap-type: y proximity;
+/* Use whichever is the actual scrolling element; you said this part works */
+html {
+  scroll-snap-type: y mandatory;
 }
 
-/* Invisible anchor that acts as the snap point */
+/* Make the anchors clearly valid as snap targets */
 .snap-anchor {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  height: 0;            /* so it doesn't add visible space */
-  margin: 0;
+  display: block;
+  min-height: 1px;     /* avoid truly zero-height quirks */
 }
