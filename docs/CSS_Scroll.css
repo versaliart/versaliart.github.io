@@ -6,7 +6,7 @@ body {
 
 /* Use whichever is the actual scrolling element; you said this part works! */
 html {
-  scroll-snap-type: y proximity;
+  scroll-snap-type: y mandatory;
 }
 
 /* Make the anchors clearly valid as snap targets */
