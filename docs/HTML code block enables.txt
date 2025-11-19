@@ -32,6 +32,16 @@ Opt-out only a section: drop a tiny Code Block inside that section:
 <div id="starfield-enable" style="display:none" aria-hidden="true"></div>
 
 
-If you only want specific sections to snap, you can:
-At the top of a section, add a Code Block with:
-<div class="snap-anchor"></div>
+<!-- Snap-Scroll activator: place this Code Block in the ONE section you want to snap -->
+<div
+  data-snap-scroll
+  data-direction="both"
+  data-offset-top="0"
+  data-duration="900"
+  data-epsilon="1"
+  data-intent-px="1"
+  data-debug="true"
+  style="display:none"
+></div>
+
+
