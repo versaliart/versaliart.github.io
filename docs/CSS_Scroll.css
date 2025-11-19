@@ -4,7 +4,7 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Use whichever is the actual scrolling element; you said this part works */
+/* Use whichever is the actual scrolling element; you said this part works! */
 html {
   scroll-snap-type: y mandatory;
 }
