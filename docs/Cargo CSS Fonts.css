@@ -486,44 +486,43 @@ button.sqs-add-to-cart-button {
   font-weight: 700 !important;
 }
 
-/* =======================================================================
-   Secondary Buttons — force text + border color #9989EC (all locations)
-   ======================================================================= */
+/* ==========================================================================
+   Secondary Buttons — #9989EC border + text; white on hover
+   ========================================================================== */
 
-/* Core secondary button anchors */
+/* Base state */
 a.sqs-button-element--secondary,
 .sqs-button-element--secondary,
+button.sqs-button-element--secondary,
 .sqs-block-button .sqs-button-element--secondary {
   color: #9989EC !important;
   border-color: #9989EC !important;
 }
 
-/* In case Squarespace uses <button> instead of <a> */
-button.sqs-button-element--secondary {
-  color: #9989EC !important;
-  border-color: #9989EC !important;
-}
-
-/* Label span inside secondary buttons */
+/* Inner label span */
 .sqs-button-element--secondary .sqs-button-label {
   color: #9989EC !important;
 }
 
-/* Hover + active states */
+/* Hover: white text, same border */
 a.sqs-button-element--secondary:hover,
 button.sqs-button-element--secondary:hover,
 .sqs-button-element--secondary:hover {
-  color: #9989EC !important;
+  color: #ffffff !important;
   border-color: #9989EC !important;
-  opacity: 0.85; /* optional subtle refinement */
 }
 
+/* Hover label */
+.sqs-button-element--secondary:hover .sqs-button-label {
+  color: #ffffff !important;
+}
+
+/* Active (pressed) — stays white for clarity */
 a.sqs-button-element--secondary:active,
 button.sqs-button-element--secondary:active,
 .sqs-button-element--secondary:active {
-  color: #9989EC !important;
+  color: #ffffff !important;
   border-color: #9989EC !important;
-  opacity: 0.75; /* optional pressed state */
 }
 
 
