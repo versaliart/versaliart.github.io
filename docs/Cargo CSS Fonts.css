@@ -253,6 +253,18 @@ button.sqs-add-to-cart-button{
 
 /* ----- Text block spacing (7.1): tighten gaps, keep font sizes unchanged ----- */
 
+/* GLOBAL SPACING TOKENS
+   These are your *core* padding values for all text blocks.
+   Override them per block with:
+   #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
+*/
+:root{
+  --tb-pad-y: 0.5rem;   /* base top/bottom padding for text blocks */
+  --tb-pad-x: 0.5rem;   /* base left/right padding for text blocks */
+
+  --gap-hp: 0.4rem;     /* Heading → Paragraph gap (site-wide) */
+}
+
 /* 1) Zero top/bottom margins on common children (both wrappers) */
 .sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
 .sqs-block-html .sqs-html-content   > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure){
@@ -263,13 +275,13 @@ button.sqs-add-to-cart-button{
 /* 2) One predictable gap between siblings */
 .sqs-block-html .sqs-block-content > * + *,
 .sqs-block-html .sqs-html-content   > * + *{
-  margin-top: 0.55rem !important;   /* base gap — tweak to taste */
+  margin-top: 0.55rem !important;   /* base gap — tweak if you want a global change */
 }
 
 /* 3) Tighter gap after “display” lines (Heading or Paragraph 1/2) */
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *,
 .sqs-block-html .sqs-html-content   > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *{
-  margin-top: 0.45rem !important;   /* smaller gap after a style change */
+  margin-top: 0.45rem !important;
 }
 
 /* 4) Remove accidental spacer paragraphs Squarespace inserts */
@@ -285,25 +297,22 @@ button.sqs-add-to-cart-button{
   margin-bottom: 0 !important;
 }
 
-/* Internal padding for all Squarespace Text blocks (7.1) */
-:root{
-  --tb-pad-y: 0.5rem;        /* top/bottom padding */
-  --tb-pad-x: 0.5rem;   /* left/right padding */
-}
+/* Internal padding for all Squarespace Text blocks (7.1)
+   Uses core variables so you can “add to / subtract from” them per block. */
 
 /* Prefer the inner wrapper so you don't affect the block footprint */
 .sqs-block.html-block.sqs-block-html .sqs-html-content{
-  padding: var(--tb-pad-y) var(--tb-pad-x) !important;
+  padding-block: var(--tb-pad-y) !important;
+  padding-inline: var(--tb-pad-x) !important;
 }
 
 /* Fallback for templates without .sqs-html-content */
 .sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
-  padding: var(--tb-pad-y) var(--tb-pad-x) !important;
+  padding-block: var(--tb-pad-y) !important;
+  padding-inline: var(--tb-pad-x) !important;
 }
 
 /* Heading → Paragraph gap (site-wide, SS 7.1) */
-:root{ --gap-hp: 0.4rem; }  /* tweak this value */
-
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
   margin-top: var(--gap-hp) !important;
@@ -314,8 +323,6 @@ button.sqs-add-to-cart-button{
   min-height: 0 !important;
   height: auto !important;
 }
-
-/* Belt-and-suspenders: if a template sets one anyway */
 .sqs-block.html-block.sqs-block-html{
   min-height: 0 !important;
   height: auto !important;
@@ -345,13 +352,11 @@ button.sqs-add-to-cart-button{
   margin: 0 !important;
 }
 
-
 /* Bigger gap between display lines and paragraph sizes */
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + *,
 .sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium,p.sqsrte-small,p.sqsrte-body) + *{
-  margin-top: 1rem !important;   /* smaller gap after a style change */
+  margin-top: 1rem !important;
 }
-
 
 /* Optional: if the editor left a trailing empty paragraph at the end, hide it */
 .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
@@ -362,18 +367,15 @@ button.sqs-add-to-cart-button{
 body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
   display: none !important;
 }
-
-/* :blank is conservative, but still avoid in editor just in case */
 @supports selector(p:blank){
   body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:blank{
     display: none !important;
   }
 }
-
-/* Be strict: only hide a trailing paragraph that is literally JUST a <br>, on the public site */
 body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){
   display: none !important;
 }
+
 
 /* Squarespace Gallery — strips thumbnails: 8px radius */
 .gallery-strips .gallery-strips-item-wrapper,
