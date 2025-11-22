@@ -251,7 +251,9 @@ button.sqs-add-to-cart-button{
 }
 
 
-/* ----- Text block spacing (7.1): tighten gaps, keep font sizes unchanged ----- */
+/* ===============================
+   TEXT BLOCK SPACING
+================================*/
 
 /* GLOBAL SPACING TOKENS
    These are your *core* padding values for all text blocks.
@@ -377,6 +379,9 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content > p:last-child:has(> 
 }
 
 
+/* ===============================
+   GALLERY TWEAKS
+================================*/
 /* Squarespace Gallery — strips thumbnails: 8px radius */
 .gallery-strips .gallery-strips-item-wrapper,
 .gallery-strips .gallery-strips-item-wrapper > a {
