@@ -357,7 +357,7 @@ button.sqs-add-to-cart-button{
 /* Bigger gap between display lines and paragraph sizes */
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + *,
 .sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium,p.sqsrte-small,p.sqsrte-body) + *{
-  margin-top: 1rem !important;
+  margin-top: 1.25rem !important;
 }
 
 /* Optional: if the editor left a trailing empty paragraph at the end, hide it */
