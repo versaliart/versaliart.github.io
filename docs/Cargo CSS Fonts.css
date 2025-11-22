@@ -486,6 +486,47 @@ button.sqs-add-to-cart-button {
   font-weight: 700 !important;
 }
 
+/* =======================================================================
+   Secondary Buttons — force text + border color #9989EC (all locations)
+   ======================================================================= */
+
+/* Core secondary button anchors */
+a.sqs-button-element--secondary,
+.sqs-button-element--secondary,
+.sqs-block-button .sqs-button-element--secondary {
+  color: #9989EC !important;
+  border-color: #9989EC !important;
+}
+
+/* In case Squarespace uses <button> instead of <a> */
+button.sqs-button-element--secondary {
+  color: #9989EC !important;
+  border-color: #9989EC !important;
+}
+
+/* Label span inside secondary buttons */
+.sqs-button-element--secondary .sqs-button-label {
+  color: #9989EC !important;
+}
+
+/* Hover + active states */
+a.sqs-button-element--secondary:hover,
+button.sqs-button-element--secondary:hover,
+.sqs-button-element--secondary:hover {
+  color: #9989EC !important;
+  border-color: #9989EC !important;
+  opacity: 0.85; /* optional subtle refinement */
+}
+
+a.sqs-button-element--secondary:active,
+button.sqs-button-element--secondary:active,
+.sqs-button-element--secondary:active {
+  color: #9989EC !important;
+  border-color: #9989EC !important;
+  opacity: 0.75; /* optional pressed state */
+}
+
+
 /* =========================================================
    FORMS TYPOGRAPHY OVERRIDES (Squarespace 7.1)
    Match buttons/paragraph system: Maax for UI labels,
