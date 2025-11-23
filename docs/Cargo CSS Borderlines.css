@@ -107,8 +107,18 @@ body.has-motifs{
   body.has-motifs .motif-rails { display: none !important; }
 }
 
-/* Put entire page sections above the motif rails layer */
-.page-section {
-  position: relative;   /* does not change layout, only stacking context */
-  z-index: 20;          /* higher than --motif-z (10) so content wins */
+/* Motif rails: base layer */
+body.has-motifs {
+  --motif-z: 1; /* rails at z-index: 1 */
+}
+
+/* Lift the whole site content above the rails */
+body.has-motifs #siteWrapper,
+body.has-motifs .sqs-site-wrapper,
+body.has-motifs .site-wrapper,
+body.has-motifs .site-container,
+body.has-motifs .site-content,
+body.has-motifs main {
+  position: relative;
+  z-index: 5; /* anything > 1 beats the rails */
 }
