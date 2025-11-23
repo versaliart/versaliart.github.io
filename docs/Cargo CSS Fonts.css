@@ -769,7 +769,7 @@ button.sqs-button-element--secondary:active,
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4rem;                     /* tweak width to taste */
+  width: 8rem;                     /* tweak width to taste */
   pointer-events: none;            /* keep arrows/clicks working */
   z-index: 5;                      /* above slides, below header, etc. */
 }

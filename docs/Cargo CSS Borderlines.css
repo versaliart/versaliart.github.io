@@ -101,6 +101,27 @@ body.has-motifs{
   background-size:100% 100%;
 }
 
+
+
 @media (max-width: 60rem) {        /* 60rem ≈ 960px */
   body.has-motifs .motif-rails { display: none !important; }
 }
+
+/* force motif rails into the SAME stacking context as page content */
+body.has-motifs .motif-rails {
+  position: fixed !important;   /* take it OUT of the body stacking trap */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  pointer-events: none !important;
+  z-index: 2 !important;        /* low but above background */
+}
+
+/* Now put your content above it */
+.page-section,
+.page-section * {
+  position: relative;
+  z-index: 5;
+}
+
