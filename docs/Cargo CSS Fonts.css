@@ -745,3 +745,9 @@ button.sqs-button-element--secondary:active,
 .user-items-list-carousel__media {
   border-radius: inherit;  /* just in case the img itself shows edges */
 }
+
+/* Increase top/bottom padding INSIDE each carousel card */
+.user-items-list-carousel .list-item {
+  padding-top: 4rem !important;    /* increase as desired */
+  padding-bottom: 4rem !important;
+}
