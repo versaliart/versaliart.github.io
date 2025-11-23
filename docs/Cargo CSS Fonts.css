@@ -735,7 +735,6 @@ button.sqs-button-element--secondary:active,
   max-width: 100%;                       /* undo inline 75% squeeze */
 }
 
-
 /* Rounded corners on all carousel images */
 .user-items-list-carousel__media-inner {
   border-radius: 0.667rem; /* ≈ 8pt at 16px base */
@@ -750,4 +749,10 @@ button.sqs-button-element--secondary:active,
 .user-items-list-carousel .list-item {
   padding-top: 2rem !important;    /* increase as desired */
   padding-bottom: 1rem !important;
+}
+
+/* Ensure list carousels sit ABOVE motif rails */
+.user-items-list-item-container.user-items-list-carousel {
+  position: relative;   /* create stacking context */
+  z-index: 20;          /* higher than --motif-z (10) */
 }
