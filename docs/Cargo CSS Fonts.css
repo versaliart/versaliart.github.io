@@ -748,6 +748,6 @@ button.sqs-button-element--secondary:active,
 
 /* Increase top/bottom padding INSIDE each carousel card */
 .user-items-list-carousel .list-item {
-  padding-top: 4rem !important;    /* increase as desired */
-  padding-bottom: 4rem !important;
+  padding-top: 2rem !important;    /* increase as desired */
+  padding-bottom: 1rem !important;
 }
