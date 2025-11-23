@@ -723,16 +723,18 @@ button.sqs-button-element--secondary:active,
 }
 
 
-/* Use P1/body typography for all list carousel titles */
+/* Use P1 typography for all list carousel titles */
 .user-items-list-carousel .list-item-content__title {
-  font-family: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-  letter-spacing: inherit;
-  text-transform: inherit;
-  max-width: 100%; /* optional: remove the 75% squeeze */
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;           /* Medium */
+  font-size: var(--p1) !important;       /* 1rem per your scale */
+  line-height: 1.4 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .02em !important;
+  font-feature-settings: "case" 1, "cpsp" 1;
+  max-width: 100%;                       /* undo inline 75% squeeze */
 }
+
 
 /* Rounded corners on all carousel images */
 .user-items-list-carousel__media-inner {
