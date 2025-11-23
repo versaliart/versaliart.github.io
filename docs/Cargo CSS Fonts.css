@@ -98,7 +98,7 @@
 /* ===============================
    HEADINGS (content area)
 ================================*/
-.sqs-block-content h1{ font-family:"Maax",sans-serif; font-weight:500; font-size:var(--h1); line-height:1.2;  }
+.sqs-block-content h1{ font-family:"Maax",sans-serif; font-weight:500; font-size:var(--h1); line-height:1.2 !important;  }
 .sqs-block-content h2{ font-family:"Maax",sans-serif; font-weight:500; font-size:var(--h2); line-height:1.2;
   text-transform: uppercase;
   letter-spacing: .02em;
