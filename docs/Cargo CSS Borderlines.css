@@ -27,7 +27,7 @@ body.has-motifs{
   --motif-center-gap-pad: .25rem;    /* breathing room above/below center */
   --motif-bottom-cap-gap: .25rem;     /* extra space between line & bottom cap */
   --motif-opacity: 1;
-  --motif-z: 5;
+  --motif-z: 10;
   --motif-fallback-col-pct: .92;
   --motif-content-clear: 12px;
   --motif-placement-mode: gutter;
