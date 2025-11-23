@@ -756,3 +756,40 @@ button.sqs-button-element--secondary:active,
   position: relative;   /* create stacking context */
   z-index: 50;          /* higher than --motif-z (10) */
 }
+
+/* Fade the edge slides toward the page edges on all list carousels */
+.user-items-list-carousel__gutter {
+  position: relative; /* anchor the gradients */
+}
+
+/* Left + right fade overlays */
+.user-items-list-carousel__gutter::before,
+.user-items-list-carousel__gutter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 4rem;                     /* tweak width to taste */
+  pointer-events: none;            /* keep arrows/clicks working */
+  z-index: 5;                      /* above slides, below header, etc. */
+}
+
+/* Left side: fade from solid card bg (#201343) to transparent inwards */
+.user-items-list-carousel__gutter::before {
+  left: 0;
+  background: linear-gradient(
+    to right,
+    #201343 0%,
+    rgba(32, 19, 67, 0) 100%
+  );
+}
+
+/* Right side: mirror the gradient */
+.user-items-list-carousel__gutter::after {
+  right: 0;
+  background: linear-gradient(
+    to left,
+    #201343 0%,
+    rgba(32, 19, 67, 0) 100%
+  );
+}
