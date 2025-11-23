@@ -140,7 +140,7 @@
   font-family:"Crimson Pro",serif;
   font-weight:400;             /* Regular */
   font-size:var(--p3);
-  line-height:1.5;
+  line-height:1.75;
 }
 
 /* Lists inherit paragraph styles */
