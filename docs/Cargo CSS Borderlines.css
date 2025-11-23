@@ -109,7 +109,7 @@ body.has-motifs{
 
 /* Motif rails: base layer */
 body.has-motifs {
-  --motif-z: 1; /* rails at z-index: 1 */
+  --motif-z: 5; /* rails at z-index: 1 */
 }
 
 /* Lift the whole site content above the rails */
@@ -120,5 +120,5 @@ body.has-motifs .site-container,
 body.has-motifs .site-content,
 body.has-motifs main {
   position: relative;
-  z-index: 5; /* anything > 1 beats the rails */
+  z-index: 9; /* anything > 1 beats the rails */
 }
