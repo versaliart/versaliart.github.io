@@ -684,3 +684,40 @@ button.sqs-button-element--secondary:active,
 :is(footer, .Footer, .footer) .newsletter-block {
   font-family: inherit !important; /* keep global font rules active */
 }
+
+
+/* ==========================================================
+   FORM ERROR MESSAGE STYLING — Global override
+   ========================================================== */
+
+.form-field-error,
+.sqs-error-message,
+.form-field-error-message,
+.form-field-error .form-error-message,
+.form-wrapper .form-error-message,
+.newsletter-block .newsletter-block-failure {
+  background-color: #2C7966 !important;   /* your new background color */
+  color: white !important;                /* ensure readable contrast */
+  padding: 0.75rem 1rem !important;       /* comfortable breathing room */
+  border-radius: 0.35rem !important;      /* optional polish */
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Make the error icon white + vertically aligned */
+.form-field-error svg,
+.sqs-error-message svg,
+.newsletter-block .newsletter-block-failure svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.form-field-error svg path,
+.sqs-error-message svg path,
+.newsletter-block .newsletter-block-failure svg path {
+  fill: white !important;
+  stroke: white !important;
+}
