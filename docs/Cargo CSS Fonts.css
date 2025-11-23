@@ -264,7 +264,7 @@ button.sqs-add-to-cart-button{
   --tb-pad-y: 0.5rem;   /* base top/bottom padding for text blocks */
   --tb-pad-x: 0.5rem;   /* base left/right padding for text blocks */
 
-  --gap-hp: 0.4rem;     /* Heading → Paragraph gap (site-wide) */
+  --gap-hp: 0.5rem;     /* Heading → Paragraph gap (site-wide) */
 }
 
 /* 1) Zero top/bottom margins on common children (both wrappers) */
