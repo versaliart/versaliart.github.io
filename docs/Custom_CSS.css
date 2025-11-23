@@ -1,0 +1,112 @@
+#block-yui_3_17_2_1_1757554504439_2552,
+#block-3fd5474bac7cfdc5bd19 {
+  text-shadow: 3px 4px 3px
+  rgba(0,0,0,.6);
+}
+
+/* Page-level override: bigger intro line for this one block */
+#block-acd0f3e46c397008843b .sqs-html-content p {
+  font-size: 1.4rem !important;   /* tweak this value to taste */
+  line-height: 1.5 !important;    /* optional, but usually looks better */
+}
+
+
+/* -----------------------------------------
+   1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091,
+#block-42c23df4af4040779faa,
+#block-7409c8f5f3a89fe9b7bb,
+#block-8b664be0eb6c69b8ee7c {
+  margin-top: 1.25rem !important;  /* extra space above */
+}
+
+/* inner padding must be applied to the .sqs-html-content wrapper */
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
+#block-42c23df4af4040779faa .sqs-html-content,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+}
+
+/* -----------------------------------------
+   2) EXTRA SPACE BELOW Paragraph-1 (sqsrte-large)
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content p.sqsrte-large,
+#block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
+  margin-bottom: 1rem !important;
+}
+
+
+/* === Mystic Munson logo: static overlay, moving sheen inside === */
+
+#block-yui_3_17_2_1_1756422477850_41937 {
+  position: relative;
+  display: inline-block;
+}
+
+#block-yui_3_17_2_1_1756422477850_41937 img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Sheen overlay, clipped to logo alpha via mask-image */
+#block-yui_3_17_2_1_1756422477850_41937::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  /* wider gradient so it can “travel” inside the overlay */
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.65) 50%,
+    transparent 100%
+  );
+  background-size: 250% 100%;      /* 2x width so it can slide */
+  background-position: -150% 0;    /* start off to the left */
+
+  mix-blend-mode: screen;
+
+  /* mask = only show on logo pixels */
+  -webkit-mask-image: url("https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/c70261a0-528b-41aa-b62d-9868de84ab85/MMlogo2x.png?content-type=image%2Fpng");
+  mask-image: url("https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/c70261a0-528b-41aa-b62d-9868de84ab85/MMlogo2x.png?content-type=image%2Fpng");
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+
+  animation: mmSheenBG 4s ease-in-out infinite;
+}
+
+/* Move the light streak *inside* the fixed overlay */
+@keyframes mmSheenBG {
+  0% {
+    background-position: -150% 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  40% {
+    background-position: 150% 0;
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    background-position: 150% 0;
+    opacity: 0;
+  }
+}
+
