@@ -754,7 +754,7 @@ button.sqs-button-element--secondary:active,
 /* Ensure list carousels sit ABOVE motif rails */
 .user-items-list-item-container.user-items-list-carousel {
   position: relative;   /* create stacking context */
-  z-index: 50;          /* higher than --motif-z (10) */
+  z-index: 10;          /* higher than --motif-z (10) */
 }
 
 /* Fade the edge slides toward the page edges on all list carousels */
@@ -769,7 +769,7 @@ button.sqs-button-element--secondary:active,
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 8rem;                     /* tweak width to taste */
+  width: 4rem;                     /* tweak width to taste */
   pointer-events: none;            /* keep arrows/clicks working */
   z-index: 5;                      /* above slides, below header, etc. */
 }
