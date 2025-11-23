@@ -779,7 +779,7 @@ button.sqs-button-element--secondary:active,
   left: 0;
   background: linear-gradient(
     to right,
-    #201343 0%,
+    #201343 10%,
     rgba(32, 19, 67, 0) 100%
   );
 }
@@ -789,7 +789,7 @@ button.sqs-button-element--secondary:active,
   right: 0;
   background: linear-gradient(
     to left,
-    #201343 0%,
+    #201343 10%,
     rgba(32, 19, 67, 0) 100%
   );
 }
