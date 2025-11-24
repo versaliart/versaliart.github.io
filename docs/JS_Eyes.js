@@ -1,124 +1,109 @@
 (function () {
-  function ready(fn) {
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", fn);
-    } else {
-      fn();
-    }
+  var svg = document.querySelector(".mm-hero-svg");
+  if (!svg) return;
+
+  var zoneLeft  = svg.querySelector("#PupilZoneLeft");
+  var zoneRight = svg.querySelector("#PupilZoneRight");
+  if (!zoneLeft || !zoneRight) {
+    console.warn("[Eyes] Pupil zones not found");
+    return;
   }
 
-  // Load external SVG and return its inner nodes as a fragment
-  function loadPupilGraphic(url) {
-    return fetch(url)
-      .then(r => r.text())
-      .then(txt => {
-        var wrap = document.createElement("div");
-        wrap.innerHTML = txt.trim();
-        var svg = wrap.querySelector("svg");
-        if (!svg) return null;
+  console.log("[Eyes] Zones found", zoneLeft, zoneRight);
 
-        var frag = document.createDocumentFragment();
-        while (svg.firstChild) frag.appendChild(svg.firstChild);
-        return frag;
-      })
-      .catch(err => {
-        console.error("Cannot load pupil.svg", err);
-        return null;
-      });
+  var pupilURL = "https://www.mysticmunson.design/s/pupil.svg"; // <-- put your real URL here
+  var maxOffset = 5; // movement in SVG units; tweak to taste
+
+  var XLINK_NS = "http://www.w3.org/1999/xlink";
+
+  function makeEye(zone, cls) {
+    // Outer group we will move
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("mm-pupil", cls);
+
+    // Pupil image
+    var img = document.createElementNS("http://www.w3.org/2000/svg", "image");
+    img.setAttributeNS(XLINK_NS, "href", pupilURL);
+    img.setAttribute("href", pupilURL); // modern browsers
+
+    // Eye zone bbox: 40×20 for you
+    var box = zone.getBBox();
+    var cx = box.x + box.width / 2;
+    var cy = box.y + box.height / 2;
+
+    // How big should the pupil be? ~60% of eye height
+    var pupilH = box.height * 0.6;   // 0.6 * 20 = 12 units tall
+    var pupilW = pupilH;             // make it roughly circular
+
+    // Center the image around (0,0) inside its group
+    img.setAttribute("width", pupilW);
+    img.setAttribute("height", pupilH);
+    img.setAttribute("x", -pupilW / 2);
+    img.setAttribute("y", -pupilH / 2);
+
+    // Optional: add a debug dot to confirm the center
+    /*
+    var debug = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    debug.setAttribute("cx", 0);
+    debug.setAttribute("cy", 0);
+    debug.setAttribute("r", 1.5);
+    debug.setAttribute("fill", "red");
+    g.appendChild(debug);
+    */
+
+    g.appendChild(img);
+
+    // Place the whole group at the eye center
+    g.setAttribute("transform", "translate(" + cx + " " + cy + ")");
+    zone.appendChild(g);
+
+    return {
+      group: g,
+      baseX: cx,
+      baseY: cy
+    };
   }
 
-  ready(function () {
-    var svg = document.querySelector(".mm-hero-svg");
-    if (!svg) return;
+  var leftEye  = makeEye(zoneLeft,  "mm-left");
+  var rightEye = makeEye(zoneRight, "mm-right");
+  if (!leftEye || !rightEye) return;
 
-    var zoneLeft  = svg.querySelector("#PupilZoneLeft");
-    var zoneRight = svg.querySelector("#PupilZoneRight");
-    if (!zoneLeft || !zoneRight) return;
+  var isCoarse =
+    window.matchMedia &&
+    window.matchMedia("(pointer: coarse)").matches;
 
-    var isCoarse = window.matchMedia("(pointer: coarse)").matches;
-    var pupilURL = "https://www.mysticmunson.design/s/pupil.svg";
+  function onMove(e) {
+    var rect = svg.getBoundingClientRect();
+    var mx = e.clientX;
+    var my = e.clientY;
 
-    var maxOffset = 12; // movement radius in SVG units
+    var cx = rect.left + rect.width / 2;
+    var cy = rect.top + rect.height / 2;
 
-    loadPupilGraphic(pupilURL).then(function (graphic) {
-      if (!graphic) return;
+    var nx = (mx - cx) / (rect.width / 2);
+    var ny = (my - cy) / (rect.height / 2);
 
-      // Create a pupil inside a zone and compute its center
-function makeEye(zone, cls) {
-  var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  group.classList.add("mm-pupil", cls);
+    // clamp to [-1, 1]
+    nx = Math.max(-1, Math.min(1, nx));
+    ny = Math.max(-1, Math.min(1, ny));
 
-  var inner = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  inner.classList.add("mm-pupil-inner");
+    var dx = nx * maxOffset;
+    var dy = ny * maxOffset;
 
-  inner.appendChild(graphic.cloneNode(true));
-  group.appendChild(inner);
-  zone.appendChild(group);
+    leftEye.group.setAttribute(
+      "transform",
+      "translate(" + (leftEye.baseX + dx) + " " + (leftEye.baseY + dy) + ")"
+    );
 
-  var zoneBox = zone.getBBox();
-  var cx = zoneBox.x + zoneBox.width / 2;
-  var cy = zoneBox.y + zoneBox.height / 2;
+    rightEye.group.setAttribute(
+      "transform",
+      "translate(" + (rightEye.baseX + dx) + " " + (rightEye.baseY + dy) + ")"
+    );
+  }
 
-var debugCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-debugCircle.setAttribute("cx", cx);
-debugCircle.setAttribute("cy", cy);
-debugCircle.setAttribute("r", 2);
-debugCircle.setAttribute("fill", "red");
-zone.appendChild(debugCircle);
-
-
-  group.setAttribute("transform", "translate(" + cx + " " + cy + ")");
-
-  var artBox = inner.getBBox();
-  var artMaxDim = Math.max(artBox.width, artBox.height) || 1;
-
-  console.log(cls, "zoneBox", zoneBox);
-  console.log(cls, "artBox", artBox);
-  console.log(cls, "artMaxDim", artMaxDim);
-
-  var targetSize = zoneBox.height * 0.6;
-  var scale = targetSize / artMaxDim;
-
-  console.log(cls, "targetSize", targetSize, "scale", scale);
-
-  inner.setAttribute("transform", "scale(" + scale + ")");
-
-  return {
-    group: group,
-    baseX: cx,
-    baseY: cy
-  };
-}
-
-
-
-      var leftEye  = makeEye(zoneLeft, "mm-left");
-      var rightEye = makeEye(zoneRight, "mm-right");
-
-      function onMouse(e) {
-        var rect = svg.getBoundingClientRect();
-        var nx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
-        var ny = (e.clientY - (rect.top + rect.height / 2)) / (rect.height / 2);
-
-        // clamp into [-1,1]
-        nx = Math.max(-1, Math.min(1, nx));
-        ny = Math.max(-1, Math.min(1, ny));
-
-        var dx = nx * maxOffset;
-        var dy = ny * maxOffset;
-
-        leftEye.group.setAttribute(
-          "transform",
-          `translate(${leftEye.baseX + dx} ${leftEye.baseY + dy})`
-        );
-
-        rightEye.group.setAttribute(
-          "transform",
-          `translate(${rightEye.baseX + dx} ${rightEye.baseY + dy})`
-        );
-      }
-
-      if (!isCoarse) window.addEventListener("mousemove", onMouse);
-    });
-  });
+  if (!isCoarse) {
+    window.addEventListener("mousemove", onMove);
+  } else {
+    console.log("[Eyes] Coarse pointer detected, disabling eye tracking");
+  }
 })();
