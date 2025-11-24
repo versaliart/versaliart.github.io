@@ -79,4 +79,11 @@ whenSelector('[data-snap-scroll]', function () {
   });
   
 })();
+
+whenSelector(".mm-hero-svg", function () {
+  loadScript("https://versaliart.github.io/JS%20EyeTracker.js")
+    .then(()=>console.log("[Loader] EyeTracker loaded"))
+    .catch(err => console.warn("[Loader] EyeTracker failed", err));
+});
+
 </script>
