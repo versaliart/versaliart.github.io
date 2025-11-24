@@ -39,7 +39,7 @@ HERO WITH ANIMATED EYES
 <div class="mm-hero-wrapper">
   <!-- OPTIONAL: you can delete the <?xml ... ?> line if you want -->
   <?xml version="1.0" encoding="UTF-8"?>
-<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1641 923" class="mm-hero-svg">
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 60 1641 923" class="mm-hero-svg">
   <!-- Generator: Adobe Illustrator 30.0.0, SVG Export Plug-In . SVG Version: 2.1.1 Build 123)  -->
   <defs>
     <style>
