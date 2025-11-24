@@ -44,27 +44,46 @@
       if (!graphic) return;
 
       // Create a pupil inside a zone and compute its center
-      function makeEye(zone, cls) {
-        var group = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "g"
-        );
-        group.classList.add("mm-pupil", cls);
+function makeEye(zone, cls) {
+  // Outer wrapper that we will MOVE around
+  var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  group.classList.add("mm-pupil", cls);
 
-        // Insert the loaded shapes
-        group.appendChild(graphic.cloneNode(true));
-        zone.appendChild(group);
+  // Inner group that holds the pupil artwork and gets SCALED
+  var inner = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  inner.classList.add("mm-pupil-inner");
 
-        // The zone’s bounding box defines the center point
-        var b = zone.getBBox();
-        var cx = b.x + b.width / 2;
-        var cy = b.y + b.height / 2;
+  inner.appendChild(graphic.cloneNode(true));
+  group.appendChild(inner);
+  zone.appendChild(group);
 
-        // Initial placement
-        group.setAttribute("transform", "translate(" + cx + " " + cy + ")");
+  // Eye zone bbox – defines center + available area
+  var zoneBox = zone.getBBox();
+  var cx = zoneBox.x + zoneBox.width / 2;
+  var cy = zoneBox.y + zoneBox.height / 2;
 
-        return { group, baseX: cx, baseY: cy };
-      }
+  // First, center the whole pupil group in the eye zone
+  group.setAttribute("transform", "translate(" + cx + " " + cy + ")");
+
+  // Now measure the raw pupil artwork
+  var artBox = inner.getBBox();
+
+  // Decide how big the pupil should be relative to the eye zone
+  // 0.45 = 45% of the smaller dimension of the zone; tweak this
+  var targetSize = Math.min(zoneBox.width, zoneBox.height) * 0.45;
+  var artMaxDim = Math.max(artBox.width, artBox.height) || 1;
+  var scale = targetSize / artMaxDim;
+
+  // Scale the pupil artwork around its own origin
+  inner.setAttribute("transform", "scale(" + scale + ")");
+
+  return {
+    group: group,   // we animate this one (translate only)
+    baseX: cx,
+    baseY: cy
+  };
+}
+
 
       var leftEye  = makeEye(zoneLeft, "mm-left");
       var rightEye = makeEye(zoneRight, "mm-right");

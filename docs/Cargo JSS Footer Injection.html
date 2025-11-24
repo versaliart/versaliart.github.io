@@ -77,13 +77,13 @@ whenSelector('[data-snap-scroll]', function () {
       .then(()=>console.log("[Loader] Marquee loaded"))
       .catch(console.warn);
   });
-  
-})();
 
-whenSelector(".mm-hero-svg", function () {
-  loadScript("https://versaliart.github.io/JS%20EyeTracker.js")
+  whenSelector(".mm-hero-svg", function () {
+  loadScript("https://versaliart.github.io/JS_Eyes.js")
     .then(()=>console.log("[Loader] EyeTracker loaded"))
     .catch(err => console.warn("[Loader] EyeTracker failed", err));
 });
+
+})();
 
 </script>
