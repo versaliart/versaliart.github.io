@@ -66,25 +66,7 @@
 
   var leftEye  = setupEye("PupilLeft",  "PupilZoneLeft");
   var rightEye = setupEye("PupilRight", "PupilZoneRight");
-
-var leftEye  = setupEye("PupilLeft",  "PupilZoneLeft");
-var rightEye = setupEye("PupilRight", "PupilZoneRight");
-
-if (!leftEye || !rightEye) {
-  console.warn("[Eyes] Failed to setup eyes");
-  return;
-}
-
-/* 🔧 Normalize ranges so both eyes move the same amount */
-var sharedMaxX = Math.min(leftEye.maxX, rightEye.maxX);
-var sharedMaxY = Math.min(leftEye.maxY, rightEye.maxY);
-
-leftEye.maxX  = sharedMaxX;
-rightEye.maxX = sharedMaxX;
-leftEye.maxY  = sharedMaxY;
-rightEye.maxY = sharedMaxY;
-
-
+  
   if (!leftEye || !rightEye) {
     console.warn("[Eyes] Failed to setup eyes");
     return;
