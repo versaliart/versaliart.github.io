@@ -1,53 +1,47 @@
 (function () {
-  var svg = document.querySelector(".mm-hero-svg");
-  if (!svg) return;
+  // Try to grab the actual <svg> regardless of where the class lives
+  var svg =
+    document.querySelector("svg.mm-hero-svg") ||
+    document.querySelector(".mm-hero-svg svg") ||
+    document.querySelector("svg.mm-hero") || // fallback if you rename
+    document.querySelector("svg");
 
-  var left = svg.querySelector("#PupilLeft");
-  var right = svg.querySelector("#PupilRight");
-
-  if (!left || !right) {
-    console.warn("[Eyes] Could not find PupilLeft/PupilRight");
+  if (!svg) {
+    console.warn("[Eyes] No hero SVG found");
     return;
   }
 
-  console.log("[Eyes] Pupils found");
+  // Pupils by ID (your SVG uses exactly these IDs)
+  var left  = svg.querySelector("#PupilLeft");
+  var right = svg.querySelector("#PupilRight");
 
-  // Compute their original center positions by reading their current transform box
-  function getCenter(node) {
-    var box = node.getBBox();
-    return {
-      x: box.x + box.width / 2,
-      y: box.y + box.height / 2
-    };
+  if (!left || !right) {
+    console.warn("[Eyes] Could not find PupilLeft/PupilRight", left, right);
+    console.log("[Eyes] Existing pupil-like nodes:", svg.querySelectorAll('[id*="Pupil"]'));
+    return;
   }
 
-  var baseLeft  = getCenter(left);
-  var baseRight = getCenter(right);
+  console.log("[Eyes] Pupils found", left, right);
 
-  var maxOffset = 5; // adjust for playfulness
+  var maxOffset = 5; // movement range in SVG units – tweak 3–7 to taste
 
+  // We only need relative motion; pupils are already in the right place.
   function onMove(e) {
     var rect = svg.getBoundingClientRect();
 
-    var nx = (e.clientX - (rect.left + rect.width / 2)) / (rect.width / 2);
+    var nx = (e.clientX - (rect.left + rect.width  / 2)) / (rect.width  / 2);
     var ny = (e.clientY - (rect.top  + rect.height / 2)) / (rect.height / 2);
 
-    // clamp [-1,1]
+    // clamp [-1, 1]
     nx = Math.max(-1, Math.min(1, nx));
     ny = Math.max(-1, Math.min(1, ny));
 
     var dx = nx * maxOffset;
     var dy = ny * maxOffset;
 
-    left.setAttribute(
-      "transform",
-      "translate(" + (baseLeft.x + dx) + " " + (baseLeft.y + dy) + ")"
-    );
-
-    right.setAttribute(
-      "transform",
-      "translate(" + (baseRight.x + dx) + " " + (baseRight.y + dy) + ")"
-    );
+    // Move each pupil group a little relative to its original position
+    left.setAttribute("transform",  "translate(" + dx + " " + dy + ")");
+    right.setAttribute("transform", "translate(" + dx + " " + dy + ")");
   }
 
   var isCoarse =
@@ -57,6 +51,6 @@
   if (!isCoarse) {
     window.addEventListener("mousemove", onMove);
   } else {
-    console.log("[Eyes] Coarse pointer detected; disabled.");
+    console.log("[Eyes] Coarse pointer; disabled.");
   }
 })();
