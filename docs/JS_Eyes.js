@@ -59,6 +59,14 @@ function makeEye(zone, cls) {
   var cx = zoneBox.x + zoneBox.width / 2;
   var cy = zoneBox.y + zoneBox.height / 2;
 
+var debugCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+debugCircle.setAttribute("cx", cx);
+debugCircle.setAttribute("cy", cy);
+debugCircle.setAttribute("r", 2);
+debugCircle.setAttribute("fill", "red");
+zone.appendChild(debugCircle);
+
+
   group.setAttribute("transform", "translate(" + cx + " " + cy + ")");
 
   var artBox = inner.getBBox();
