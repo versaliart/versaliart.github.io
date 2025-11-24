@@ -59,16 +59,19 @@ function makeEye(zone, cls) {
   var cx = zoneBox.x + zoneBox.width / 2;
   var cy = zoneBox.y + zoneBox.height / 2;
 
-  // Center the whole pupil group in the eye zone
   group.setAttribute("transform", "translate(" + cx + " " + cy + ")");
 
-  // Measure the raw pupil artwork
   var artBox = inner.getBBox();
   var artMaxDim = Math.max(artBox.width, artBox.height) || 1;
 
-  // 👇 size pupil to ~60% of the eye height
-  var targetSize = zoneBox.height * 0.6; // 0.6 * 20 = 12 units tall
+  console.log(cls, "zoneBox", zoneBox);
+  console.log(cls, "artBox", artBox);
+  console.log(cls, "artMaxDim", artMaxDim);
+
+  var targetSize = zoneBox.height * 0.6;
   var scale = targetSize / artMaxDim;
+
+  console.log(cls, "targetSize", targetSize, "scale", scale);
 
   inner.setAttribute("transform", "scale(" + scale + ")");
 
@@ -78,6 +81,7 @@ function makeEye(zone, cls) {
     baseY: cy
   };
 }
+
 
 
       var leftEye  = makeEye(zoneLeft, "mm-left");
