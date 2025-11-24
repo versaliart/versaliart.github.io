@@ -45,11 +45,9 @@
 
       // Create a pupil inside a zone and compute its center
 function makeEye(zone, cls) {
-  // Outer wrapper that we will MOVE around
   var group = document.createElementNS("http://www.w3.org/2000/svg", "g");
   group.classList.add("mm-pupil", cls);
 
-  // Inner group that holds the pupil artwork and gets SCALED
   var inner = document.createElementNS("http://www.w3.org/2000/svg", "g");
   inner.classList.add("mm-pupil-inner");
 
@@ -57,28 +55,25 @@ function makeEye(zone, cls) {
   group.appendChild(inner);
   zone.appendChild(group);
 
-  // Eye zone bbox – defines center + available area
   var zoneBox = zone.getBBox();
   var cx = zoneBox.x + zoneBox.width / 2;
   var cy = zoneBox.y + zoneBox.height / 2;
 
-  // First, center the whole pupil group in the eye zone
+  // Center the whole pupil group in the eye zone
   group.setAttribute("transform", "translate(" + cx + " " + cy + ")");
 
-  // Now measure the raw pupil artwork
+  // Measure the raw pupil artwork
   var artBox = inner.getBBox();
-
-  // Decide how big the pupil should be relative to the eye zone
-  // 0.45 = 45% of the smaller dimension of the zone; tweak this
-  var targetSize = Math.min(zoneBox.width, zoneBox.height) * 0.45;
   var artMaxDim = Math.max(artBox.width, artBox.height) || 1;
+
+  // 👇 size pupil to ~60% of the eye height
+  var targetSize = zoneBox.height * 0.6; // 0.6 * 20 = 12 units tall
   var scale = targetSize / artMaxDim;
 
-  // Scale the pupil artwork around its own origin
   inner.setAttribute("transform", "scale(" + scale + ")");
 
   return {
-    group: group,   // we animate this one (translate only)
+    group: group,
     baseX: cx,
     baseY: cy
   };
