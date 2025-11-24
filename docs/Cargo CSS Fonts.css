@@ -795,3 +795,27 @@ section[data-section-id="YOUR-ID-HERE"]::before {
   height: 100%;
   display: block;
 }
+
+/* Remove default padding/margins Squarespace adds to Code Blocks */
+.mm-hero-wrapper,
+.mm-hero-wrapper .sqs-block-content,
+.mm-hero-wrapper .sqs-block {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Force the SVG to sit flush with the wrapper with zero stray offsets */
+.mm-hero-wrapper svg {
+  display: block;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 0; /* eliminates inline-block baseline gap */
+}
+
+/* Remove any internal spacing the Fluid Engine might add */
+.mm-hero-wrapper .sqs-block-content > :first-child {
+  margin-top: 0 !important;
+}
+.mm-hero-wrapper .sqs-block-content > :last-child {
+  margin-bottom: 0 !important;
+}
