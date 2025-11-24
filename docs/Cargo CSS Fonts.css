@@ -788,6 +788,7 @@ section[data-section-id="YOUR-ID-HERE"]::before {
 .mm-hero-wrapper {
   width: 100%;
   aspect-ratio: 1440 / 810;
+  overflow: hidden;      /* this is key: chops off what we move out of view */
 }
 
 .mm-hero-svg {
