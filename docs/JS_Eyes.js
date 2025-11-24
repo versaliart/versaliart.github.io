@@ -38,14 +38,13 @@
     var maxYNeg = cy - zoneTop;
     var maxYPos = zoneBottom - cy;
 
-    // Use symmetrical limits so the motion feels even
+    // Use symmetrical limits for this eye so motion feels even
     var maxX = Math.min(maxXNeg, maxXPos);
     var maxY = Math.min(maxYNeg, maxYPos);
 
     // Wrap the pupil group in a new group so we can transform it cleanly
     var wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    // Preserve the original ID on the wrapper
-    wrapper.setAttribute("id", pupilId);
+    wrapper.setAttribute("id", pupilId); // preserve ID on wrapper
 
     var parent = pupil.parentNode;
     parent.replaceChild(wrapper, pupil);
@@ -66,27 +65,34 @@
 
   var leftEye  = setupEye("PupilLeft",  "PupilZoneLeft");
   var rightEye = setupEye("PupilRight", "PupilZoneRight");
-  
+
   if (!leftEye || !rightEye) {
     console.warn("[Eyes] Failed to setup eyes");
     return;
   }
 
+  // 🔧 Reduce travel a bit so pupils stay nicely visible near edges
+  var travelScale = 0.55; // tweak 0.4–0.7
+  leftEye.maxX  *= travelScale;
+  leftEye.maxY  *= travelScale;
+  rightEye.maxX *= travelScale;
+  rightEye.maxY *= travelScale;
+
   var isCoarse =
     window.matchMedia &&
     window.matchMedia("(pointer: coarse)").matches;
 
-  var ease = 0.15;          // easing factor for in/out
+  // Tunables
+  var ease = 0.15;          // easing factor (higher = snappier, lower = floaty)
   var squishAmtX = 0.12;    // max horizontal squish (1 -> 0.88)
-  var squishAmtY = 0.12;    // max vertical squish (1 -> 0.88)
+  var squishAmtY = 0.12;    // max vertical squish   (1 -> 0.88)
   var nonLinearPower = 1.7; // >1 = more dramatic far, gentler near
 
   var animating = false;
 
   function updateTransforms() {
-    // Ease current toward target and apply transforms
     [leftEye, rightEye].forEach(function (eye) {
-      // Ease in/out
+      // Ease current toward target
       eye.currentX += (eye.targetX - eye.currentX) * ease;
       eye.currentY += (eye.targetY - eye.currentY) * ease;
 
@@ -94,17 +100,15 @@
       var edgeX = eye.maxX > 0 ? Math.min(1, Math.abs(eye.currentX) / eye.maxX) : 0;
       var edgeY = eye.maxY > 0 ? Math.min(1, Math.abs(eye.currentY) / eye.maxY) : 0;
 
-      // Squish based on how close we are to the edges
-      // Zero squish at center; max squish at boundary
+      // Squish based on how close we are to edges
+      // Zero squish at center; max at boundary
       var scaleX = 1 - squishAmtX * edgeX; // squish horizontally at left/right
       var scaleY = 1 - squishAmtY * edgeY; // squish vertically at top/bottom
 
-      // Compose transform so we:
-      // 1) scale around the eye's center (cx, cy)
-      // 2) then translate by currentX/currentY
       var tx = eye.currentX;
       var ty = eye.currentY;
 
+      // Scale around the eye's own center, then translate
       var transform =
         "translate(" + tx + " " + ty + ") " +
         "translate(" + eye.cx + " " + eye.cy + ") " +
@@ -140,7 +144,6 @@
     var nx = (mx - cx) / (rect.width  / 2);
     var ny = (my - cy) / (rect.height / 2);
 
-    // clamp
     nx = Math.max(-1, Math.min(1, nx));
     ny = Math.max(-1, Math.min(1, ny));
 
@@ -155,7 +158,7 @@
     var fy = curve(ny);
 
     [leftEye, rightEye].forEach(function (eye) {
-      // Proposed offsets based on non-linear mapped cursor
+      // Proposed offsets in SVG units
       var targetX = fx * eye.maxX;
       var targetY = fy * eye.maxY;
 
