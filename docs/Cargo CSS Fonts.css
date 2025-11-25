@@ -787,15 +787,15 @@ section[data-section-id="YOUR-ID-HERE"]::before {
 
 .mm-hero-wrapper {
   width: 100%;
-  aspect-ratio: 1440 / 810;
-  overflow: hidden;      /* this is key: chops off what we move out of view */
+  overflow: hidden;
 }
 
-.mm-hero-svg {
+.mm-hero-wrapper .mm-hero-svg {
   width: 100%;
-  height: 100%;
+  height: auto;
   display: block;
 }
+
 
 /* Remove default padding/margins Squarespace adds to Code Blocks */
 .mm-hero-wrapper,
