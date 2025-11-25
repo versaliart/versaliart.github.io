@@ -787,12 +787,13 @@ section[data-section-id="YOUR-ID-HERE"]::before {
 
 .mm-hero-wrapper {
   width: 100%;
+  height: auto;
   overflow: hidden;
 }
 
-.mm-hero-wrapper .mm-hero-svg {
+.mm-hero-svg {
   width: 100%;
-  height: auto;
+  height: 100%;
   display: block;
 }
 
