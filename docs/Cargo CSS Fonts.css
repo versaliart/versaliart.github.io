@@ -787,7 +787,7 @@ section[data-section-id="YOUR-ID-HERE"]::before {
 
 .mm-hero-wrapper {
   width: 100%;
-  height: auto;
+  aspect-ratio: 1641 / 863;  /* or whatever new height you actually want */
   overflow: hidden;
 }
 
