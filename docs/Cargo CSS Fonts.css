@@ -931,35 +931,32 @@ body.collection-68b0cf9bee4bdf7a0a0f8bfc
 }
 
 /* =========================================================
-   FLUID ENGINE — Text blocks ONLY
+   FLUID ENGINE — Text blocks ONLY — Vertical center ONLY
    Section: 68c0a68011503c3cc9ecde9a
-   1) Restore FE min-height behavior (undo your global collapse)
-   2) Vertically center content WITHOUT affecting horizontal alignment
    ========================================================= */
 
-/* 1) UNDO the global "collapse text block min-height" rules (scoped) */
-section[data-section-id="68c0a68011503c3cc9ecde9a"] .sqs-block.html-block.sqs-block-html,
-section[data-section-id="68c0a68011503c3cc9ecde9a"] .sqs-block.html-block.sqs-block-html[style*="min-height"],
-section[data-section-id="68c0a68011503c3cc9ecde9a"] .page-section:not(:first-of-type) .sqs-block.html-block.sqs-block-html,
-section[data-section-id="68c0a68011503c3cc9ecde9a"] .page-section:not(:first-of-type) .sqs-block.html-block.sqs-block-html[style*="min-height"]{
-  min-height: revert !important; /* allows FE inline min-height to exist again */
-  height: revert !important;
+/* 1) Ensure the block is the sizing box */
+section[data-section-id="68c0a68011503c3cc9ecde9a"]
+.fluid-engine
+.fe-block[data-block-type="text"]{
+  position: relative !important;
 }
 
-/* 2) Vertical-center ONLY text blocks (no horizontal alignment changes) */
-section[data-section-id="68c0a68011503c3cc9ecde9a"] .fluid-engine
-.fe-block[data-block-type="text"]{
+/* 2) Force the FE content wrapper to fill the block, then flex-center vertically */
+section[data-section-id="68c0a68011503c3cc9ecde9a"]
+.fluid-engine
+.fe-block[data-block-type="text"] > .fe-block-content{
+  position: absolute !important;
+  inset: 0 !important;                 /* gives it real height to center within */
   display: flex !important;
   flex-direction: column !important;
-  justify-content: center !important; /* vertical center */
-  align-items: stretch !important;    /* do NOT change horizontal behavior */
+  justify-content: center !important;  /* vertical centering */
+  align-items: stretch !important;     /* NO horizontal behavior changes */
 }
 
-/* Neutralize wrappers that sometimes break the flex centering */
-section[data-section-id="68c0a68011503c3cc9ecde9a"] .fluid-engine
-.fe-block[data-block-type="text"]
-:where(.fe-block-content, .fe-block-inner, .sqs-block-content){
-  position: static !important;
-  transform: none !important;
-  width: 100% !important;
+/* 3) Don’t let default paragraph margins “fake” vertical positioning */
+section[data-section-id="68c0a68011503c3cc9ecde9a"]
+.fluid-engine
+.fe-block[data-block-type="text"] p{
+  margin-block: 0 !important;
 }
