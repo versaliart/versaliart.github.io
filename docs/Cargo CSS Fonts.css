@@ -821,3 +821,139 @@ section[data-section-id="YOUR-ID-HERE"]::before {
 .mm-hero-wrapper .sqs-block-content > :last-child {
   margin-bottom: 0 !important;
 }
+
+/* =====================================================
+   VIDEO BLOCKS — FORCE FILL BOUNDING BOX
+   Page: collection-68b0cf9bee4bdf7a0a0f8bfc
+   ===================================================== */
+
+/* Force all wrapper layers to accept 100% height */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block > .sqs-block-content,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .intrinsic,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .embed-block-wrapper,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-native-video {
+  height: 100%;
+}
+
+/* Kill intrinsic aspect-ratio padding */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .video-player {
+  padding: 0 !important;
+}
+
+/* Ensure wrapper behaves as a clipping frame */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .embed-block-wrapper,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-native-video {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Uploaded videos */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* YouTube / Vimeo embeds */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* =====================================================
+   VIDEO BLOCKS — ROUNDED VIDEO FRAMES (0.5rem)
+   ===================================================== */
+
+/* The clipping frame (this is what actually rounds the corners) */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .embed-block-wrapper,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-native-video,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-video-wrapper {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Ensure the media itself respects the rounding */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block video,
+body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block iframe {
+  border-radius: 0.5rem;
+}
+
+/* LEFT-ALIGN a single video inside its frame */
+body.collection-68b0cf9bee4bdf7a0a0f8bfc
+#block-yui_3_17_2_1_1766798589504_785155.video-block video {
+  object-position: calc(50% - 8.5rem) center;
+}
+
+
+
+
+#block-yui_3_17_2_1_1757554504439_2552,
+#block-3fd5474bac7cfdc5bd19 {
+  text-shadow: 3px 4px 3px
+  rgba(0,0,0,.6);
+}
+
+/* Page-level override: bigger intro line for this one block */
+#block-acd0f3e46c397008843b .sqs-html-content p {
+  font-size: 1.4rem !important;   /* tweak this value to taste */
+  line-height: 1.5 !important;    /* optional, but usually looks better */
+}
+
+
+
+/* -----------------------------------------
+   1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091,
+#block-42c23df4af4040779faa,
+#block-7409c8f5f3a89fe9b7bb,
+#block-8b664be0eb6c69b8ee7c {
+  margin-top: 1.25rem !important;  /* extra space above */
+}
+
+/* inner padding must be applied to the .sqs-html-content wrapper */
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
+#block-42c23df4af4040779faa .sqs-html-content,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+}
+
+/* -----------------------------------------
+   2) EXTRA SPACE BELOW Paragraph-1 (sqsrte-large)
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content p.sqsrte-large,
+#block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
+  margin-bottom: 1rem !important;
+}
+
+/* =========================================================
+   FIX: Restore Squarespace vertical alignment behavior
+   ONLY for Text blocks in this section (Fluid Engine)
+   Section: 68c0a68011503c3cc9ecde9a
+   ========================================================= */
+
+section[data-section-id="68c0a68011503c3cc9ecde9a"] .fluid-engine
+.fe-block[data-block-type="text"].sqs-block-html,
+section[data-section-id="68c0a68011503c3cc9ecde9a"] .fluid-engine
+.fe-block[data-block-type="text"].sqs-block-html[style*="min-height"] {
+  /* Undo your global “collapse the text block” rules */
+  height: revert !important;
+  min-height: revert !important;
+}
+
+/* If your browser/template doesn’t like `revert`, use this fallback instead */
+@supports not (height: revert) {
+  section[data-section-id="68c0a68011503c3cc9ecde9a"] .fluid-engine
+  .fe-block[data-block-type="text"].sqs-block-html,
+  section[data-section-id="68c0a68011503c3cc9ecde9a"] .fluid-engine
+  .fe-block[data-block-type="text"].sqs-block-html[style*="min-height"] {
+    height: unset !important;
+    min-height: unset !important;
+  }
+}
