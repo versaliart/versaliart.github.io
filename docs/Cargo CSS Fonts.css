@@ -968,3 +968,8 @@ section[data-section-id="68c0a68011503c3cc9ecde9a"]
 .sqs-block.html-block.sqs-block-html .sqs-html-content > :last-child{
   margin-bottom: 0 !important;
 }
+
+section[data-section-id="68c0a68011503c3cc9ecde9a"]
+.sqs-layout .sqs-row{
+  align-items: stretch !important;
+}
