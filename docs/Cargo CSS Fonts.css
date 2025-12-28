@@ -722,69 +722,6 @@ button.sqs-button-element--secondary:active,
   stroke: white !important;
 }
 
-
-/* Use P1 typography for all list carousel titles */
-.user-items-list-carousel .list-item-content__title {
-  font-family: "Maax", sans-serif !important;
-  font-weight: 500 !important;           /* Medium */
-  font-size: var(--p1) !important;       /* 1rem per your scale */
-  line-height: 1.4 !important;
-  text-transform: uppercase !important;
-  letter-spacing: .02em !important;
-  font-feature-settings: "case" 1, "cpsp" 1;
-  max-width: 100%;                       /* undo inline 75% squeeze */
-}
-
-/* Rounded corners on all carousel images */
-.user-items-list-carousel__media-inner {
-  border-radius: 0.667rem; /* ≈ 8pt at 16px base */
-  overflow: hidden;        /* clip image to the rounded container */
-}
-
-.user-items-list-carousel__media {
-  border-radius: inherit;  /* just in case the img itself shows edges */
-}
-
-/* Increase top/bottom padding INSIDE each carousel card */
-.user-items-list-carousel .list-item {
-  padding-top: 2rem !important;    /* increase as desired */
-  padding-bottom: 1rem !important;
-}
-
-/* Ensure list carousels sit ABOVE motif rails */
-.user-items-list-item-container.user-items-list-carousel {
-  position: relative;   /* create stacking context */
-  z-index: 50;          /* higher than --motif-z (10) */
-}
-
-/* Fade the edge slides toward the page edges on all list carousels */
-.user-items-list-carousel__gutter {
-  position: relative; /* anchor the gradients */
-}
-
-/* Left + right fade overlays */
-.user-items-list-carousel__gutter::before,
-.user-items-list-carousel__gutter::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 4rem;                     /* tweak width to taste */
-  pointer-events: none;            /* keep arrows/clicks working */
-  z-index: 15;                      /* above slides, below header, etc. */
-}
-
-/* Disable motif rails for the carousel section */
-section[data-section-id="YOUR-ID-HERE"] {
-  --motifs-disable-section: true;
-}
-
-/* Also give the JS a direct signal via attribute */
-section[data-section-id="YOUR-ID-HERE"]::before {
-  content: "";
-  display: none;
-}
-
 .mm-hero-wrapper {
   width: 100%;
   aspect-ratio: 1641 / 863;  /* or whatever new height you actually want */
