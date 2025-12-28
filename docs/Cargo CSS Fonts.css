@@ -930,33 +930,41 @@ body.collection-68b0cf9bee4bdf7a0a0f8bfc
   margin-bottom: 1rem !important;
 }
 
+
 /* =========================================================
-   FLUID ENGINE — Text blocks ONLY — Vertical center ONLY
+   Text blocks (classic .sqs-block-html) — vertical center only
    Section: 68c0a68011503c3cc9ecde9a
    ========================================================= */
 
-/* 1) Ensure the block is the sizing box */
+/* 1) Undo your global "collapse text blocks" rules IN THIS SECTION ONLY */
 section[data-section-id="68c0a68011503c3cc9ecde9a"]
-.fluid-engine
-.fe-block[data-block-type="text"]{
-  position: relative !important;
+.sqs-block.html-block.sqs-block-html{
+  height: 100% !important;     /* restore a real box height */
+  min-height: unset !important;
 }
 
-/* 2) Force the FE content wrapper to fill the block, then flex-center vertically */
+/* 2) Make the content fill the block so we have height to center within */
 section[data-section-id="68c0a68011503c3cc9ecde9a"]
-.fluid-engine
-.fe-block[data-block-type="text"] > .fe-block-content{
-  position: absolute !important;
-  inset: 0 !important;                 /* gives it real height to center within */
+.sqs-block.html-block.sqs-block-html > .sqs-block-content{
+  height: 100% !important;
+}
+
+/* 3) Vertical center the actual rich text wrapper (NO horizontal changes) */
+section[data-section-id="68c0a68011503c3cc9ecde9a"]
+.sqs-block.html-block.sqs-block-html .sqs-html-content{
+  height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
-  justify-content: center !important;  /* vertical centering */
-  align-items: stretch !important;     /* NO horizontal behavior changes */
+  justify-content: center !important; /* vertical center */
+  align-items: stretch !important;    /* preserve horizontal alignment */
 }
 
-/* 3) Don’t let default paragraph margins “fake” vertical positioning */
+/* Optional: remove default top/bottom paragraph spacing that can look "off-center" */
 section[data-section-id="68c0a68011503c3cc9ecde9a"]
-.fluid-engine
-.fe-block[data-block-type="text"] p{
-  margin-block: 0 !important;
+.sqs-block.html-block.sqs-block-html .sqs-html-content > :first-child{
+  margin-top: 0 !important;
+}
+section[data-section-id="68c0a68011503c3cc9ecde9a"]
+.sqs-block.html-block.sqs-block-html .sqs-html-content > :last-child{
+  margin-bottom: 0 !important;
 }
