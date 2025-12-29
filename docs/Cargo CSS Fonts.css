@@ -759,67 +759,68 @@ button.sqs-button-element--secondary:active,
   margin-bottom: 0 !important;
 }
 
+
+
 /* =====================================================
-   VIDEO BLOCKS — FORCE FILL BOUNDING BOX
-   Page: collection-68b0cf9bee4bdf7a0a0f8bfc
+   VIDEO BLOCKS — FORCE FILL BOUNDING BOX (GLOBAL)
    ===================================================== */
 
 /* Force all wrapper layers to accept 100% height */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block > .sqs-block-content,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .intrinsic,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .embed-block-wrapper,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-native-video {
+.video-block > .sqs-block-content,
+.video-block .intrinsic,
+.video-block .embed-block-wrapper,
+.video-block .sqs-native-video {
   height: 100%;
 }
 
 /* Kill intrinsic aspect-ratio padding */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .video-player {
+.video-block .video-player {
   padding: 0 !important;
 }
 
 /* Ensure wrapper behaves as a clipping frame */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .embed-block-wrapper,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-native-video {
+.video-block .embed-block-wrapper,
+.video-block .sqs-native-video {
   position: relative;
   overflow: hidden;
 }
 
 /* Uploaded videos */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block video {
+.video-block video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
 /* YouTube / Vimeo embeds */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block iframe {
+.video-block iframe {
   width: 100% !important;
   height: 100% !important;
 }
+
+
 
 /* =====================================================
    VIDEO BLOCKS — ROUNDED VIDEO FRAMES (0.5rem)
    ===================================================== */
 
 /* The clipping frame (this is what actually rounds the corners) */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .embed-block-wrapper,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-native-video,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block .sqs-video-wrapper {
+.video-block .embed-block-wrapper,
+.video-block .sqs-native-video,
+.video-block .sqs-video-wrapper {
   border-radius: 0.5rem;
   overflow: hidden;
 }
 
 /* Ensure the media itself respects the rounding */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block video,
-body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block iframe {
+.video-block video,
+.video-block iframe {
   border-radius: 0.5rem;
 }
 
-/* LEFT-ALIGN a single video inside its frame */
-body.collection-68b0cf9bee4bdf7a0a0f8bfc
-#block-yui_3_17_2_1_1766798589504_785155.video-block video {
-  object-position: calc(50%) center;
-}
+/* -----------------------------------------
+   SPECIFIC BLOCK FIXES
+   ----------------------------------------- */
 
 
 #block-yui_3_17_2_1_1757554504439_2552,
