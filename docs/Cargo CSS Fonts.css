@@ -762,29 +762,45 @@ button.sqs-button-element--secondary:active,
 
 
 /* =====================================================
-   VIDEO BLOCKS — TRUE FILL (WORKING)
+   VIDEO BLOCKS — TRUE FILL THE FLUID ENGINE CELL
+   (fills height, crops with object-fit: cover)
    ===================================================== */
 
-.video-block .sqs-video-wrapper {
-  aspect-ratio: 16 / 9; /* change freely */
+/* The FE cell must provide a height; we stretch into it */
+.video-block,
+.video-block > .sqs-block-content {
+  height: 100%;
+}
+
+/* Make the internal wrapper a real frame */
+.video-block .sqs-video-wrapper,
+.video-block .sqs-native-video,
+.video-block .embed-block-wrapper {
+  height: 100%;
   width: 100%;
+  position: relative;
   overflow: hidden;
 }
 
-/* Make inner layers fill */
-.video-block .sqs-block-content,
-.video-block .video-player,
-.video-block .sqs-native-video {
+/* Remove aspect padding AND make the player fill the frame */
+.video-block .video-player {
+  padding: 0 !important;
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
 }
 
-/* Media fills the frame */
+/* Media covers the frame */
 .video-block video,
 .video-block iframe {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
 }
+
 
 
 /* -----------------------------------------
