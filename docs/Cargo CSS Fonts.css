@@ -760,45 +760,60 @@ button.sqs-button-element--secondary:active,
 }
 
 
-
 /* =====================================================
-   VIDEO BLOCKS — TRUE FILL THE FLUID ENGINE CELL
-   (fills height, crops with object-fit: cover)
+   VIDEO BLOCKS — RECOVERY RESET + SAFE FILL/CROP
+   Put this AFTER your current video rules
    ===================================================== */
 
-/* The FE cell must provide a height; we stretch into it */
+/* --- 1) RECOVERY RESET (undo the "disappearing" behavior) --- */
+.video-block .video-player {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Undo absolute positioning that can hide media */
+.video-block video,
+.video-block iframe {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+/* --- 2) MAKE THE FE CELL A REAL FRAME --- */
 .video-block,
 .video-block > .sqs-block-content {
   height: 100%;
 }
 
-/* Make the internal wrapper a real frame */
 .video-block .sqs-video-wrapper,
 .video-block .sqs-native-video,
 .video-block .embed-block-wrapper {
   height: 100%;
   width: 100%;
-  position: relative;
   overflow: hidden;
+  position: relative;
+  display: flex;
 }
 
-/* Remove aspect padding AND make the player fill the frame */
-.video-block .video-player {
-  padding: 0 !important;
-  position: absolute;
-  inset: 0;
+/* --- 3) UPLOADED VIDEO: true cover --- */
+.video-block video {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-/* Media covers the frame */
-.video-block video,
+/* --- 4) IFRAME (YouTube/Vimeo): “cover-ish” without vanishing --- */
+/* Keep iframe visible, centered, and large enough to crop */
 .video-block iframe {
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover;
+  width: 120% !important;
+  height: 120% !important;
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }
 
 
