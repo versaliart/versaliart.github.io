@@ -794,14 +794,14 @@ button.sqs-button-element--secondary:active,
 .video-block .embed-block-wrapper,
 .video-block .sqs-native-video,
 .video-block .sqs-video-wrapper {
-  border-radius: 1rem !important;
+  border-radius: 0.5rem !important;
   overflow: hidden !important;
 }
 
 /* Ensure the media itself respects the rounding */
 .video-block video,
 .video-block iframe {
-  border-radius: 1rem !important;
+  border-radius: 0.5rem !important;
 }
 
 
