@@ -818,7 +818,7 @@ body.collection-68b0cf9bee4bdf7a0a0f8bfc .video-block iframe {
 /* LEFT-ALIGN a single video inside its frame */
 body.collection-68b0cf9bee4bdf7a0a0f8bfc
 #block-yui_3_17_2_1_1766798589504_785155.video-block video {
-  object-position: calc(50% - 8.5rem) center;
+  object-position: calc(50%) center;
 }
 
 
