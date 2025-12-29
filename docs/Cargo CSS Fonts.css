@@ -762,61 +762,30 @@ button.sqs-button-element--secondary:active,
 
 
 /* =====================================================
-   VIDEO BLOCKS — FORCE FILL BOUNDING BOX (GLOBAL)
+   VIDEO BLOCKS — TRUE FILL (WORKING)
    ===================================================== */
 
-/* Force all wrapper layers to accept 100% height */
-.video-block > .sqs-block-content,
-.video-block .intrinsic,
-.video-block .embed-block-wrapper,
+.video-block .sqs-video-wrapper {
+  aspect-ratio: 16 / 9; /* change freely */
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Make inner layers fill */
+.video-block .sqs-block-content,
+.video-block .video-player,
 .video-block .sqs-native-video {
   height: 100%;
 }
 
-/* Kill intrinsic aspect-ratio padding */
-.video-block .video-player {
-  padding: 0 !important;
-}
-
-/* Ensure wrapper behaves as a clipping frame */
-.video-block .embed-block-wrapper,
-.video-block .sqs-native-video {
-  position: relative;
-  overflow: hidden;
-}
-
-/* Uploaded videos */
-.video-block video {
+/* Media fills the frame */
+.video-block video,
+.video-block iframe {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* YouTube / Vimeo embeds */
-.video-block iframe {
-  width: 100% !important;
-  height: 100% !important;
-}
-
-
-
-/* =====================================================
-   VIDEO BLOCKS — ROUNDED VIDEO FRAMES (0.5rem)
-   ===================================================== */
-
-/* The clipping frame (this is what actually rounds the corners) */
-.video-block .embed-block-wrapper,
-.video-block .sqs-native-video,
-.video-block .sqs-video-wrapper {
-  border-radius: 0.5rem;
-  overflow: hidden;
-}
-
-/* Ensure the media itself respects the rounding */
-.video-block video,
-.video-block iframe {
-  border-radius: 0.5rem;
-}
 
 /* -----------------------------------------
    SPECIFIC BLOCK FIXES
