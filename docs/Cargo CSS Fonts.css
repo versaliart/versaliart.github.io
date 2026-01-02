@@ -830,6 +830,41 @@ button.sqs-button-element--secondary:active,
   min-height: 0 !important;
 }
 
+/* =====================================================
+   SECTION-SCOPED VIDEO SIZING
+   Set the size once per section, all videos match.
+   ===================================================== */
+
+/* 1) Set the desired frame height per section */
+section[data-section-id="68fc1811a943717405f68996"]{ --mm-video-h: 18rem; }
+#page-section-SECTIONID_2 { --mm-video-h: 18rem; }
+
+/* If your sections use data-section-id instead: */
+/* section[data-section-id="UUID_1"] { --mm-video-h: 18rem; } */
+/* section[data-section-id="UUID_2"] { --mm-video-h: 18rem; } */
+
+/* 2) Apply to all videos inside those sections */
+section[data-section-id="68fc1811a943717405f68996"] .video-block .embed-block-wrapper,
+section[data-section-id="68fc1811a943717405f68996"] .video-block .sqs-native-video,
+section[data-section-id="68fc1811a943717405f68996"] .video-block .sqs-video-wrapper,
+#page-section-SECTIONID_2 .video-block .embed-block-wrapper,
+#page-section-SECTIONID_2 .video-block .sqs-native-video,
+#page-section-SECTIONID_2 .video-block .sqs-video-wrapper {
+  height: var(--mm-video-h) !important;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+/* Media fills the frame */
+section[data-section-id="68fc1811a943717405f68996"] .video-block video,
+section[data-section-id="68fc1811a943717405f68996"] .video-block iframe,
+#page-section-SECTIONID_2 .video-block video,
+#page-section-SECTIONID_2 .video-block iframe {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
 
 
 /* -----------------------------------------
@@ -848,6 +883,7 @@ button.sqs-button-element--secondary:active,
   font-size: 1.4rem !important;   /* tweak this value to taste */
   line-height: 1.5 !important;    /* optional, but usually looks better */
 }
+
 
 
 
