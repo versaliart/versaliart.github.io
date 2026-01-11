@@ -299,11 +299,12 @@ button.sqs-add-to-cart-button{
   margin-top: 0.55rem !important;   /* base gap — tweak if you want a global change */
 }
 
-/* 3) Tighter gap after “display” lines (Heading or Paragraph 1/2) */
-.sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *,
-.sqs-block-html .sqs-html-content   > :is(h1,h2,h3,h4,h5,h6,p.sqsrte-large,p.sqsrte-medium) + *{
+/* 3) Tighter gap only after display paragraphs, not headings */
+.sqs-block-html .sqs-block-content > :is(p.sqsrte-large,p.sqsrte-medium) + *,
+.sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium) + *{
   margin-top: 0.45rem !important;
 }
+
 
 /* 4) Remove accidental spacer paragraphs Squarespace inserts */
 .sqs-block-html .sqs-html-content p:empty{ display:none !important; }
@@ -318,33 +319,28 @@ button.sqs-add-to-cart-button{
   margin-bottom: 0 !important;
 }
 
-
 /* Heading → Paragraph gap (site-wide, SS 7.1) */
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
   margin-top: var(--gap-hp) !important;
 }
 
-
 /* Remove any theme padding that could look like bottom gap */
 .sqs-block-html .sqs-block-content{ padding-bottom: 0 !important; }
 
-/* Apply only when the block contains ONLY p.sqsrte-large paragraphs */
 .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
   display: grid;
   row-gap: .55rem;
-  padding-block: var(--tb-pad-y, 0);
-  padding-inline: var(--tb-pad-x, .5rem);
+  padding-top: var(--tb-pad-y) !important;
+  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-inline: var(--tb-pad-x, .5rem) !important;
 }
+
+
 .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))) > *{
   margin: 0 !important;
 }
 
-/* Bigger gap between display lines and paragraph sizes */
-.sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + *,
-.sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium,p.sqsrte-small,p.sqsrte-body) + *{
-  margin-top: 1.25rem !important;
-}
 
 /* Optional: if the editor left a trailing empty paragraph at the end, hide it */
 .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
@@ -872,20 +868,15 @@ button.sqs-button-element--secondary:active,
 
 
 /* =========================================================
-   Text blocks — remove TOP padding when vertically centered
-   or bottom-aligned (Fluid Engine)
-   ========================================================= */
+   FE Text blocks — remove vertical padding when centered/bottom
+   (reliable: scopes to the same .fe-block)
+========================================================= */
 
-/* CENTER-aligned text blocks */
-.fe-block
-  .sqs-block-alignment-wrapper[style*="justify-content: center"]
-  .sqs-html-content{
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: center"])
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: flex-end"])
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
 
-/* BOTTOM-aligned text blocks */
-.fe-block
-  .sqs-block-alignment-wrapper[style*="justify-content: flex-end"]
-  .sqs-html-content{
-  padding-top: 0 !important;
-}
