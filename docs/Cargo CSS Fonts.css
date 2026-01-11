@@ -325,15 +325,6 @@ button.sqs-add-to-cart-button{
   margin-top: var(--gap-hp) !important;
 }
 
-/* Text blocks: ignore Fluid Engine's stored min-height so they can collapse */
-.sqs-block.html-block.sqs-block-html[style*="min-height"]{
-  min-height: 0 !important;
-  height: auto !important;
-}
-.sqs-block.html-block.sqs-block-html{
-  min-height: 0 !important;
-  height: auto !important;
-}
 
 /* Remove any theme padding that could look like bottom gap */
 .sqs-block-html .sqs-block-content{ padding-bottom: 0 !important; }
