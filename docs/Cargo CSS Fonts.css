@@ -880,34 +880,44 @@ button.sqs-button-element--secondary:active,
 }
 
 
-/* --- FE Vertical Centering Fix (block-scoped) --- */
-#block-65850d8f6a3e2730ce5c{
-  height: 100%;
-}
+/* =========================================================
+   FLUID ENGINE — TRUE VERTICAL CENTERING FOR TEXT BLOCKS
+   Applies only when FE vertical-align is center or bottom
+========================================================= */
 
-#block-65850d8f6a3e2730ce5c > .sqs-block-content{
-  height: 100%;
-}
+@supports selector(.fe-block:has(*)) {
 
-/* Make the actual text container fill the FE cell and do the centering */
-#block-65850d8f6a3e2730ce5c .sqs-html-content{
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  /* Make the FE cell's text content fill the available height */
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: center"]),
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: flex-end"]) {
 
-  /* eliminate any “token padding” that shifts optics */
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
+    /* block + wrappers must allow full height */
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] > .sqs-block-content {
+      height: 100%;
+    }
 
-/* Stop your global sibling-margin system inside this one block */
-#block-65850d8f6a3e2730ce5c .sqs-html-content > *{
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
+    /* the actual text container does the centering */
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
 
-/* Recreate spacing in a way that *counts* in flex height */
-#block-65850d8f6a3e2730ce5c .sqs-html-content{
-  row-gap: 0.55rem;
+      /* kill token padding so optics are correct */
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+
+    /* neutralize margin-based spacing */
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > * {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+    }
+
+    /* reintroduce spacing in a way FE *counts* */
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content {
+      row-gap: 0.55rem; /* sync with your system */
+    }
+  }
 }
