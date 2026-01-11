@@ -329,16 +329,6 @@ button.sqs-add-to-cart-button{
 /* Remove any theme padding that could look like bottom gap */
 .sqs-block-html .sqs-block-content{ padding-bottom: 0 !important; }
 
-/* Only collapse Text-block min-heights outside the first section */
-.page-section:not(:first-of-type) .sqs-block.html-block.sqs-block-html{
-  min-height: 0 !important;
-  height: auto !important;
-}
-.page-section:not(:first-of-type)
-  .sqs-block.html-block.sqs-block-html[style*="min-height"]{
-  min-height: 0 !important;
-}
-
 /* Apply only when the block contains ONLY p.sqsrte-large paragraphs */
 .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
   display: grid;
