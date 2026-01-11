@@ -261,11 +261,30 @@ button.sqs-add-to-cart-button{
    #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
 */
 :root{
-  --tb-pad-y: 0.5rem;   /* base top/bottom padding for text blocks */
-  --tb-pad-x: 0.5rem;   /* base left/right padding for text blocks */
+  --tb-pad-y: 0.5rem;
+  --tb-pad-y-bottom: 0rem;
+  --tb-pad-x: 0.5rem;
 
   --gap-hp: 0.5rem;     /* Heading → Paragraph gap (site-wide) */
 }
+
+/* Internal padding for all Squarespace Text blocks (7.1)
+   Uses core variables so you can “add to / subtract from” them per block. */
+
+/* Prefer the inner wrapper so you don't affect the block footprint */
+.sqs-block.html-block.sqs-block-html .sqs-html-content{
+  padding-top: var(--tb-pad-y) !important;
+  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-inline: var(--tb-pad-x) !important;
+}
+
+/* Fallback for templates without .sqs-html-content */
+.sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
+  padding-top: var(--tb-pad-y) !important;
+  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-inline: var(--tb-pad-x) !important;
+}
+
 
 /* 1) Zero top/bottom margins on common children (both wrappers) */
 .sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
@@ -299,20 +318,6 @@ button.sqs-add-to-cart-button{
   margin-bottom: 0 !important;
 }
 
-/* Internal padding for all Squarespace Text blocks (7.1)
-   Uses core variables so you can “add to / subtract from” them per block. */
-
-/* Prefer the inner wrapper so you don't affect the block footprint */
-.sqs-block.html-block.sqs-block-html .sqs-html-content{
-  padding-block: var(--tb-pad-y) !important;
-  padding-inline: var(--tb-pad-x) !important;
-}
-
-/* Fallback for templates without .sqs-html-content */
-.sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
-  padding-block: var(--tb-pad-y) !important;
-  padding-inline: var(--tb-pad-x) !important;
-}
 
 /* Heading → Paragraph gap (site-wide, SS 7.1) */
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
