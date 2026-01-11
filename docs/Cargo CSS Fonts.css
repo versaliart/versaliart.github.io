@@ -879,3 +879,30 @@ button.sqs-button-element--secondary:active,
   padding-bottom: 0.5rem !important;
 }
 
+
+/* Force the visual content to be what FE is centering */
+#block-65850d8f6a3e2730ce5c{
+  height: 100%;
+}
+
+#block-65850d8f6a3e2730ce5c .sqs-block-content{
+  height: 100%;
+}
+
+#block-65850d8f6a3e2730ce5c .sqs-html-content{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* vertical centering */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* Use gap instead of stacked margins for predictable height */
+#block-65850d8f6a3e2730ce5c .sqs-html-content > * + *{
+  margin-top: 0 !important;
+}
+
+#block-65850d8f6a3e2730ce5c .sqs-html-content{
+  row-gap: 0.55rem;
+}
