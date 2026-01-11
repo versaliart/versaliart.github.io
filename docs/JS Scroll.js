@@ -1,4 +1,4 @@
-/*! snap-scroll.js v1.4.4 — single snap line at marked section bottom; absolute crossing + seeded first down + immediate re-arm both ways + optional guard/input-lock */
+/*! snap-scroll.js v1.4.5 — disabled on mobile (coarse pointer / small screens) */
 (function () {
   function ready(fn){ if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", fn, { once:true }); else fn(); }
   function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
@@ -14,7 +14,20 @@
     window.scrollTo({ top: y, behavior: "smooth" });
   }
 
+  // --- MOBILE DISABLE SWITCH ---
+  // Disable when either:
+  // 1) viewport is <= 767px, OR
+  // 2) primary pointer is coarse (touch), OR
+  // 3) no hover (typical touch devices)
+  var DISABLE_MQ = "(max-width: 767px), (pointer: coarse), (hover: none)";
+  function isMobileLike(){
+    return window.matchMedia && window.matchMedia(DISABLE_MQ).matches;
+  }
+
   ready(function () {
+    // Hard stop on mobile-like devices: do not attach any listeners.
+    if (isMobileLike()) return;
+
     var markers = [].slice.call(document.querySelectorAll("[data-snap-scroll]"));
     if (!markers.length) return;
 
@@ -68,7 +81,6 @@
     document.addEventListener('wheel',      preventWhileLocked, { passive:false });
     document.addEventListener('touchmove',  preventWhileLocked, { passive:false });
     document.addEventListener('keydown', function(e){
-      // block typical scroll keys while snapping
       if (!anyCtrlLockingInput()) return;
       var k = e.key;
       if (k === 'ArrowDown' || k === 'ArrowUp' || k === 'PageDown' || k === 'PageUp' || k === 'Home' || k === 'End' || k === ' '){
@@ -91,9 +103,7 @@
       // reset intent accumulators
       ctrl.upTravel = ctrl.downTravel = 0;
 
-      // Re-arm immediately for the reverse direction:
-      // - If we snapped DOWN to next: prime UP and clear top edge so the first tiny up-nudge snaps.
-      // - If we snapped UP to marked section: prime DOWN and clear bottom edge likewise.
+      // Re-arm immediately for the reverse direction
       if (target === ctrl.next) {
         ctrl.seededUp = true;
         ctrl.lastViewTopAbs = null;
@@ -126,9 +136,9 @@
 
         var rect = ctrl.section.getBoundingClientRect();
         var EPS     = ctrl.opts.epsilon;
-        var viewTopAbs = y + ctrl.opts.offsetTop;   // absolute content-top
-        var viewBottomAbs = y + vh;                 // absolute viewport bottom
-        var lineAbs = (rect.top + y) + rect.height; // absolute snap line (section bottom)
+        var viewTopAbs = y + ctrl.opts.offsetTop;
+        var viewBottomAbs = y + vh;
+        var lineAbs = (rect.top + y) + rect.height;
         var intent  = ctrl.opts.intentPx;
 
         // intent accumulation
@@ -143,7 +153,7 @@
         if (ctrl.lastViewBottomAbs == null) {
           if (viewBottomAbs >= lineAbs - EPS) {
             ctrl.lastViewBottomAbs = (lineAbs - EPS) - 1;
-            ctrl.seededDown = true;    // permit first down crossing without intent
+            ctrl.seededDown = true;
           } else {
             ctrl.lastViewBottomAbs = viewBottomAbs;
           }
@@ -156,10 +166,9 @@
           }
         }
 
-        // During guard window after a snap, keep seeds alive and relax intent
         var inGuard = now < ctrl.guardUntil;
 
-        // ----- DOWN: crossing when viewport bottom passes the line -----
+        // DOWN
         var downCross =
           (ctrl.seededDown || inGuard || ctrl.downTravel >= intent) &&
           (ctrl.lastViewBottomAbs < (lineAbs - EPS)) &&
@@ -168,31 +177,28 @@
         if ((ctrl.opts.direction === "down" || ctrl.opts.direction === "both") &&
             dir === 1 && ctrl.next && downCross) {
           snap(ctrl, ctrl.next, "down/cross-abs-bottom");
-          // keep edges current; consume seeds by snap()
           ctrl.lastViewBottomAbs = viewBottomAbs;
           ctrl.lastViewTopAbs    = viewTopAbs;
           return;
         }
 
-// ----- UP: crossing when content top passes the line (header-aware) -----
-var topThresh = lineAbs + EPS;
-var upCross = ctrl.seededUp
-  ? (viewTopAbs <= topThresh)                   // immediate UP after a DOWN snap
-  : ((inGuard || ctrl.upTravel >= intent) &&
-     (ctrl.lastViewTopAbs > topThresh) &&
-     (viewTopAbs        <= topThresh));
+        // UP
+        var topThresh = lineAbs + EPS;
+        var upCross = ctrl.seededUp
+          ? (viewTopAbs <= topThresh)
+          : ((inGuard || ctrl.upTravel >= intent) &&
+             (ctrl.lastViewTopAbs > topThresh) &&
+             (viewTopAbs        <= topThresh));
 
-if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
-    dir === -1 && upCross) {
-  snap(ctrl, ctrl.section, "up/cross-abs-top");
-  ctrl.seededUp = false;                        // consume the seed
-  ctrl.lastViewBottomAbs = viewBottomAbs;
-  ctrl.lastViewTopAbs    = viewTopAbs;
-  return;
-}
+        if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
+            dir === -1 && upCross) {
+          snap(ctrl, ctrl.section, "up/cross-abs-top");
+          ctrl.seededUp = false;
+          ctrl.lastViewBottomAbs = viewBottomAbs;
+          ctrl.lastViewTopAbs    = viewTopAbs;
+          return;
+        }
 
-
-        // store for next tick
         ctrl.lastViewBottomAbs = viewBottomAbs;
         ctrl.lastViewTopAbs    = viewTopAbs;
       });
@@ -202,11 +208,17 @@ if ((ctrl.opts.direction === "up" || ctrl.opts.direction === "both") &&
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", function(){
       lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; c.guardUntil = 0; });
+      ctrls.forEach(function(c){
+        c.lastViewBottomAbs = c.lastViewTopAbs = null;
+        c.seededDown = false; c.seededUp = false; c.guardUntil = 0;
+      });
     }, { passive: true });
     document.addEventListener("visibilitychange", function(){
       lastY = window.scrollY || 0;
-      ctrls.forEach(c=>{ c.lastViewBottomAbs = c.lastViewTopAbs = null; c.seededDown = false; c.seededUp = false; c.guardUntil = 0; });
+      ctrls.forEach(function(c){
+        c.lastViewBottomAbs = c.lastViewTopAbs = null;
+        c.seededDown = false; c.seededUp = false; c.guardUntil = 0;
+      });
     });
   });
 })();
