@@ -261,7 +261,7 @@ button.sqs-add-to-cart-button{
    #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
 */
 :root{
-  --tb-pad-y: 0.5rem;
+  --tb-pad-y: 0rem;
   --tb-pad-y-bottom: 0rem;
   --tb-pad-x: 0.5rem;
 
@@ -271,19 +271,20 @@ button.sqs-add-to-cart-button{
 /* Internal padding for all Squarespace Text blocks (7.1)
    Uses core variables so you can “add to / subtract from” them per block. */
 
-/* Prefer the inner wrapper so you don't affect the block footprint */
-.sqs-block.html-block.sqs-block-html .sqs-html-content{
+/* Text blocks only */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: var(--tb-pad-y) !important;
   padding-bottom: var(--tb-pad-y-bottom) !important;
   padding-inline: var(--tb-pad-x) !important;
 }
 
-/* Fallback for templates without .sqs-html-content */
-.sqs-block.html-block.sqs-block-html:not(:has(.sqs-html-content)) .sqs-block-content{
+/* Fallback (Text blocks only) */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content{
   padding-top: var(--tb-pad-y) !important;
   padding-bottom: var(--tb-pad-y-bottom) !important;
   padding-inline: var(--tb-pad-x) !important;
 }
+
 
 
 /* 1) Zero top/bottom margins on common children (both wrappers) */
@@ -831,8 +832,6 @@ button.sqs-button-element--secondary:active,
   font-size: 1.4rem !important;   /* tweak this value to taste */
   line-height: 1.5 !important;    /* optional, but usually looks better */
 }
-
-
 
 
 /* -----------------------------------------
