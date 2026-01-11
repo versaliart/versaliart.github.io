@@ -876,6 +876,6 @@ button.sqs-button-element--secondary:active,
 .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: flex-end"])
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  padding-bottom: 0.5rem !important;
 }
 
