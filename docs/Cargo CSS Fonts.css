@@ -263,7 +263,7 @@ button.sqs-add-to-cart-button{
 :root{
   --tb-pad-y: 0rem;
   --tb-pad-y-bottom: 0rem;
-  --tb-pad-x: 0.5rem;
+  --tb-pad-x: 0.25rem;
 
   --gap-hp: 0.5rem;     /* Heading → Paragraph gap (site-wide) */
 }
