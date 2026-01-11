@@ -869,3 +869,23 @@ button.sqs-button-element--secondary:active,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
   margin-bottom: 1rem !important;
 }
+
+
+/* =========================================================
+   Text blocks — remove TOP padding when vertically centered
+   or bottom-aligned (Fluid Engine)
+   ========================================================= */
+
+/* CENTER-aligned text blocks */
+.fe-block
+  .sqs-block-alignment-wrapper[style*="justify-content: center"]
+  .sqs-html-content{
+  padding-top: 0 !important;
+}
+
+/* BOTTOM-aligned text blocks */
+.fe-block
+  .sqs-block-alignment-wrapper[style*="justify-content: flex-end"]
+  .sqs-html-content{
+  padding-top: 0 !important;
+}
