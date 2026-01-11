@@ -891,7 +891,7 @@ button.sqs-button-element--secondary:active,
    ========================================================= */
 
 /* 1) Undo your global "collapse text blocks" rules IN THIS SECTION ONLY */
-section[data-section-id="68c0a68011503c3cc9ecde9a"]
+section[data-section-id="68c0a68011503c3cc9ecde9a"]  /* Bounty Hunter */
 .sqs-block.html-block.sqs-block-html{
   height: 100% !important;     /* restore a real box height */
   min-height: unset !important;
@@ -926,4 +926,9 @@ section[data-section-id="68c0a68011503c3cc9ecde9a"]
 section[data-section-id="68c0a68011503c3cc9ecde9a"]
 .sqs-layout .sqs-row{
   align-items: stretch !important;
+}
+
+
+section[data-section-id="68c0a68011503c3cc9ecde9a"]{
+  --tb-pad-y: 0rem;
 }
