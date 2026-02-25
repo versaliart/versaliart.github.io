@@ -836,7 +836,7 @@ button.sqs-button-element--secondary:active,
 /* Drop shadow for specific Fluid Engine blocks */
 #block-yui_3_17_2_1_1762293512044_1730,
 #block-057950c6d7e2d5e4fe2a {
-  box-shadow: 0 0rem 1rem rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0rem 1rem rgba(0, 0, 0, 0.25);
   border-radius: 1rem; /* optional – remove if not needed */
     overflow: visible;
 }
