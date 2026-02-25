@@ -846,7 +846,7 @@ button.sqs-button-element--secondary:active,
   position: relative;
   z-index: 50;
   border-radius: 1rem; /* match your block radius */
-  box-shadow: 0 1.25rem 1.5rem -0.75rem rgba(32, 19, 67, 0.35);
+  box-shadow: 0 1.25rem 1.5rem -0.75rem rgba(28, 24, 41, 0.35);
 }
 
 /* -----------------------------------------
