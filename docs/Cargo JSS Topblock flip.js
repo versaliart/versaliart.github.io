@@ -81,6 +81,27 @@
 
   const closestFeBlock = el => el.closest('.fe-block') || null;
 
+  const mobileFlipBlocks = new Set();
+  let mobileCloseHandlerInstalled = false;
+
+  function ensureMobileCloseHandler(){
+    if (mobileCloseHandlerInstalled) return;
+    mobileCloseHandlerInstalled = true;
+    document.addEventListener('click', function(e){
+      if (!isCoarse()) return;
+      const actionable = e.target.closest &&
+        e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
+      if (actionable) return;
+
+      mobileFlipBlocks.forEach(block => {
+        if (block.classList.contains('is-flipped')){
+          block.classList.remove('is-flipped');
+          setPassThrough(block, false);
+        }
+      });
+    }, true);
+  }
+
   function setPassThrough(block, on){
     const outer = closestFeBlock(block);
     if (on){
@@ -190,18 +211,9 @@
       }
     }, true);
 
-    // Tap blank space to close on mobile
-    document.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (block.classList.contains('is-flipped')){
-        const actionable = e.target.closest &&
-          e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
-        if (!actionable){
-          block.classList.remove('is-flipped');
-          setPassThrough(block, false);
-        }
-      }
-    }, true);
+    // Tap blank space to close on mobile (shared global listener)
+    mobileFlipBlocks.add(block);
+    ensureMobileCloseHandler();
 
     // Layout + reactions
     const relayout = () => layout(block);

@@ -41,18 +41,25 @@
     // width of one sequence (the first batch of images)
     const halfWidth = track.scrollWidth / 2;
 
-    // make a unique animation name so multiple marquees don't clash
-    const animName = 'mmScroll_' + Math.random().toString(36).slice(2);
+    // skip work when width has not changed
+    if (track.__mmHalfWidth === halfWidth) return;
+    track.__mmHalfWidth = halfWidth;
 
-    // build a <style> tag just for this animation
-    const styleTag = document.createElement('style');
-    styleTag.textContent = `
+    // make a stable animation name per track and reuse one <style> tag
+    const animName = track.__mmAnimName || ('mmScroll_' + Math.random().toString(36).slice(2));
+    track.__mmAnimName = animName;
+
+    if (!track.__mmStyleTag){
+      track.__mmStyleTag = document.createElement('style');
+      document.head.appendChild(track.__mmStyleTag);
+    }
+
+    track.__mmStyleTag.textContent = `
       @keyframes ${animName} {
         0%   { transform: translateX(0); }
         100% { transform: translateX(-${halfWidth}px); }
       }
     `;
-    document.head.appendChild(styleTag);
 
     // hook the track up to that animation name
     // (duration still comes from --scroll-speed on the .mm-marquee)
@@ -102,6 +109,12 @@ function initMarquee(m){
   function initAll(){
     document.querySelectorAll('.mm-marquee').forEach(initMarquee);
   }
+
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('.mm-marquee-track').forEach(track => {
+      if (track.__mmFilled) applyDynamicAnimation(track);
+    });
+  }, { passive: true });
 
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', initAll);

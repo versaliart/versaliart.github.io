@@ -94,6 +94,20 @@ hdr.insertAdjacentHTML('afterbegin', `
         }
       }
 
+      let rafId = 0;
+      function scheduleUpdate(full = false){
+        if (rafId) return;
+        rafId = requestAnimationFrame(() => {
+          rafId = 0;
+          if (full){
+            applyPagePadding();
+            computeThreshold();
+            syncEdgePad();
+          }
+          update();
+        });
+      }
+
       // Make left/right inset equal the vertical “air” inside the bar
       function syncEdgePad(){
         const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
@@ -113,8 +127,8 @@ hdr.insertAdjacentHTML('afterbegin', `
       update();
 
       // Listeners
-      window.addEventListener('scroll', update, {passive:true});
-      window.addEventListener('resize', () => { applyPagePadding(); computeThreshold(); syncEdgePad(); update(); });
+      window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
+      window.addEventListener('resize', () => scheduleUpdate(true), {passive:true});
 
       // Re-sync when fonts load (sizes change)
       if (document.fonts && document.fonts.ready) {
@@ -125,7 +139,7 @@ hdr.insertAdjacentHTML('afterbegin', `
       let t = null;
       const mo = new MutationObserver(() => {
         clearTimeout(t);
-        t = setTimeout(() => { applyPagePadding(); computeThreshold(); syncEdgePad(); update(); }, 100);
+        t = setTimeout(() => scheduleUpdate(true), 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);

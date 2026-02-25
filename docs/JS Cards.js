@@ -215,9 +215,12 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
 
 
 
+    const getDrawCards = () => $$('.cdp-card', drawPile);
+
     const refreshInteractivity = () => {
-      $$('.cdp-card', drawPile).forEach(c => c.style.pointerEvents = 'none');
-      const top = $$('.cdp-card', drawPile).at(-1);
+      const cardsInDraw = getDrawCards();
+      cardsInDraw.forEach(c => c.style.pointerEvents = 'none');
+      const top = cardsInDraw.at(-1);
       if (top) top.style.pointerEvents = '';
     };
 
@@ -225,7 +228,7 @@ const onCardClick = (ev) => {
   const card = ev.currentTarget;
 
   // only the top card in draw acts
-  if ($$('.cdp-card', drawPile).at(-1) !== card) return;
+  if (getDrawCards().at(-1) !== card) return;
 
   // First click → open
   if (!card.classList.contains('is-flipped')) {
@@ -246,7 +249,7 @@ const onCardClick = (ev) => {
 // Reshuffle so BOTTOM cards go first and the TOP card returns LAST.
 // That way, no post-animation "pop" is needed and stacking stays correct.
 const maybeReshuffle = async () => {
-  if ($$('.cdp-card', drawPile).length) return;
+  if (getDrawCards().length) return;
 
   const cards = $$('.cdp-card', discardPile); // DOM order: bottom..top (last = topmost)
   const n = cards.length;

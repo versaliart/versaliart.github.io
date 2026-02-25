@@ -176,6 +176,7 @@
     const layer = ensureLayer(host);
 
     const gcsBody = getComputedStyle(body), gcsRoot = getComputedStyle(root);
+    const bodyStarColor = gcsBody.getPropertyValue('--star-color') || '#9989EC';
     const count   = Math.max(0, Math.round(parseFloat(gcsBody.getPropertyValue('--star-count')) || 40));
     const durMin  = parseFloat(gcsBody.getPropertyValue('--twinkle-min')) || 0.5;
     const durMax  = parseFloat(gcsBody.getPropertyValue('--twinkle-max')) || 2.0;
@@ -256,7 +257,7 @@
           star.style.width = 'var(--size, 1rem)';
           star.style.height = 'var(--size, 1rem)';
           star.style.background = 'currentColor';
-          star.style.color = getComputedStyle(body).getPropertyValue('--star-color') || '#9989EC';
+          star.style.color = bodyStarColor;
           star.style.willChange = 'opacity, transform';
           star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
           star.style.animation = 'twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay,0s) infinite alternate';
@@ -273,6 +274,8 @@
       }
 
       let svgCenter = null;
+      const pathTotalLength = (mode === 'svg') ? path.getTotalLength() : 0;
+
       if (mode === 'svg'){
         if (typeof path.getBBox === 'function'){
           const bb = path.getBBox();
@@ -285,14 +288,13 @@
       const rectForBox = host.getBoundingClientRect();
 
       function tryPlaceAtT_SVG(t, sizeRem){
-        const total = path.getTotalLength();
-        const d = (t % 1) * total;
+        const d = (t % 1) * pathTotalLength;
         const p  = path.getPointAtLength(d);
         if (avoidStrength > 0 && avoidWidthDeg > 0 && svgCenter){
           const a = angleDeg(svgCenter.x, svgCenter.y, p.x, p.y);
           if (avoidAngle(a, avoidWidthDeg)) return false;
         }
-        const p2 = path.getPointAtLength((d + 0.75) % total);
+        const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
         let nx = -(p2.y - p.y), ny = (p2.x - p.x);
         const nlen = Math.hypot(nx, ny) || 1; nx/=nlen; ny/=nlen;
         const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
@@ -341,8 +343,7 @@
       for (let i = 0; i < T_all.length; i++){
         const t = T_all[i];
         if (mode === 'svg'){
-          const total = path.getTotalLength();
-          const d = (t % 1) * total;
+          const d = (t % 1) * pathTotalLength;
           const p  = path.getPointAtLength(d);
           // svgCenter is in SVG coords; p.x also in SVG coords — compare directly
           const isLeft = svgCenter ? (p.x < svgCenter.x) : (i < T_all.length/2);
