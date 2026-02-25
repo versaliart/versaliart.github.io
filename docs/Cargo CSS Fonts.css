@@ -844,20 +844,22 @@ button.sqs-button-element--secondary:active,
 #block-057950c6d7e2d5e4fe2a::after {
   content: "";
   position: absolute;
-  left: 10%;
-  right: 10%;
-  bottom: -1.25rem; /* controls how far shadow extends */
-  height: 1.5rem;
+  left: 12%;
+  right: 12%;
+  bottom: -0.75rem;
+  height: 1.25rem;
+
+  z-index: 199;
+  pointer-events: none;
 
   background: radial-gradient(
     ellipse at center,
-    rgba(0, 0, 0, 0.45) 0%,
-    rgba(0, 0, 0, 0.30) 40%,
-    rgba(0, 0, 0, 0.15) 65%,
-    transparent 80%
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.35) 35%,
+    rgba(0, 0, 0, 0.18) 55%,
+    rgba(0, 0, 0, 0.08) 70%,
+    transparent 85%
   );
-
-  pointer-events: none;
 }
 
 
