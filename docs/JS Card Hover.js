@@ -4,15 +4,15 @@
   const CARD_1_SELECTORS = [
     '#block-9720ff97e85c3b701b8c',
     '#block-yui_3_17_2_1_1762293512044_1730',
-    '#block-yui_3_17_2_1_1756837579989_9426',
+    '#block-0a2a57dba5d721018c4c',
     '#block-yui_3_17_2_1_1757554504439_2552',
   ];
 
   const CARD_2_SELECTORS = [
     '#block-057950c6d7e2d5e4fe2a',
-    '#block-0a2a57dba5d721018c4c',
+    '#block-1e14a0c2b150cb046369',
     '#block-3fd5474bac7cfdc5bd19',
-    '#block-2c2ebf7c48d980d76fd2',
+    '#block-yui_3_17_2_1_1772052368029_9026',
   ];
 
   const AMPLITUDE_PX = 8;      // max vertical movement up/down
