@@ -853,10 +853,10 @@ button.sqs-button-element--secondary:active,
 
   background: radial-gradient(
     ellipse at center,
-    rgba(0, 0, 0, 0.55) 0%,
-    rgba(0, 0, 0, 0.35) 35%,
-    rgba(0, 0, 0, 0.18) 55%,
-    rgba(0, 0, 0, 0.08) 70%,
+    rgba(32, 19, 67, 0.55) 0%,
+    rgba(32, 19, 67, 0.35) 35%,
+    rgba(32, 19, 67, 0.18) 55%,
+    rgba(32, 19, 67, 0.08) 70%,
     transparent 85%
   );
 }
