@@ -16,7 +16,7 @@
   ];
 
   const AMPLITUDE_PX = 8;      // max vertical movement up/down
-  const CYCLE_MS = 2400;       // time for a full up+down cycle
+  const CYCLE_MS = 3600;       // time for a full up+down cycle
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) return;
