@@ -840,27 +840,14 @@ button.sqs-button-element--secondary:active,
   position: relative;
   z-index: 1;
 }
-#block-yui_3_17_2_1_1762293512044_1730::after,
-#block-057950c6d7e2d5e4fe2a::after {
-  content: "";
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: -0.75rem;
-  height: 1.25rem;
 
-  pointer-events: none;
-
-  background: radial-gradient(
-    ellipse at center,
-    rgba(32, 19, 67, 0.55) 0%,
-    rgba(32, 19, 67, 0.35) 35%,
-    rgba(32, 19, 67, 0.18) 55%,
-    rgba(32, 19, 67, 0.08) 70%,
-    transparent 85%
-  );
+#block-yui_3_17_2_1_1762293512044_1730,
+#block-057950c6d7e2d5e4fe2a {
+  position: relative;
+  z-index: 50;
+  border-radius: 1rem; /* match your block radius */
+  box-shadow: 0 1.25rem 1.5rem -0.75rem rgba(32, 19, 67, 0.35);
 }
-
 
 /* -----------------------------------------
    1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
