@@ -849,7 +849,6 @@ button.sqs-button-element--secondary:active,
   bottom: -0.75rem;
   height: 1.25rem;
 
-  z-index: 199;
   pointer-events: none;
 
   background: radial-gradient(
