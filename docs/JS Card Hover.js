@@ -1,0 +1,92 @@
+/* Squarespace Opposing Card Float — v1.0 */
+
+(() => {
+  const CARD_1_SELECTORS = [
+    '#block-9720ff97e85c3b701b8c',
+    '#block-yui_3_17_2_1_1762293512044_1730',
+    '#block-yui_3_17_2_1_1756837579989_9426',
+    '#block-yui_3_17_2_1_1757554504439_2552',
+  ];
+
+  const CARD_2_SELECTORS = [
+    '#block-057950c6d7e2d5e4fe2a',
+    '#block-0a2a57dba5d721018c4c',
+    '#block-3fd5474bac7cfdc5bd19',
+    '#block-2c2ebf7c48d980d76fd2',
+  ];
+
+  const AMPLITUDE_PX = 8;      // max vertical movement up/down
+  const CYCLE_MS = 2400;       // time for a full up+down cycle
+
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  const getElements = (selectors) => selectors
+    .map((selector) => document.querySelector(selector))
+    .filter(Boolean);
+
+  const ensureElements = () => {
+    const card1 = getElements(CARD_1_SELECTORS);
+    const card2 = getElements(CARD_2_SELECTORS);
+
+    if (!card1.length || !card2.length) return null;
+
+    [...card1, ...card2].forEach((element) => {
+      element.style.willChange = 'translate';
+    });
+
+    return { card1, card2 };
+  };
+
+  const onReady = (fn) => {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn, { once: true });
+      return;
+    }
+    fn();
+  };
+
+  const startAnimation = ({ card1, card2 }) => {
+    const startTime = performance.now();
+
+    const tick = (now) => {
+      const elapsed = now - startTime;
+      const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
+      const offset = Math.sin(phase) * AMPLITUDE_PX;
+
+      const upValue = `${(-offset).toFixed(2)}px`;
+      const downValue = `${offset.toFixed(2)}px`;
+
+      card1.forEach((element) => {
+        element.style.translate = `0 ${upValue}`;
+      });
+
+      card2.forEach((element) => {
+        element.style.translate = `0 ${downValue}`;
+      });
+
+      requestAnimationFrame(tick);
+    };
+
+    requestAnimationFrame(tick);
+  };
+
+  onReady(() => {
+    const initial = ensureElements();
+    if (initial) {
+      startAnimation(initial);
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      const elements = ensureElements();
+      if (!elements) return;
+      observer.disconnect();
+      startAnimation(elements);
+    });
+
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+
+    setTimeout(() => observer.disconnect(), 10000);
+  });
+})();
