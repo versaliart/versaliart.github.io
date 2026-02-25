@@ -838,12 +838,6 @@ button.sqs-button-element--secondary:active,
 #block-yui_3_17_2_1_1762293512044_1730,
 #block-057950c6d7e2d5e4fe2a {
   position: relative;
-  z-index: 1;
-}
-
-#block-yui_3_17_2_1_1762293512044_1730,
-#block-057950c6d7e2d5e4fe2a {
-  position: relative;
   border-radius: 1rem; /* match your block radius */
   box-shadow: 0 1.25rem 1.5rem -0.75rem rgba(0, 10, 20, 0.45);
   overflow: visible;
