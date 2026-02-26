@@ -223,7 +223,6 @@ button.sqs-add-to-cart-button{
   font-family:"Crimson Pro",serif;
   font-size:var(--p3);
   line-height:1.6;
-  padding-bottom:clamp(0.5rem, 2vw, 1rem);
 }
 
 .footer h1, .footer h2, .footer h3, .footer h4,
