@@ -1,9 +1,10 @@
-/* Mystic Munson • mm-card-pile loop v2.0 */
+/* Mystic Munson • mm-marquee init v1.3 (dynamic distance) */
 (function(){
+  // ===== Your images / alts =====
   const imgs = [
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/e6681620-e044-4531-a05e-feaa026dffde/Me02.jpg",
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/51070983-4641-4f44-806e-3b12e27e3583/Me03.jpg",
-    "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/4560e500-fb9f-4186-9887-8aa97ca42e81/Me01.jpg",
+        "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/4560e500-fb9f-4186-9887-8aa97ca42e81/Me01.jpg",
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/0becf6ce-fc22-4f5c-a493-638a9813e8e0/Me04.jpg",
     "https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/db49bafa-8fbf-4f74-bda5-2f4f533b9abe/Me05.jpg"
   ];
@@ -16,84 +17,104 @@
     "Me being playfully choked by a friend"
   ];
 
-  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  // build one sequence of images
+  function buildSequence(){
+    const frag = document.createDocumentFragment();
+    imgs.forEach((url, i)=>{
+      const wrap = document.createElement('div');
+      wrap.className = 'mm-marquee-item';
 
-  function readMs(el, varName, fallback){
-    const raw = getComputedStyle(el).getPropertyValue(varName).trim();
-    if (!raw) return fallback;
-    if (raw.endsWith('ms')) return parseFloat(raw) || fallback;
-    if (raw.endsWith('s')) return (parseFloat(raw) || 0) * 1000;
-    const n = parseFloat(raw);
-    return Number.isFinite(n) ? n : fallback;
+      const im = document.createElement('img');
+      im.loading  = 'lazy';
+      im.decoding = 'async';
+      im.src      = url;
+      im.alt      = alts[i] || '';
+
+      wrap.appendChild(im);
+      frag.appendChild(wrap);
+    });
+    return frag;
   }
 
-  function preloadImages(){
-    imgs.forEach((src) => {
-      const im = new Image();
-      im.src = src;
+  // create custom keyframes for THIS track based on pixel width
+  function applyDynamicAnimation(track){
+    // width of one sequence (the first batch of images)
+    const halfWidth = track.scrollWidth / 2;
+
+    // skip work when width has not changed
+    if (track.__mmHalfWidth === halfWidth) return;
+    track.__mmHalfWidth = halfWidth;
+
+    // make a stable animation name per track and reuse one <style> tag
+    const animName = track.__mmAnimName || ('mmScroll_' + Math.random().toString(36).slice(2));
+    track.__mmAnimName = animName;
+
+    if (!track.__mmStyleTag){
+      track.__mmStyleTag = document.createElement('style');
+      document.head.appendChild(track.__mmStyleTag);
+    }
+
+    track.__mmStyleTag.textContent = `
+      @keyframes ${animName} {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-${halfWidth}px); }
+      }
+    `;
+
+    // hook the track up to that animation name
+    // (duration still comes from --scroll-speed on the .mm-marquee)
+    track.style.animationName = animName;
+    track.style.animationTimingFunction = 'linear';
+    track.style.animationIterationCount = 'infinite';
+
+    // We do NOT set animationDuration here, because you're already
+    // controlling that with --scroll-speed in inline style.
+  }
+
+function initMarquee(m){
+  const track = m.querySelector('.mm-marquee-track');
+  if (!track || track.__mmFilled) return;
+  track.__mmFilled = true;
+
+  // populate two copies
+  track.appendChild(buildSequence());
+  track.appendChild(buildSequence());
+
+  // pause on hover (JS fallback)
+  m.addEventListener('mouseenter', ()=> track.style.animationPlayState = 'paused');
+  m.addEventListener('mouseleave', ()=> track.style.animationPlayState = 'running');
+
+  // wait until all images load before measuring
+  const imgs = track.querySelectorAll('img');
+  let loadedCount = 0;
+
+  function finalize() {
+    requestAnimationFrame(()=> {
+      applyDynamicAnimation(track);
     });
   }
 
-  function buildPile(container){
-    container.innerHTML = `
-      <div class="mm-card-stage" aria-live="polite">
-        <div class="mm-stack-card mm-stack-card--back-1" aria-hidden="true"></div>
-        <div class="mm-stack-card mm-stack-card--back-2" aria-hidden="true"></div>
-        <div class="mm-reveal-card">
-          <div class="mm-reveal-flipper">
-            <div class="mm-face mm-face--back" aria-hidden="true"></div>
-            <div class="mm-face mm-face--front">
-              <img class="mm-face-image" loading="eager" decoding="async" alt="" />
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  }
+  imgs.forEach(img => {
+    if (img.complete) loadedCount++;
+    else img.addEventListener('load', () => {
+      loadedCount++;
+      if (loadedCount === imgs.length) finalize();
+    });
+  });
 
-  async function runLoop(container){
-    if (container.__mmRunning || imgs.length === 0) return;
-    container.__mmRunning = true;
+  if (loadedCount === imgs.length) finalize();
+}
 
-    const stage = container.querySelector('.mm-card-stage');
-    const card = container.querySelector('.mm-reveal-card');
-    const image = container.querySelector('.mm-face-image');
-    if (!stage || !card || !image) return;
-
-    const flipMs = readMs(stage, '--flip-duration', 900);
-    const closedDelayMs = readMs(stage, '--delay-closed', 1000);
-    const openDelayMs = readMs(stage, '--delay-open', 900);
-
-    let index = 0;
-    image.src = imgs[index];
-    image.alt = alts[index] || '';
-
-    while (true){
-      await wait(closedDelayMs);
-
-      card.classList.add('is-open');
-      await wait(flipMs + openDelayMs);
-
-      card.classList.remove('is-open');
-      await wait(flipMs);
-
-      index = (index + 1) % imgs.length;
-      image.src = imgs[index];
-      image.alt = alts[index] || '';
-    }
-  }
-
-  function initPile(m){
-    if (m.__mmReady) return;
-    m.__mmReady = true;
-    buildPile(m);
-    runLoop(m);
-  }
 
   function initAll(){
-    preloadImages();
-    document.querySelectorAll('.mm-marquee').forEach(initPile);
+    document.querySelectorAll('.mm-marquee').forEach(initMarquee);
   }
+
+  window.addEventListener('resize', () => {
+    document.querySelectorAll('.mm-marquee-track').forEach(track => {
+      if (track.__mmFilled) applyDynamicAnimation(track);
+    });
+  }, { passive: true });
 
   if (document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded', initAll);
