@@ -416,6 +416,7 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
 }
 
 /* ===== Buttons: force Maax on all variants + inner label ===== */
+
 /* Core button anchors (7.1) */
 a.sqs-button-element,
 a.sqs-button-element--primary,
@@ -424,7 +425,7 @@ a.sqs-button-element--tertiary,
 .sqs-button-element,
 .sqs-editable-button a {
   font-family: "Maax", sans-serif !important;
-  font-weight: 500 !important;
+  font-weight: 700 !important;
   font-size: 1rem !important;
   line-height: 1.2 !important;
   letter-spacing: .03em !important;
