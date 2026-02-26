@@ -178,7 +178,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
       // Newest on top in discard
       if (toPile.id === 'discardPile') {
         discardZ = (typeof discardZ === 'number') ? discardZ + 1 : 1;
-        card.style.zIndex = String(1000 + discardZ);
+        card.style.zIndex = String(discardZ);
       } else {
         card.style.zIndex = '';
       }
