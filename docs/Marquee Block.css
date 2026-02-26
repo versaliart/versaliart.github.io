@@ -2,19 +2,14 @@
      style="
        --card-w: min(72vw, 24rem);
        --card-ratio: 0.68;
-       --card-back-image: url('https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/8d1d1ded-df4e-4ce6-90b0-bf51a8fedd48/MMtarot01.png');
        --flip-duration: .9s;
        --delay-closed: 1.1s;
        --delay-open: .9s;
 ">
-  <div class="mm-marquee-track"></div>
+  <!-- JS injects the animated pile here -->
 </div>
 
 <style>
-/* ============================
-   Marquee base styles
-   ============================ */
-
 .mm-marquee {
   position: relative;
   width: 100%;
@@ -40,10 +35,7 @@
 }
 
 .mm-stack-card {
-  background-image: var(--card-back-image);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(160deg, #eee7dc 0%, #d8c9b3 100%);
   box-shadow: 0 .8rem 1.8rem rgba(0, 0, 0, .2);
 }
 
@@ -77,47 +69,30 @@
 .mm-face {
   backface-visibility: hidden;
   overflow: hidden;
-  padding: 1rem 0;
-  /* no fixed height here, we're honoring the block's own height */
 }
 
 .mm-face--back {
-  background-image: var(--card-back-image);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 50%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.13) 0 10px, rgba(0,0,0,.04) 10px 20px),
+    linear-gradient(160deg, #b69167 0%, #886647 100%);
 }
 
 .mm-face--front {
-  transform: rotateY(180deg);
+  transform: rotateX(180deg);
   background: #f7f1e8;
 }
 
 .mm-face-image {
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: flex-start;   /* ⬅ anchor img to the top inside each item */
-}
-
-.mm-marquee-item img {
-  max-height: var(--img-h-max);
-  height: auto;
-  width: auto;
-  object-fit: contain;
   display: block;
-  border-radius: .5rem;
-  box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
+  object-fit: cover;
 }
 
-
-
-
-/* Squarespace editor safeguard:
-   When you're in the site editor sometimes it forces very small iframes,
-   which can wrap flex items. Force no-wrap in those cases too.
-*/
-.sqs-block-content .mm-marquee-track{
-  flex-wrap: nowrap !important;
+@media (prefers-reduced-motion: reduce){
+  .mm-reveal-flipper {
+    transition: none;
+  }
 }
 </style>
