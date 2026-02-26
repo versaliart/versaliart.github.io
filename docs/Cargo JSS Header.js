@@ -152,6 +152,11 @@
       }
 
       function syncEdgePad(){
+        if (window.matchMedia('(max-width: 767px)').matches){
+          document.documentElement.style.setProperty('--mm-edge-pad', '0px');
+          return;
+        }
+
         const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
         if (!leftLink) return;
         const hr = hdr.getBoundingClientRect();
