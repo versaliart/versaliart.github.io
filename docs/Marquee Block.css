@@ -4,7 +4,7 @@
        --card-ratio: 0.68;
        --flip-duration: .9s;
        --delay-closed: 1.1s;
-       --delay-open: .9s;
+       --delay-open: 2.0s;
 ">
   <!-- JS injects the animated pile here -->
 </div>
