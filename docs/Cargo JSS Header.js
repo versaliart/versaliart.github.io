@@ -105,12 +105,45 @@
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
+            ensureMobileButtons();
           }
           update();
         });
       }
 
       // Make left/right inset equal the vertical “air” inside the bar
+
+
+      function ensureMobileButtons(){
+        if (window.matchMedia('(min-width: 768px)').matches) return;
+
+        const desktopLinks = hdr.querySelectorAll('.header-display-desktop .header-nav-item > a');
+        const anyLinks = hdr.querySelectorAll('.header-nav-item > a');
+        const source = desktopLinks.length ? desktopLinks : anyLinks;
+        if (!source.length) return;
+
+        const first = source[0];
+        const last = source[source.length - 1];
+
+        function upsert(btnClass, fromLink){
+          if (!fromLink) return;
+          let a = hdr.querySelector('.' + btnClass);
+          if (!a){
+            a = document.createElement('a');
+            a.className = 'mm-mobile-pill ' + btnClass;
+            a.setAttribute('data-mm-mobile-pill', '');
+            hdr.appendChild(a);
+          }
+          a.href = fromLink.getAttribute('href') || '#';
+          a.textContent = (fromLink.textContent || '').trim();
+          const label = fromLink.getAttribute('aria-label');
+          if (label) a.setAttribute('aria-label', label);
+        }
+
+        upsert('mm-mobile-pill-left', first);
+        upsert('mm-mobile-pill-right', last);
+      }
+
       function syncEdgePad(){
         const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
         if (!leftLink) return;
@@ -126,6 +159,7 @@
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
+      ensureMobileButtons();
       update();
 
       // Listeners

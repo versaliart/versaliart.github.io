@@ -286,21 +286,56 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
     width: min(96vw, 34rem);
   }
 
-  /* Force the regular nav container to remain active on mobile */
-  header#header .header-display-desktop{
+  /* Keep whichever Squarespace nav container has links visible */
+  header#header .header-display-desktop,
+  header#header .header-display-mobile{
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
   }
 
-  /* Hide Squarespace hamburger/mobile takeover UI */
-  header#header .header-display-mobile,
+  /* Mobile fallback pills injected by JS (guaranteed visible buttons) */
+  header#header[data-test="header"] .mm-mobile-pill{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-block: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--mm-btn-min);
+    max-width: calc(50% - var(--mm-gap-fixed) / 2 - var(--mm-edge-pad) - .5rem);
+    padding-block: var(--mm-btn-pad-y);
+    padding-inline: var(--mm-btn-pad-x);
+    border-radius: .5rem;
+    font-size: var(--mm-pill-font);
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    color: #BBBABF;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.35);
+    z-index: 3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  header#header[data-test="header"] .mm-mobile-pill-left{ left: var(--mm-edge-pad); }
+  header#header[data-test="header"] .mm-mobile-pill-right{ right: var(--mm-edge-pad); }
+
+  header#header[data-test="header"] .mm-mobile-pill:hover,
+  header#header[data-test="header"] .mm-mobile-pill:focus-visible{
+    background: rgba(255,255,255,.18);
+    border-color: rgba(255,255,255,.5);
+    outline: none;
+  }
+
+  /* Hide Squarespace hamburger trigger + overlay only */
   header#header .header-burger,
   header#header .header-menu-toggle,
   header#header [data-test="header-menu-toggle"],
   .header-menu,
   .header-menu-overlay,
-  .sqs-mobile-nav,
   [data-test="header-menu"]{
     display: none !important;
     visibility: hidden !important;
