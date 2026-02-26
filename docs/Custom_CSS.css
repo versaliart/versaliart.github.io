@@ -12,25 +12,23 @@
 
 
 /* -----------------------------------------
-   1) FLUID TOP MARGIN + FLUID LEFT/RIGHT PADDING
-   (Scales down on mobile automatically)
+   1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
    ----------------------------------------- */
 
-/* Top margin (fluid) */
 #block-yui_3_17_2_1_1756418080301_6091,
 #block-42c23df4af4040779faa,
 #block-7409c8f5f3a89fe9b7bb,
 #block-8b664be0eb6c69b8ee7c {
-  margin-top: clamp(0.75rem, 2.5vw, 1.25rem) !important;
+  margin-top: 1.25rem !important;  /* extra space above */
 }
 
-/* Inner padding applied to .sqs-html-content (fluid) */
+/* inner padding must be applied to the .sqs-html-content wrapper */
 #block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
 #block-42c23df4af4040779faa .sqs-html-content,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content {
-  padding-left: clamp(0.75rem, 3vw, 1.25rem) !important;
-  padding-right: clamp(0.75rem, 3vw, 1.25rem) !important;
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
 }
 
 /* -----------------------------------------
@@ -41,5 +39,5 @@
 #block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
-  margin-bottom: clamp(0.75rem, 2rem, 1rem) !important;;
+  margin-bottom: 1rem !important;
 }
