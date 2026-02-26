@@ -317,6 +317,9 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
     padding-block: var(--mm-btn-pad-y);
     padding-inline: var(--mm-btn-pad-x);
     border-radius: .5rem;
+    font-family: "Maax", sans-serif !important;
+    font-size: var(--mm-pill-font);
+    font-weight: 500;
     font-size: var(--mm-pill-font);
     font-weight: 700;
     line-height: 1;
