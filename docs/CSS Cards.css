@@ -134,4 +134,28 @@
 /* Motion safety */
 @media (prefers-reduced-motion: reduce){
   #cardTable .cdp-flipper{ transition: none; }
+
+}
+
+/* Mobile layout: keep OPEN card centered and park discarded pile off-canvas */
+@media (max-width: 768px){
+  #cardTable{
+    grid-template-columns: 1fr;
+    justify-items: center;
+    overflow: hidden;
+  }
+
+  #cardTable #drawPile{
+    width: min(100%, calc(var(--card-w) + 2 * var(--pile-pad)));
+    margin-inline: auto;
+  }
+
+  #cardTable #discardPile{
+    position: absolute;
+    top: 50%;
+    left: calc(100% + var(--card-w));
+    transform: translateY(-50%);
+    width: var(--card-w);
+    pointer-events: none;
+  }
 }
