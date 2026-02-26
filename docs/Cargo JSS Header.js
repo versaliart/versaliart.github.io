@@ -28,11 +28,13 @@
   function setup(){
     onceHeader(function(hdr){
       // === Centered logo ===
-hdr.insertAdjacentHTML('afterbegin', `
-  <img class="mm-logo-center"
-       src="https://www.mysticmunson.design/s/MMlogoSHORTpng.png"
-       alt="Mystic Munson app icon">
-`);
+      if (!hdr.querySelector('.mm-logo-center')) {
+        hdr.insertAdjacentHTML('afterbegin', `
+          <img class="mm-logo-center"
+               src="https://www.mysticmunson.design/s/MMlogoSHORTpng.png"
+               alt="Mystic Munson app icon">
+        `);
+      }
 
       const STICKY = pxVar('--mm-sticky-top', 12);
 

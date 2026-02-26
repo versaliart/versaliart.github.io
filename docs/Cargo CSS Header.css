@@ -270,3 +270,40 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
     transition: opacity 1ms linear;
   }
 }
+
+/* === Mobile fallback: keep custom glass nav, disable Squarespace hamburger === */
+@media screen and (max-width: 767px){
+  :root{
+    --mm-header-h: clamp(2.75rem, 2.45rem + 1vw, 3rem);
+    --mm-gap-fixed: clamp(4.25rem, 22vw, 6.25rem);
+    --mm-btn-min: clamp(4.8rem, 26vw, 6.4rem);
+    --mm-btn-pad-x: clamp(.5rem, 2.8vw, .8rem);
+    --mm-pill-font: clamp(.72rem, 2.8vw, .85rem);
+    --mm-logo-h: clamp(1.5rem, 7vw, 1.85rem);
+  }
+
+  header#header[data-test="header"]{
+    width: min(96vw, 34rem);
+  }
+
+  /* Force the regular nav container to remain active on mobile */
+  header#header .header-display-desktop{
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Hide Squarespace hamburger/mobile takeover UI */
+  header#header .header-display-mobile,
+  header#header .header-burger,
+  header#header .header-menu-toggle,
+  header#header [data-test="header-menu-toggle"],
+  .header-menu,
+  .header-menu-overlay,
+  .sqs-mobile-nav,
+  [data-test="header-menu"]{
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
