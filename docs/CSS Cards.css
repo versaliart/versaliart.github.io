@@ -1,13 +1,13 @@
 /* ===== Namespaced: CDP (Card Deck Piles) v1.5 ===== */
 
 #cardTable{
-  --card-w: 18rem;
-  --card-h: 32rem;
+  --card-w: clamp(10rem, 22vw, 18rem);
+  --card-h: calc(var(--card-w) * 1.7778);
   --radius: .6rem;
   --flip-duration: .35s;
   --move-duration: .35s;
   --perspective: 80rem;
-  --gap: 2rem;
+  --gap: clamp(.75rem, 3vw, 2rem);
   --pile-pad: 1rem;
   --flip-scale: 1.15;
   
@@ -17,7 +17,7 @@
   min-height: calc(var(--card-h) * var(--flip-scale) + 2 * var(--pile-pad) + 1rem);
 
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: center;
   justify-items: center;
   gap: var(--gap);
@@ -34,13 +34,22 @@
 #cardTable .pile{
   position: relative;
   height: calc(var(--card-h) * 1.1);     /* intrinsic; not % */
-  width: clamp(14rem, 42%, 28rem);
+  width: min(100%, calc(var(--card-w) + 2 * var(--pile-pad)));
+  min-width: 0;
   padding: var(--pile-pad);
   box-sizing: border-box;
   perspective: var(--perspective);
   border-radius: .75rem;
   outline: none;
   outline-offset: none;
+}
+
+#cardTable #drawPile{
+  z-index: 3;
+}
+
+#cardTable #discardPile{
+  z-index: 1;
 }
 
 /* Hide the seed container */
@@ -116,6 +125,7 @@
 #cardTable .cdp-card.is-discarded{
   pointer-events: none;
   cursor: default;
+  z-index: 0;
 }
 
 #cardTable { isolation: isolate; }
