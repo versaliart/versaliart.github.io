@@ -11,6 +11,7 @@
 
 <style>
 .mm-marquee {
+  --card-back-image: url("https://images.squarespace-cdn.com/content/68b0cf9aee4bdf7a0a0f8be4/8d1d1ded-df4e-4ce6-90b0-bf51a8fedd48/MMtarot01.png");
   position: relative;
   width: 100%;
   display: grid;
@@ -35,7 +36,10 @@
 }
 
 .mm-stack-card {
-  background: linear-gradient(160deg, #eee7dc 0%, #d8c9b3 100%);
+  background-image: var(--card-back-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   box-shadow: 0 .8rem 1.8rem rgba(0, 0, 0, .2);
 }
 
@@ -72,14 +76,14 @@
 }
 
 .mm-face--back {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 50%),
-    repeating-linear-gradient(45deg, rgba(255,255,255,.13) 0 10px, rgba(0,0,0,.04) 10px 20px),
-    linear-gradient(160deg, #b69167 0%, #886647 100%);
+  background-image: var(--card-back-image);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 .mm-face--front {
-  transform: rotateX(180deg);
+  transform: rotateY(180deg);
   background: #f7f1e8;
 }
 
