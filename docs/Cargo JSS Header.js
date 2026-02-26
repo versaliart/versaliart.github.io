@@ -38,6 +38,11 @@
 
       const STICKY = pxVar('--mm-sticky-top', 12);
 
+      function applyMobileFrame(){
+        const mobile = window.matchMedia('(max-width: 767px)').matches;
+        hdr.style.left = mobile ? '50vw' : '50%';
+      }
+
       // Park the header (no animation)
       Object.assign(hdr.style, {
         position: 'fixed',
@@ -46,6 +51,7 @@
         // Let CSS control the Y drop; we only center on X here:
         transform: 'translateX(-50%)'
       });
+      applyMobileFrame();
 
 
       // Visibility helpers (make hidden truly inert)
@@ -106,6 +112,7 @@
             computeThreshold();
             syncEdgePad();
             ensureMobileButtons();
+            applyMobileFrame();
           }
           update();
         });
@@ -160,6 +167,7 @@
       computeThreshold();
       syncEdgePad();
       ensureMobileButtons();
+      applyMobileFrame();
       update();
 
       // Listeners
