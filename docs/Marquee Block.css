@@ -1,65 +1,98 @@
 <div class="mm-marquee"
      style="
-       --scroll-speed: 15s;      /* Larger = slower. ex: 20s fast, 60s slow */
-       --img-gap: 1rem;          /* space between images */
-       --img-h-max: 40rem;
-       max-height: var(--img-h-max);
-       --pause-on-hover: paused; /* don't change */
+       --card-w: min(72vw, 24rem);
+       --card-ratio: 0.68;
+       --flip-duration: .9s;
+       --delay-closed: 1.1s;
+       --delay-open: .9s;
 ">
-  <div class="mm-marquee-track"></div>
+  <!-- JS injects the animated pile here -->
 </div>
 
 <style>
-/* ============================
-   Marquee base styles
-   ============================ */
-
 .mm-marquee {
   position: relative;
   width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 0;
+}
+
+.mm-card-stage {
+  --card-h: calc(var(--card-w) / var(--card-ratio));
+  position: relative;
+  width: var(--card-w);
+  height: var(--card-h);
+  perspective: 1400px;
+}
+
+.mm-stack-card,
+.mm-reveal-card,
+.mm-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+}
+
+.mm-stack-card {
+  background: linear-gradient(160deg, #eee7dc 0%, #d8c9b3 100%);
+  box-shadow: 0 .8rem 1.8rem rgba(0, 0, 0, .2);
+}
+
+.mm-stack-card--back-1 {
+  transform: translate(.7rem, .55rem) rotate(3deg);
+  opacity: .92;
+}
+
+.mm-stack-card--back-2 {
+  transform: translate(-.7rem, .95rem) rotate(-5deg);
+  opacity: .85;
+}
+
+.mm-reveal-card {
+  transform-style: preserve-3d;
+  transform-origin: 50% 0%;
+  box-shadow: 0 1rem 2.4rem rgba(0,0,0,.28);
+}
+
+.mm-reveal-flipper {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform var(--flip-duration) cubic-bezier(.33,.01,.2,1.01);
+}
+
+.mm-reveal-card.is-open .mm-reveal-flipper {
+  transform: rotateX(180deg);
+}
+
+.mm-face {
+  backface-visibility: hidden;
   overflow: hidden;
-  padding: 1rem 0;
-  /* no fixed height here, we're honoring the block's own height */
 }
 
-.mm-marquee-track {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: flex-start;   /* ⬅ anchor children to the top */
-  gap: var(--img-gap);
-  animation-duration: var(--scroll-speed);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  user-select: none;
-  -webkit-user-drag: none;
-  will-change: transform;
+.mm-face--back {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,.35), transparent 50%),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.13) 0 10px, rgba(0,0,0,.04) 10px 20px),
+    linear-gradient(160deg, #b69167 0%, #886647 100%);
 }
 
-.mm-marquee-item {
-  flex: 0 0 auto;
+.mm-face--front {
+  transform: rotateX(180deg);
+  background: #f7f1e8;
+}
+
+.mm-face-image {
+  width: 100%;
   height: 100%;
-  display: flex;
-  align-items: flex-start;   /* ⬅ anchor img to the top inside each item */
-}
-
-.mm-marquee-item img {
-  max-height: var(--img-h-max);
-  height: auto;
-  width: auto;
-  object-fit: contain;
   display: block;
-  border-radius: .5rem;
-  box-shadow: 0 0.25rem 1rem rgba(0,0,0,.25);
+  object-fit: cover;
 }
 
-
-
-
-/* Squarespace editor safeguard:
-   When you're in the site editor sometimes it forces very small iframes,
-   which can wrap flex items. Force no-wrap in those cases too.
-*/
-.sqs-block-content .mm-marquee-track{
-  flex-wrap: nowrap !important;
+@media (prefers-reduced-motion: reduce){
+  .mm-reveal-flipper {
+    transition: none;
+  }
 }
 </style>
