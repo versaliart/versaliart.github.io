@@ -150,6 +150,8 @@
 /* Mobile layout: keep OPEN card centered and park discarded pile off-canvas */
 @media (max-width: 768px){
   #cardTable{
+    --card-w: min(88vw, 18rem);
+
     grid-template-columns: 1fr;
     justify-items: center;
     overflow: hidden;
