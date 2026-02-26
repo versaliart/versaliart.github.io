@@ -270,3 +270,86 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
     transition: opacity 1ms linear;
   }
 }
+
+/* === Mobile fallback: keep custom glass nav, disable Squarespace hamburger === */
+@media screen and (max-width: 767px){
+  :root{
+    --mm-header-h: clamp(2.75rem, 2.45rem + 1vw, 3rem);
+    --mm-gap-fixed: clamp(4.25rem, 22vw, 6.25rem);
+    --mm-btn-min: clamp(4.8rem, 26vw, 6.4rem);
+    --mm-btn-pad-x: clamp(.5rem, 2.8vw, .8rem);
+    --mm-pill-font: clamp(.72rem, 2.8vw, .85rem);
+    --mm-logo-h: clamp(1.5rem, 7vw, 1.85rem);
+    --mm-edge-pad: clamp(.25rem, 1.5vw, .5rem);
+  }
+
+  header#header[data-test="header"]{
+    width: 100vw;
+    max-width: 100vw;
+    border-radius: 0;
+    left: 50vw;
+  }
+
+  /* Keep whichever Squarespace nav container has links visible */
+  header#header .header-display-desktop,
+  header#header .header-display-mobile{
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  header#header .header-nav-item > a{
+    text-transform: uppercase !important;
+    letter-spacing: .04em;
+  }
+
+  /* Mobile fallback pills injected by JS (guaranteed visible buttons) */
+  header#header[data-test="header"] .mm-mobile-pill{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    margin-block: auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--mm-btn-min);
+    max-width: calc(50% - var(--mm-gap-fixed) / 2 - var(--mm-edge-pad) - .5rem);
+    padding-block: var(--mm-btn-pad-y);
+    padding-inline: var(--mm-btn-pad-x);
+    border-radius: .5rem;
+    font-size: var(--mm-pill-font);
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: #BBBABF;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.35);
+    z-index: 3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  header#header[data-test="header"] .mm-mobile-pill-left{ left: var(--mm-edge-pad); }
+  header#header[data-test="header"] .mm-mobile-pill-right{ right: var(--mm-edge-pad); }
+
+  header#header[data-test="header"] .mm-mobile-pill:hover,
+  header#header[data-test="header"] .mm-mobile-pill:focus-visible{
+    background: rgba(255,255,255,.18);
+    border-color: rgba(255,255,255,.5);
+    outline: none;
+  }
+
+  /* Hide Squarespace hamburger trigger + overlay only */
+  header#header .header-burger,
+  header#header .header-menu-toggle,
+  header#header [data-test="header-menu-toggle"],
+  .header-menu,
+  .header-menu-overlay,
+  [data-test="header-menu"]{
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
