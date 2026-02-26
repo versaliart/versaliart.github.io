@@ -247,8 +247,8 @@ button.sqs-add-to-cart-button{
 ================================*/
 @media (max-width: 48rem){
   .sqs-block-content h1{ font-size: calc(var(--h1) * .9); }
-  .sqs-block-content h2{ font-size: calc(var(--h2) * .92); }
-  .sqs-block-content h3{ font-size: calc(var(--h3) * .94); }
+  .sqs-block-content h2{ font-size: calc(var(--h2) * .85); }
+  .sqs-block-content h3{ font-size: calc(var(--h3) * .85); }
 }
 
 
