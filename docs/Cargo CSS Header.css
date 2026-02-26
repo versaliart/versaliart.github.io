@@ -284,10 +284,13 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
   }
 
   header#header[data-test="header"]{
-    width: 100vw;
-    max-width: 100vw;
-    border-radius: 0;
-    left: 50vw;
+    width: min(
+      92vw,
+      calc((2 * var(--mm-btn-min)) + var(--mm-gap-fixed) + (2 * var(--mm-edge-pad)) + 1rem)
+    );
+    max-width: 92vw;
+    border-radius: var(--mm-radius);
+    left: 50%;
   }
 
   /* Keep whichever Squarespace nav container has links visible */
