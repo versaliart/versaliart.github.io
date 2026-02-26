@@ -28,14 +28,15 @@
   function setup(){
     onceHeader(function(hdr){
       // === Centered logo ===
-hdr.insertAdjacentHTML('afterbegin', `
-  <img class="mm-logo-center"
-       src="https://www.mysticmunson.design/s/MMlogoSHORTpng.png"
-       alt="Mystic Munson app icon">
-`);
+      if (!hdr.querySelector('.mm-logo-center')) {
+        hdr.insertAdjacentHTML('afterbegin', `
+          <img class="mm-logo-center"
+               src="https://www.mysticmunson.design/s/MMlogoSHORTpng.png"
+               alt="Mystic Munson app icon">
+        `);
+      }
 
       const STICKY = pxVar('--mm-sticky-top', 12);
-
       // Park the header (no animation)
       Object.assign(hdr.style, {
         position: 'fixed',
@@ -103,12 +104,45 @@ hdr.insertAdjacentHTML('afterbegin', `
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
+            ensureMobileButtons();
           }
           update();
         });
       }
 
       // Make left/right inset equal the vertical “air” inside the bar
+
+
+      function ensureMobileButtons(){
+        if (window.matchMedia('(min-width: 768px)').matches) return;
+
+        const desktopLinks = hdr.querySelectorAll('.header-display-desktop .header-nav-item > a');
+        const anyLinks = hdr.querySelectorAll('.header-nav-item > a');
+        const source = desktopLinks.length ? desktopLinks : anyLinks;
+        if (!source.length) return;
+
+        const first = source[0];
+        const last = source[source.length - 1];
+
+        function upsert(btnClass, fromLink){
+          if (!fromLink) return;
+          let a = hdr.querySelector('.' + btnClass);
+          if (!a){
+            a = document.createElement('a');
+            a.className = 'mm-mobile-pill ' + btnClass;
+            a.setAttribute('data-mm-mobile-pill', '');
+            hdr.appendChild(a);
+          }
+          a.href = fromLink.getAttribute('href') || '#';
+          a.textContent = (fromLink.textContent || '').trim();
+          const label = fromLink.getAttribute('aria-label');
+          if (label) a.setAttribute('aria-label', label);
+        }
+
+        upsert('mm-mobile-pill-left', first);
+        upsert('mm-mobile-pill-right', last);
+      }
+
       function syncEdgePad(){
         const leftLink = hdr.querySelector('.header-nav-item:first-child > a');
         if (!leftLink) return;
@@ -124,6 +158,7 @@ hdr.insertAdjacentHTML('afterbegin', `
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
+      ensureMobileButtons();
       update();
 
       // Listeners
