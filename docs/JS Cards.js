@@ -90,6 +90,8 @@ const _getMoveMs = (() => {
   };
 })();
 
+const _isMobileDeckLayout = () => window.matchMedia('(max-width: 768px)').matches;
+
 
 // Z-order safe move in overlay; tilt stays visible during motion.
 // Pass { tilt: newAngle } only for reshuffle moves.
@@ -113,7 +115,13 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
   const [fromCx, fromCy] = center(fromRect);
 
   const toRect = toPile.getBoundingClientRect();
-  const [toCx, toCy] = center(toRect);
+  let [toCx, toCy] = center(toRect);
+
+  // On mobile, discarded cards should move fully off-screen to avoid covering opened fronts.
+  if (_isMobileDeckLayout() && toPile.id === 'discardPile') {
+    toCx = window.innerWidth + (fromRect.width * 1.5);
+    toCy = fromCy;
+  }
 
   const shuttle = card.querySelector('.cdp-shuttle');
   const currentTilt = Number(card.dataset.tilt || 0);
