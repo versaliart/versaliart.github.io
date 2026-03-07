@@ -95,8 +95,8 @@
   --p3: 1rem;     /* Paragraph 3 → Crimson Pro Regular 16pt */
 
   /* Text blocks with background color (easy to tweak) */
-  --text-block-background-padding-inline: 2rem;
-  --text-block-background-padding-block: 1.5rem;
+  --text-block-background-padding-inline: 10rem;
+  --text-block-background-padding-block: 15rem;
 }
 
 /* ===============================
