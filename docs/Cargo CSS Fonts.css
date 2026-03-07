@@ -274,9 +274,9 @@ button.sqs-add-to-cart-button{
    #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
 */
 :root{
-  --tb-pad-y: 0.25rem;
+  --tb-pad-y: 0.5rem;
   --tb-pad-y-bottom: 0rem;
-  --tb-pad-x: 0.25rem;
+  --tb-pad-x: 0.5rem;
 
   --gap-hp: 0.5rem;     /* Heading → Paragraph gap (site-wide) */
 }
