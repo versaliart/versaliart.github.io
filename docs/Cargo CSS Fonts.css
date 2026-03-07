@@ -93,6 +93,17 @@
   --p1: 1rem;     /* Paragraph 1 → Maax Bold 16pt */
   --p2: 1.25rem;        /* Paragraph 2 → Crimson Pro Medium 20pt */
   --p3: 1rem;     /* Paragraph 3 → Crimson Pro Regular 16pt */
+
+  /* Text blocks with background color (easy to tweak) */
+  --text-block-background-padding-inline: 2rem;
+  --text-block-background-padding-block: 1.5rem;
+}
+
+/* ===============================
+   TEXT BLOCKS WITH BACKGROUND COLOR
+================================*/
+.sqs-block[data-sqsp-block="text"].sqs-background-enabled .sqs-html-content{
+  padding: var(--text-block-background-padding-block) var(--text-block-background-padding-inline) !important;
 }
 
 /* ===============================
