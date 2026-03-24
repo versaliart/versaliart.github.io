@@ -273,7 +273,7 @@ button.sqs-add-to-cart-button{
 */
 :root{
   --tb-pad-y: 1rem;
-  --tb-pad-y-bottom: 0rem;
+  --tb-pad-y-bottom: 1rem;
   --tb-pad-x: 1rem;
 
   /* Text blocks with background color (easy to tweak) */
@@ -913,12 +913,12 @@ button.sqs-button-element--secondary:active,
    (reliable: scopes to the same .fe-block)
 ========================================================= */
 
-.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: center"])
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
-.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: flex-end"])
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: 0 !important;
-  padding-bottom: 0.5rem !important;
+  padding-bottom: 0 !important;
 }
 
 
@@ -930,8 +930,8 @@ button.sqs-button-element--secondary:active,
 @supports selector(.fe-block:has(*)) {
 
   /* Make the FE cell's text content fill the available height */
-  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: center"]),
-  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper)[style*="justify-content: flex-end"]) {
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"])),
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"])) {
 
     /* block + wrappers must allow full height */
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
