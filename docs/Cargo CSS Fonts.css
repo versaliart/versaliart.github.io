@@ -916,6 +916,10 @@ button.sqs-button-element--secondary:active,
 .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
 .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: 0 !important;
   padding-bottom: 0 !important;
@@ -940,7 +944,8 @@ button.sqs-button-element--secondary:active,
     }
 
     /* the actual text container does the centering */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content {
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -952,13 +957,15 @@ button.sqs-button-element--secondary:active,
     }
 
     /* neutralize margin-based spacing */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > * {
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > *,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content > * {
       margin-top: 0 !important;
       margin-bottom: 0 !important;
     }
 
     /* reintroduce spacing in a way FE *counts* */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content {
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
       row-gap: 0.55rem; /* sync with your system */
     }
   }
