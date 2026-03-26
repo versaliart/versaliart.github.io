@@ -1,7 +1,26 @@
 /* Mystic Munson — Header v2.6 */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
-  function isHome(){ return normalizePath(location.pathname) === '/'; }
+  function pathnameFromUrl(u){
+    try { return new URL(u, location.origin).pathname; }
+    catch (_) { return ''; }
+  }
+  function isHome(){
+    if (normalizePath(location.pathname) === '/') return true;
+
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical && normalizePath(pathnameFromUrl(canonical.href)) === '/') return true;
+
+    const body = document.body;
+    if (!body) return false;
+    const homeAttrs = [
+      'data-collection-url',
+      'data-page-url',
+      'data-url',
+      'data-homepage-url'
+    ];
+    return homeAttrs.some((attr) => normalizePath(body.getAttribute(attr)) === '/');
+  }
 
   function onceHeader(cb){
     let hdr = document.querySelector('header#header[data-test="header"]');
@@ -73,12 +92,16 @@
       // Page top padding (none on home, space elsewhere)
       const page = document.getElementById('page');
       function applyPagePadding(){
-        if (!page) return;
         if (isHome()){
-          page.style.paddingTop = '0px';
+          if (page) page.style.setProperty('padding-top', '0px', 'important');
+          document.body.style.setProperty('padding-top', '0px', 'important');
+          document.body.style.setProperty('margin-top', '0px', 'important');
         } else {
+          if (!page) return;
           const h = parseFloat(getComputedStyle(hdr).height) || 52;
-          page.style.paddingTop = (h + STICKY) + 'px';
+          page.style.setProperty('padding-top', (h + STICKY) + 'px');
+          document.body.style.removeProperty('padding-top');
+          document.body.style.removeProperty('margin-top');
         }
       }
 
