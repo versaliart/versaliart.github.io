@@ -963,3 +963,27 @@ button.sqs-button-element--secondary:active,
     }
   }
 }
+
+/* -----------------------------------------
+   BLOCK-SPECIFIC SAFEGUARD — multiline intro copy
+   Prevent FE height/overflow clipping when the text wraps or uses <br>
+   ----------------------------------------- */
+#block-acd0f3e46c397008843b,
+#block-acd0f3e46c397008843b .sqs-block-content,
+#block-acd0f3e46c397008843b .sqs-text-block-container,
+#block-acd0f3e46c397008843b .sqs-html-content {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+#block-acd0f3e46c397008843b .sqs-html-content {
+  display: block !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#block-acd0f3e46c397008843b .sqs-html-content p {
+  white-space: normal !important;
+}
