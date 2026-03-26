@@ -57,6 +57,14 @@
 #block-acd0f3e46c397008843b .sqs-html-content {
   display: block !important;
   overflow: visible !important;
+  max-height: none !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+#block-acd0f3e46c397008843b .sqs-html-content p {
+  white-space: normal !important;
+}
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
