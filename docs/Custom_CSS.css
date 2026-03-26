@@ -65,6 +65,22 @@
 #block-acd0f3e46c397008843b .sqs-html-content p {
   white-space: normal !important;
 }
+
+.fe-block-acd0f3e46c397008843b {
+  --blur-value: blur(0px) !important;
+}
+
+#block-acd0f3e46c397008843b .sqs-html-content,
+#block-acd0f3e46c397008843b .sqs-html-content p {
+  filter: none !important;
+  -webkit-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  mix-blend-mode: normal !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  color: var(--paragraphMediumColor, currentColor) !important;
+  -webkit-text-fill-color: currentColor !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
