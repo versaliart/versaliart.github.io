@@ -272,7 +272,6 @@ button.sqs-add-to-cart-button{
 */
 :root{
   --tb-pad-y: 0.5rem;
-  --tb-pad-y-bottom: 0.5rem;
   --tb-pad-x: 0.5rem;
 
   /* Text blocks with background color (easy to tweak) */
@@ -288,14 +287,14 @@ button.sqs-add-to-cart-button{
 /* Text blocks only */
 .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: var(--tb-pad-y) !important;
-  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-bottom: var(--tb-pad-y) !important;
   padding-inline: var(--tb-pad-x) !important;
 }
 
 /* Fallback (Text blocks only) */
 .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content{
   padding-top: var(--tb-pad-y) !important;
-  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-bottom: var(--tb-pad-y) !important;
   padding-inline: var(--tb-pad-x) !important;
 }
 
@@ -357,7 +356,7 @@ button.sqs-add-to-cart-button{
   display: grid;
   row-gap: .55rem;
   padding-top: var(--tb-pad-y) !important;
-  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-bottom: var(--tb-pad-y) !important;
   padding-inline: var(--tb-pad-x, .5rem) !important;
 }
 
