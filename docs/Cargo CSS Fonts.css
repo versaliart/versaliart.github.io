@@ -99,10 +99,9 @@
 
 /* ===============================
    TEXT BLOCKS WITH BACKGROUND COLOR
+   NOTE: keep this token-only section; the real applying rules live
+   later in "TEXT BLOCK SPACING" so they can override base text padding.
 ================================*/
-.sqs-block[data-sqsp-block="text"].sqs-background-enabled .sqs-html-content{
-  padding: var(--text-block-background-padding-block) var(--text-block-background-padding-inline) !important;
-}
 
 /* ===============================
    HEADINGS (content area)
@@ -300,6 +299,16 @@ button.sqs-add-to-cart-button{
   padding-inline: var(--tb-pad-x) !important;
 }
 
+/* Text blocks with a background color get dedicated padding tokens.
+   Includes both class-based and inline-style cases used by Squarespace. */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:is(.sqs-background-enabled,[style*="background"]) .sqs-html-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content:is(.sqs-background-enabled,[style*="background"]) .sqs-html-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:is(.sqs-background-enabled,[style*="background"]):not(:has(.sqs-html-content)) .sqs-block-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content:is(.sqs-background-enabled,[style*="background"]):not(:has(.sqs-html-content)){
+  padding-top: var(--text-block-background-padding-block) !important;
+  padding-bottom: var(--text-block-background-padding-block) !important;
+  padding-inline: var(--text-block-background-padding-inline) !important;
+}
 
 
 /* 1) Zero top/bottom margins on common children (both wrappers) */
