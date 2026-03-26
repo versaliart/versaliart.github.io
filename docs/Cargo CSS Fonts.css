@@ -99,10 +99,9 @@
 
 /* ===============================
    TEXT BLOCKS WITH BACKGROUND COLOR
+   NOTE: keep this token-only section; the real applying rules live
+   later in "TEXT BLOCK SPACING" so they can override base text padding.
 ================================*/
-.sqs-block[data-sqsp-block="text"].sqs-background-enabled .sqs-html-content{
-  padding: var(--text-block-background-padding-block) var(--text-block-background-padding-inline) !important;
-}
 
 /* ===============================
    HEADINGS (content area)
@@ -272,13 +271,12 @@ button.sqs-add-to-cart-button{
    #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
 */
 :root{
-  --tb-pad-y: 1rem;
-  --tb-pad-y-bottom: 1rem;
-  --tb-pad-x: 1rem;
+  --tb-pad-y: 0.5rem;
+  --tb-pad-x: 0.5rem;
 
   /* Text blocks with background color (easy to tweak) */
-  --text-block-background-padding-inline: 10rem;
-  --text-block-background-padding-block: 15rem;
+  --text-block-background-padding-inline: 2rem;
+  --text-block-background-padding-block: 2rem;
 
   --gap-hp: 0.5rem;     /* Heading → Paragraph gap (site-wide) */
 }
@@ -289,17 +287,27 @@ button.sqs-add-to-cart-button{
 /* Text blocks only */
 .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: var(--tb-pad-y) !important;
-  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-bottom: var(--tb-pad-y) !important;
   padding-inline: var(--tb-pad-x) !important;
 }
 
 /* Fallback (Text blocks only) */
 .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content{
   padding-top: var(--tb-pad-y) !important;
-  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-bottom: var(--tb-pad-y) !important;
   padding-inline: var(--tb-pad-x) !important;
 }
 
+/* Text blocks with a background color get dedicated padding tokens.
+   Includes both class-based and inline-style cases used by Squarespace. */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:is(.sqs-background-enabled,[style*="background"]) .sqs-html-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content:is(.sqs-background-enabled,[style*="background"]) .sqs-html-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:is(.sqs-background-enabled,[style*="background"]):not(:has(.sqs-html-content)) .sqs-block-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content:is(.sqs-background-enabled,[style*="background"]):not(:has(.sqs-html-content)){
+  padding-top: var(--text-block-background-padding-block) !important;
+  padding-bottom: var(--text-block-background-padding-block) !important;
+  padding-inline: var(--text-block-background-padding-inline) !important;
+}
 
 
 /* 1) Zero top/bottom margins on common children (both wrappers) */
@@ -348,7 +356,7 @@ button.sqs-add-to-cart-button{
   display: grid;
   row-gap: .55rem;
   padding-top: var(--tb-pad-y) !important;
-  padding-bottom: var(--tb-pad-y-bottom) !important;
+  padding-bottom: var(--tb-pad-y) !important;
   padding-inline: var(--tb-pad-x, .5rem) !important;
 }
 
@@ -916,6 +924,10 @@ button.sqs-button-element--secondary:active,
 .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
 .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
   .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
   padding-top: 0 !important;
   padding-bottom: 0 !important;
@@ -940,7 +952,8 @@ button.sqs-button-element--secondary:active,
     }
 
     /* the actual text container does the centering */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content {
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
       height: 100%;
       display: flex;
       flex-direction: column;
@@ -952,13 +965,15 @@ button.sqs-button-element--secondary:active,
     }
 
     /* neutralize margin-based spacing */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > * {
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > *,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content > * {
       margin-top: 0 !important;
       margin-bottom: 0 !important;
     }
 
     /* reintroduce spacing in a way FE *counts* */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content {
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
       row-gap: 0.55rem; /* sync with your system */
     }
   }

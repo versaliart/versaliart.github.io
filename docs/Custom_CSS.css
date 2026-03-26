@@ -81,4 +81,6 @@
   visibility: visible !important;
   color: var(--paragraphMediumColor, currentColor) !important;
   -webkit-text-fill-color: currentColor !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
 }
