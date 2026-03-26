@@ -84,3 +84,12 @@
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
+
+/* -----------------------------------------
+   4) VISUAL HEIGHT TRIM FOR SPECIFIC FLUID ENGINE BLOCKS
+   ----------------------------------------- */
+#block-0a2a57dba5d721018c4c .sqs-block-content,
+#block-yui_3_17_2_1_1756944426569_9957 .sqs-block-content {
+  clip-path: inset(12% 0 12% 0) !important;
+  -webkit-clip-path: inset(12% 0 12% 0) !important;
+}
