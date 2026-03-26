@@ -271,13 +271,13 @@ button.sqs-add-to-cart-button{
    #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
 */
 :root{
-  --tb-pad-y: 1rem;
-  --tb-pad-y-bottom: 1rem;
-  --tb-pad-x: 1rem;
+  --tb-pad-y: 0.5rem;
+  --tb-pad-y-bottom: 0.5rem;
+  --tb-pad-x: 0.5rem;
 
   /* Text blocks with background color (easy to tweak) */
-  --text-block-background-padding-inline: 10rem;
-  --text-block-background-padding-block: 15rem;
+  --text-block-background-padding-inline: 2rem;
+  --text-block-background-padding-block: 2rem;
 
   --gap-hp: 0.5rem;     /* Heading → Paragraph gap (site-wide) */
 }
