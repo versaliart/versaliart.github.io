@@ -128,8 +128,8 @@
 .sqs-block-quote .sqs-block-content blockquote p{
   font-family:"Maax",sans-serif;
   font-weight:400;
-  font-size:var(--h3);
-  line-height:1.3;
+  font-size:var(--h4);
+  line-height:1.35;
   color:#fff;
   text-transform:uppercase;
   letter-spacing:.02em;
