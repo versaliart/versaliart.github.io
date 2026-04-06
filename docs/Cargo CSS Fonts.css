@@ -131,7 +131,6 @@
   font-size:var(--h4);
   line-height:1.35;
   color:#fff;
-  text-transform:uppercase;
   letter-spacing:.02em;
   font-feature-settings: "case" 1, "cpsp" 1;
 }
