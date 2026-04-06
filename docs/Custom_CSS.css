@@ -20,7 +20,8 @@
 #block-yui_3_17_2_1_1756418080301_6091,
 #block-42c23df4af4040779faa,
 #block-7409c8f5f3a89fe9b7bb,
-#block-8b664be0eb6c69b8ee7c {
+#block-8b664be0eb6c69b8ee7c,
+#block-e7cbd3944b764174d32f, {
   margin-top: clamp(0.75rem, 2.5vw, 1.25rem) !important;
 }
 
@@ -28,7 +29,8 @@
 #block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
 #block-42c23df4af4040779faa .sqs-html-content,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content,
-#block-8b664be0eb6c69b8ee7c .sqs-html-content {
+#block-8b664be0eb6c69b8ee7c .sqs-html-content,
+#block-e7cbd3944b764174d32f .sqs-html-content, {
   padding-left: clamp(0.75rem, 3vw, 1.25rem) !important;
   padding-right: clamp(0.75rem, 3vw, 1.25rem) !important;
 }
@@ -40,57 +42,17 @@
 #block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content p.sqsrte-large,
 #block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
-#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
+#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large,
+#block-e7cbd3944b764174d32f .sqs-html-content p.sqsrte-large {
   margin-bottom: clamp(0.75rem, 2rem, 1rem) !important;
 }
 
-/* -----------------------------------------
-   3) BLOCK-SPECIFIC FIX — PREVENT MULTI-LINE TEXT CLIPPING
-   ----------------------------------------- */
-#block-acd0f3e46c397008843b,
-#block-acd0f3e46c397008843b .sqs-block-content,
-#block-acd0f3e46c397008843b .sqs-text-block-container,
-#block-acd0f3e46c397008843b .sqs-html-content {
-  height: auto !important;
-  max-height: none !important;
-  min-height: 0 !important;
-  overflow: visible !important;
-}
-
-#block-acd0f3e46c397008843b .sqs-html-content {
-  display: block !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-#block-acd0f3e46c397008843b .sqs-html-content p {
-  white-space: normal !important;
-}
-
-.fe-block-acd0f3e46c397008843b {
-  --blur-value: blur(0px) !important;
-}
-
-#block-acd0f3e46c397008843b .sqs-html-content,
-#block-acd0f3e46c397008843b .sqs-html-content p {
-  filter: none !important;
-  -webkit-filter: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  mix-blend-mode: normal !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  color: var(--paragraphMediumColor, currentColor) !important;
-  -webkit-text-fill-color: currentColor !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
 
 /* -----------------------------------------
    4) VISUAL HEIGHT TRIM FOR SPECIFIC FLUID ENGINE BLOCKS
    ----------------------------------------- */
 #block-yui_3_17_2_1_1772052368029_9026 .sqs-block-content,
-#block-yui_3_17_2_1_1756944426569_9957 .sqs-block-content {
+#block-0a2a57dba5d721018c4c .sqs-block-content {
   clip-path: inset(12% 0 12% 0) !important;
   -webkit-clip-path: inset(12% 0 12% 0) !important;
 }
