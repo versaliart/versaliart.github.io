@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.0 */
+/* Squarespace Opposing Card Float — v1.1 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -32,7 +32,7 @@
     if (!card1.length || !card2.length) return null;
 
     [...card1, ...card2].forEach((element) => {
-      element.style.willChange = 'translate';
+      element.style.willChange = 'translate, scale';
     });
 
     return { card1, card2 };
@@ -52,18 +52,20 @@
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-      const offset = Math.sin(phase) * AMPLITUDE_PX;
 
-      const upValue = `${(-offset).toFixed(2)}px`;
-      const downValue = `${offset.toFixed(2)}px`;
+      const cycleValue = (phaseValue) => 0.5 - (0.5 * Math.cos(phaseValue));
+      const card1Progress = cycleValue(phase); // 0 -> 1 -> 0 (up then return)
+      const card2Progress = cycleValue(phase + Math.PI); // opposite rhythm
 
-      card1.forEach((element) => {
-        element.style.translate = `0 ${upValue}`;
-      });
+      const applyFloat = (element, progress) => {
+        const y = (-AMPLITUDE_PX * progress).toFixed(2);
+        const scale = (1 + (progress * 0.05)).toFixed(4);
+        element.style.translate = `0 ${y}px`;
+        element.style.scale = scale;
+      };
 
-      card2.forEach((element) => {
-        element.style.translate = `0 ${downValue}`;
-      });
+      card1.forEach((element) => applyFloat(element, card1Progress));
+      card2.forEach((element) => applyFloat(element, card2Progress));
 
       requestAnimationFrame(tick);
     };
