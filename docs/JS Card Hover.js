@@ -17,6 +17,7 @@
 
   const AMPLITUDE_PX = 8;      // max vertical movement up/down
   const CYCLE_MS = 3600;       // time for a full up+down cycle
+  const MAX_SCALE = 1.05;      // 5% scale increase at max upward offset
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) return;
@@ -32,7 +33,8 @@
     if (!card1.length || !card2.length) return null;
 
     [...card1, ...card2].forEach((element) => {
-      element.style.willChange = 'translate';
+      element.style.willChange = 'transform';
+      element.style.transformOrigin = 'center center';
     });
 
     return { card1, card2 };
@@ -52,17 +54,27 @@
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-      const offset = Math.sin(phase) * AMPLITUDE_PX;
+      const rawWave = Math.sin(phase);
+      const easeInOutSine = (t) => -(Math.cos(Math.PI * t) - 1) / 2;
+      const easedWave = Math.sign(rawWave) * easeInOutSine(Math.abs(rawWave));
+      const offset = easedWave * AMPLITUDE_PX;
 
-      const upValue = `${(-offset).toFixed(2)}px`;
-      const downValue = `${offset.toFixed(2)}px`;
+      const card1Y = -offset;
+      const card2Y = offset;
+
+      // Scale is derived directly from the same eased Y value used for movement,
+      // so translation + scale stay concurrent for every frame.
+      const card1Lift = Math.max(0, -card1Y / AMPLITUDE_PX);
+      const card2Lift = Math.max(0, -card2Y / AMPLITUDE_PX);
+      const card1Scale = 1 + ((MAX_SCALE - 1) * card1Lift);
+      const card2Scale = 1 + ((MAX_SCALE - 1) * card2Lift);
 
       card1.forEach((element) => {
-        element.style.translate = `0 ${upValue}`;
+        element.style.transform = `translate3d(0, ${card1Y.toFixed(2)}px, 0) scale(${card1Scale.toFixed(4)})`;
       });
 
       card2.forEach((element) => {
-        element.style.translate = `0 ${downValue}`;
+        element.style.transform = `translate3d(0, ${card2Y.toFixed(2)}px, 0) scale(${card2Scale.toFixed(4)})`;
       });
 
       requestAnimationFrame(tick);
