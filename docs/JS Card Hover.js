@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.0 */
+/* Squarespace Opposing Card Float — v1.1 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -17,6 +17,10 @@
 
   const AMPLITUDE_PX = 8;      // max vertical movement up/down
   const CYCLE_MS = 3600;       // time for a full up+down cycle
+  const MAX_SCALE = 1.2;       // +20% at the top
+  const SHADOW_MIN_SCALE = 0.8; // -20% at the top
+  const APPEAR_TIMEOUT_MS = 2200;
+  const shadowCache = new WeakMap();
 
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (prefersReducedMotion) return;
@@ -25,6 +29,91 @@
     .map((selector) => document.querySelector(selector))
     .filter(Boolean);
 
+  const splitByTopLevelComma = (value) => value.split(/,(?![^(]*\))/);
+
+  const formatPx = (num) => `${num.toFixed(2)}px`;
+
+  const scaleAndOffsetBoxShadow = (boxShadowValue, scale, translateY) => {
+    if (!boxShadowValue || boxShadowValue === 'none') return '';
+
+    return splitByTopLevelComma(boxShadowValue).map((shadowPart) => {
+      let pxIndex = 0;
+      return shadowPart.replace(/-?\d*\.?\d+px/g, (match) => {
+        const px = Number.parseFloat(match);
+        if (!Number.isFinite(px)) return match;
+
+        // box-shadow order: x y blur spread ...
+        if (pxIndex === 0) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+        if (pxIndex === 1) {
+          pxIndex += 1;
+          return formatPx((px * scale) - translateY);
+        }
+        if (pxIndex === 2 || pxIndex === 3) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+
+        pxIndex += 1;
+        return match;
+      });
+    }).join(', ');
+  };
+
+  const scaleAndOffsetFilterShadows = (filterValue, scale, translateY) => {
+    if (!filterValue || filterValue === 'none' || !filterValue.includes('drop-shadow')) return '';
+
+    return filterValue.replace(/drop-shadow\(([^)]+)\)/g, (_full, inner) => {
+      let pxIndex = 0;
+      const adjusted = inner.replace(/-?\d*\.?\d+px/g, (match) => {
+        const px = Number.parseFloat(match);
+        if (!Number.isFinite(px)) return match;
+
+        // drop-shadow order: x y blur ...
+        if (pxIndex === 0) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+        if (pxIndex === 1) {
+          pxIndex += 1;
+          return formatPx((px * scale) - translateY);
+        }
+        if (pxIndex === 2) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+
+        pxIndex += 1;
+        return match;
+      });
+      return `drop-shadow(${adjusted})`;
+    });
+  };
+
+  const primeShadowCache = (element) => {
+    if (shadowCache.has(element)) return;
+    const style = window.getComputedStyle(element);
+    shadowCache.set(element, {
+      boxShadow: style.boxShadow,
+      filter: style.filter,
+    });
+  };
+
+  const applyInverseShadowScale = (element, scale, translateY) => {
+    const cached = shadowCache.get(element);
+    if (!cached) return;
+
+    if (cached.boxShadow && cached.boxShadow !== 'none') {
+      element.style.boxShadow = scaleAndOffsetBoxShadow(cached.boxShadow, scale, translateY);
+    }
+
+    if (cached.filter && cached.filter !== 'none' && cached.filter.includes('drop-shadow')) {
+      element.style.filter = scaleAndOffsetFilterShadows(cached.filter, scale, translateY);
+    }
+  };
+
   const ensureElements = () => {
     const card1 = getElements(CARD_1_SELECTORS);
     const card2 = getElements(CARD_2_SELECTORS);
@@ -32,7 +121,9 @@
     if (!card1.length || !card2.length) return null;
 
     [...card1, ...card2].forEach((element) => {
-      element.style.willChange = 'translate';
+      element.style.willChange = 'transform, filter';
+      element.style.transformOrigin = 'center center';
+      primeShadowCache(element);
     });
 
     return { card1, card2 };
@@ -46,23 +137,78 @@
     fn();
   };
 
+  const inferAppearDurationMs = (elements) => {
+    let maxMs = 0;
+    elements.forEach((element) => {
+      const style = window.getComputedStyle(element);
+      const parseTimeList = (value) => value
+        .split(',')
+        .map((token) => token.trim())
+        .map((token) => (
+          token.endsWith('ms')
+            ? Number.parseFloat(token)
+            : Number.parseFloat(token) * 1000
+        ))
+        .filter((n) => Number.isFinite(n) && n > 0);
+
+      const transitionDurations = parseTimeList(style.transitionDuration);
+      const transitionDelays = parseTimeList(style.transitionDelay);
+      const animationDurations = parseTimeList(style.animationDuration);
+      const animationDelays = parseTimeList(style.animationDelay);
+
+      const transitionMs = transitionDurations.reduce((acc, duration, index) => {
+        const delay = transitionDelays[index] ?? transitionDelays[0] ?? 0;
+        return Math.max(acc, duration + delay);
+      }, 0);
+
+      const animationMs = animationDurations.reduce((acc, duration, index) => {
+        const delay = animationDelays[index] ?? animationDelays[0] ?? 0;
+        return Math.max(acc, duration + delay);
+      }, 0);
+
+      maxMs = Math.max(maxMs, transitionMs, animationMs);
+    });
+    return maxMs;
+  };
+
+  const waitForOnAppearComplete = (elements, timeoutMs = APPEAR_TIMEOUT_MS) => new Promise((resolve) => {
+    const settleMs = Math.min(Math.max(inferAppearDurationMs(elements), 0), timeoutMs);
+    if (settleMs === 0) {
+      requestAnimationFrame(resolve);
+      return;
+    }
+    window.setTimeout(resolve, settleMs);
+  });
+
   const startAnimation = ({ card1, card2 }) => {
     const startTime = performance.now();
 
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-      const offset = Math.sin(phase) * AMPLITUDE_PX;
+      const card1Offset = Math.sin(phase) * AMPLITUDE_PX; // smooth loop
+      const card2Offset = Math.sin(phase + Math.PI) * AMPLITUDE_PX; // opposing phase
 
-      const upValue = `${(-offset).toFixed(2)}px`;
-      const downValue = `${offset.toFixed(2)}px`;
+      // top progress: 0 at bottom, 1 at top
+      const card1Progress = (-card1Offset + AMPLITUDE_PX) / (2 * AMPLITUDE_PX);
+      const card2Progress = (-card2Offset + AMPLITUDE_PX) / (2 * AMPLITUDE_PX);
+
+      const card1Scale = 1 + ((MAX_SCALE - 1) * card1Progress);
+      const card2Scale = 1 + ((MAX_SCALE - 1) * card2Progress);
+
+      const card1ShadowScale = 1 - ((1 - SHADOW_MIN_SCALE) * card1Progress);
+      const card2ShadowScale = 1 - ((1 - SHADOW_MIN_SCALE) * card2Progress);
 
       card1.forEach((element) => {
-        element.style.translate = `0 ${upValue}`;
+        element.style.translate = `0 ${card1Offset.toFixed(2)}px`;
+        element.style.scale = card1Scale.toFixed(4);
+        applyInverseShadowScale(element, card1ShadowScale, card1Offset);
       });
 
       card2.forEach((element) => {
-        element.style.translate = `0 ${downValue}`;
+        element.style.translate = `0 ${card2Offset.toFixed(2)}px`;
+        element.style.scale = card2Scale.toFixed(4);
+        applyInverseShadowScale(element, card2ShadowScale, card2Offset);
       });
 
       requestAnimationFrame(tick);
@@ -74,7 +220,9 @@
   onReady(() => {
     const initial = ensureElements();
     if (initial) {
-      startAnimation(initial);
+      waitForOnAppearComplete([...initial.card1, ...initial.card2]).then(() => {
+        startAnimation(initial);
+      });
       return;
     }
 
@@ -82,7 +230,9 @@
       const elements = ensureElements();
       if (!elements) return;
       observer.disconnect();
-      startAnimation(elements);
+      waitForOnAppearComplete([...elements.card1, ...elements.card2]).then(() => {
+        startAnimation(elements);
+      });
     });
 
     observer.observe(document.documentElement, { childList: true, subtree: true });
