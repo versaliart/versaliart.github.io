@@ -29,12 +29,66 @@
     .map((selector) => document.querySelector(selector))
     .filter(Boolean);
 
-  const scaleShadowValue = (value, scale) => {
-    if (!value || value === 'none') return '';
-    return value.replace(/-?\d*\.?\d+px/g, (match) => {
-      const raw = Number.parseFloat(match);
-      if (!Number.isFinite(raw)) return match;
-      return `${(raw * scale).toFixed(2)}px`;
+  const splitByTopLevelComma = (value) => value.split(/,(?![^(]*\))/);
+
+  const formatPx = (num) => `${num.toFixed(2)}px`;
+
+  const scaleAndOffsetBoxShadow = (boxShadowValue, scale, translateY) => {
+    if (!boxShadowValue || boxShadowValue === 'none') return '';
+
+    return splitByTopLevelComma(boxShadowValue).map((shadowPart) => {
+      let pxIndex = 0;
+      return shadowPart.replace(/-?\d*\.?\d+px/g, (match) => {
+        const px = Number.parseFloat(match);
+        if (!Number.isFinite(px)) return match;
+
+        // box-shadow order: x y blur spread ...
+        if (pxIndex === 0) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+        if (pxIndex === 1) {
+          pxIndex += 1;
+          return formatPx((px * scale) - translateY);
+        }
+        if (pxIndex === 2 || pxIndex === 3) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+
+        pxIndex += 1;
+        return match;
+      });
+    }).join(', ');
+  };
+
+  const scaleAndOffsetFilterShadows = (filterValue, scale, translateY) => {
+    if (!filterValue || filterValue === 'none' || !filterValue.includes('drop-shadow')) return '';
+
+    return filterValue.replace(/drop-shadow\(([^)]+)\)/g, (_full, inner) => {
+      let pxIndex = 0;
+      const adjusted = inner.replace(/-?\d*\.?\d+px/g, (match) => {
+        const px = Number.parseFloat(match);
+        if (!Number.isFinite(px)) return match;
+
+        // drop-shadow order: x y blur ...
+        if (pxIndex === 0) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+        if (pxIndex === 1) {
+          pxIndex += 1;
+          return formatPx((px * scale) - translateY);
+        }
+        if (pxIndex === 2) {
+          pxIndex += 1;
+          return formatPx(px * scale);
+        }
+
+        pxIndex += 1;
+        return match;
+      });
+      return `drop-shadow(${adjusted})`;
     });
   };
 
@@ -47,16 +101,16 @@
     });
   };
 
-  const applyInverseShadowScale = (element, scale) => {
+  const applyInverseShadowScale = (element, scale, translateY) => {
     const cached = shadowCache.get(element);
     if (!cached) return;
 
     if (cached.boxShadow && cached.boxShadow !== 'none') {
-      element.style.boxShadow = scaleShadowValue(cached.boxShadow, scale);
+      element.style.boxShadow = scaleAndOffsetBoxShadow(cached.boxShadow, scale, translateY);
     }
 
     if (cached.filter && cached.filter !== 'none' && cached.filter.includes('drop-shadow')) {
-      element.style.filter = scaleShadowValue(cached.filter, scale);
+      element.style.filter = scaleAndOffsetFilterShadows(cached.filter, scale, translateY);
     }
   };
 
@@ -82,8 +136,6 @@
     }
     fn();
   };
-
-  const easeInOutSine = (t) => 0.5 - (Math.cos(Math.PI * t) / 2);
 
   const inferAppearDurationMs = (elements) => {
     let maxMs = 0;
@@ -133,12 +185,13 @@
 
     const tick = (now) => {
       const elapsed = now - startTime;
-      const cycle = (elapsed % CYCLE_MS) / CYCLE_MS; // 0..1
-      const eased = easeInOutSine(cycle);
-      const offset = ((eased * 2) - 1) * AMPLITUDE_PX; // -amp..+amp
+      const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
+      const card1Offset = Math.sin(phase) * AMPLITUDE_PX; // smooth loop
+      const card2Offset = Math.sin(phase + Math.PI) * AMPLITUDE_PX; // opposing phase
 
-      const card1Progress = 1 - eased; // card1 is at top when eased=0
-      const card2Progress = eased;     // card2 is at top when eased=1
+      // top progress: 0 at bottom, 1 at top
+      const card1Progress = (-card1Offset + AMPLITUDE_PX) / (2 * AMPLITUDE_PX);
+      const card2Progress = (-card2Offset + AMPLITUDE_PX) / (2 * AMPLITUDE_PX);
 
       const card1Scale = 1 + ((MAX_SCALE - 1) * card1Progress);
       const card2Scale = 1 + ((MAX_SCALE - 1) * card2Progress);
@@ -147,13 +200,15 @@
       const card2ShadowScale = 1 - ((1 - SHADOW_MIN_SCALE) * card2Progress);
 
       card1.forEach((element) => {
-        element.style.transform = `translate3d(0, ${(-offset).toFixed(2)}px, 0) scale(${card1Scale.toFixed(4)})`;
-        applyInverseShadowScale(element, card1ShadowScale);
+        element.style.translate = `0 ${card1Offset.toFixed(2)}px`;
+        element.style.scale = card1Scale.toFixed(4);
+        applyInverseShadowScale(element, card1ShadowScale, card1Offset);
       });
 
       card2.forEach((element) => {
-        element.style.transform = `translate3d(0, ${offset.toFixed(2)}px, 0) scale(${card2Scale.toFixed(4)})`;
-        applyInverseShadowScale(element, card2ShadowScale);
+        element.style.translate = `0 ${card2Offset.toFixed(2)}px`;
+        element.style.scale = card2Scale.toFixed(4);
+        applyInverseShadowScale(element, card2ShadowScale, card2Offset);
       });
 
       requestAnimationFrame(tick);
