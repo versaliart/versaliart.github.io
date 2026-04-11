@@ -32,7 +32,7 @@
     if (!card1.length || !card2.length) return null;
 
     [...card1, ...card2].forEach((element) => {
-      element.style.willChange = 'translate';
+      element.style.willChange = 'transform';
     });
 
     return { card1, card2 };
@@ -54,15 +54,24 @@
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
       const offset = Math.sin(phase) * AMPLITUDE_PX;
 
-      const upValue = `${(-offset).toFixed(2)}px`;
-      const downValue = `${offset.toFixed(2)}px`;
+      const upOffset = -offset;
+      const downOffset = offset;
+
+      const scaleForOffset = (value) => {
+        const progress = Math.max(0, Math.min(1, (-value) / AMPLITUDE_PX));
+        return 1 + (progress * 0.05);
+      };
 
       card1.forEach((element) => {
-        element.style.translate = `0 ${upValue}`;
+        const y = upOffset.toFixed(2);
+        const scale = scaleForOffset(upOffset).toFixed(4);
+        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
       });
 
       card2.forEach((element) => {
-        element.style.translate = `0 ${downValue}`;
+        const y = downOffset.toFixed(2);
+        const scale = scaleForOffset(downOffset).toFixed(4);
+        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
       });
 
       requestAnimationFrame(tick);
