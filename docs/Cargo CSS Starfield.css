@@ -1,125 +1,106 @@
 /* =========================================================
-   Starfield v4.0 — EDGE-ONLY + 3D depth fly animation
-   - Uses image-masked stars from --star-url (existing sparkle asset)
-   - 3 stacked planes (front/mid/back) with perspective fly + fade
-   - Works with the edge-sampler JS that targets an exact block ID
+   Starfield v5.0 — CSS 3D flythrough using sparkle asset
+   - Uses one generated box-shadow list for all star layers
+   - 3 depth planes via ::before and ::after like the SCSS reference
+   - Uses existing sparkle image mask from --star-url
 ========================================================= */
 
-/* ---- Global variables you can tune site-wide ---- */
-body.has-starfield{
-  /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
-  --star-count: 150;
-  --star-min-gap: 4px;
-
-  /* outward jitter range (rem units) */
-  --jitter-min: 0.10rem;
-  --jitter-max: 2.00rem;
-
-  /* distribution balance: 0 = even, 1 = random */
-  --star-randomize: 0;
-
-  /* Legacy twinkle values still read by JS for variation */
-  --twinkle-min: 0.5;
-  --twinkle-max: 2.0;
-
-  /* 3D fly animation controls (from requested method) */
+body.has-starfield {
+  --star-count: 350;
   --star-depth: 300px;
   --star-speed: 3s;
+  --starfield-width: 3000;
+  --starfield-height: 960;
   --star-perspective: 340px;
+  --star-size: 2px;
 
-  /* Opacity range for stars */
-  --opacity-min: 0.15;
-  --opacity-max: 1.0;
-
-  /* Size quantization using φ (golden ratio) */
-  --phi: 1.618;
-  --size-large: 1.5rem;                                 /* L base */
-  --size-medium: calc(var(--size-large) / var(--phi));  /* ≈ 0.927rem */
-  --size-small:  calc(var(--size-medium) / var(--phi)); /* ≈ 0.573rem */
-
-  /* 0 = no avoidance, 1 = strongest avoidance */
-  --avoid-vert-strength: 1;
-  --avoid-vert-width-deg: 45;
-
-  /* Soft glow */
-  --max-blur: 0.22rem;
-  --star-color: #9989EC;
   --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
+  --star-color-h: 0;
+  --star-color-s: 0%;
 
-  --jitter-fallback-mult: 2;   /* default 2.0 if omitted */
-  --jitter-fallback-steps: 3;     /* default 3 if omitted */
+  --layer-front-opacity: 1;
+  --layer-mid-opacity: 0.5;
+  --layer-back-opacity: 0;
 }
 
-/* The overlay layer the JS injects inside your Shape Block */
-.shape-edge-sparkles{
+.shape-edge-sparkles {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 2;
   overflow: hidden;
+  background: transparent;
   perspective: var(--star-perspective);
-  transform-style: preserve-3d;
 }
 
-.shape-edge-sparkles .stars-stack{
+.shape-edge-sparkles .stars {
   position: absolute;
-  inset: 0;
+  top: 50%;
+  left: 50%;
+  width: var(--star-size);
+  height: var(--star-size);
+  border-radius: 50%;
+  color: hsl(var(--star-color-h) var(--star-color-s) 100%);
+  background: currentColor;
+  -webkit-mask: var(--star-url) center / contain no-repeat;
+  mask: var(--star-url) center / contain no-repeat;
+  box-shadow: var(--star-shadows, none);
   transform-style: preserve-3d;
-  transform-origin: 50% 50%;
   animation: fly var(--star-speed) linear infinite;
+  will-change: transform;
+  opacity: var(--layer-front-opacity);
 }
 
-.shape-edge-sparkles .stars-plane{
+.shape-edge-sparkles .stars::before,
+.shape-edge-sparkles .stars::after {
+  content: "";
   position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
+  width: inherit;
+  height: inherit;
+  border-radius: inherit;
+  background: inherit;
+  -webkit-mask: inherit;
+  mask: inherit;
+  box-shadow: inherit;
 }
 
-.shape-edge-sparkles .stars-plane--mid{
+.shape-edge-sparkles .stars::before {
   transform: translateZ(calc(-1 * var(--star-depth)));
   animation: fade1 var(--star-speed) linear infinite;
+  opacity: var(--layer-mid-opacity);
 }
 
-.shape-edge-sparkles .stars-plane--back{
+.shape-edge-sparkles .stars::after {
   transform: translateZ(calc(-2 * var(--star-depth)));
   animation: fade2 var(--star-speed) linear infinite;
+  opacity: var(--layer-back-opacity);
 }
 
-/* Individual stars (mask uses your sparkle SVG) */
-.shape-edge-sparkles .star{
-  position: absolute;
-  left: 0; top: 0;              /* set via inline left/top + translate */
-  width: var(--size, 1rem);
-  height: var(--size, 1rem);
-  transform: translate(-50%, -50%);
-  opacity: var(--o, 0.85);
-  color: var(--star-color);
-  background: currentColor;
-
-  -webkit-mask: var(--star-url) center/contain no-repeat;
-          mask: var(--star-url) center/contain no-repeat;
-
-  filter: drop-shadow(0 0 var(--blur, 0) currentColor);
-  will-change: opacity, transform;
-}
-
-@keyframes fly{
+@keyframes fly {
   from { transform: translateZ(0); }
   to { transform: translateZ(var(--star-depth)); }
 }
 
-@keyframes fade1{
+@keyframes fade1 {
   from { opacity: .5; }
   to { opacity: 1; }
 }
 
-@keyframes fade2{
+@keyframes fade2 {
   from { opacity: 0; }
   to { opacity: .5; }
 }
 
-@media (prefers-reduced-motion: reduce){
-  .shape-edge-sparkles .stars-stack,
-  .shape-edge-sparkles .stars-plane{ animation: none !important; }
-  .shape-edge-sparkles .star{ opacity: 0.6; }
+@media (prefers-reduced-motion: reduce) {
+  .shape-edge-sparkles .stars,
+  .shape-edge-sparkles .stars::before,
+  .shape-edge-sparkles .stars::after {
+    animation: none !important;
+  }
+
+  .shape-edge-sparkles .stars,
+  .shape-edge-sparkles .stars::before,
+  .shape-edge-sparkles .stars::after {
+    opacity: 0.65;
+  }
 }
