@@ -18,8 +18,6 @@
   --mm-shadow: 0 6px 24px rgba(0,0,0,.18);
 
   --mm-sticky-top: 12px; /* parked offset (no animations) */
-  --mm-fluid-row-h: 48px; /* fallback estimate for one Squarespace Fluid Engine row */
-  --mm-nonhome-top-extra: calc(var(--mm-fluid-row-h) * 2); /* target: ~2 FE rows */
 
     /* The nav link font size used in the pills (set to whatever yours is) */
   --mm-pill-font: 1rem;          /* adjust if your pill text is larger/smaller */
