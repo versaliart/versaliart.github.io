@@ -62,19 +62,19 @@
       const card1Y = -offset;
       const card2Y = offset;
 
-      // Scale is derived directly from the same eased Y value used for movement,
-      // so translation + scale stay concurrent for every frame.
-      const card1Lift = Math.max(0, -card1Y / AMPLITUDE_PX);
-      const card2Lift = Math.max(0, -card2Y / AMPLITUDE_PX);
-      const card1Scale = 1 + ((MAX_SCALE - 1) * card1Lift);
-      const card2Scale = 1 + ((MAX_SCALE - 1) * card2Lift);
+      const scaleForY = (yPx) => {
+        const upwardRatio = Math.max(0, Math.min(1, (-yPx) / AMPLITUDE_PX));
+        return 1 + ((MAX_SCALE - 1) * upwardRatio);
+      };
 
       card1.forEach((element) => {
-        element.style.transform = `translate3d(0, ${card1Y.toFixed(2)}px, 0) scale(${card1Scale.toFixed(4)})`;
+        const scale = scaleForY(card1Y);
+        element.style.transform = `translate3d(0, ${card1Y.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
       });
 
       card2.forEach((element) => {
-        element.style.transform = `translate3d(0, ${card2Y.toFixed(2)}px, 0) scale(${card2Scale.toFixed(4)})`;
+        const scale = scaleForY(card2Y);
+        element.style.transform = `translate3d(0, ${card2Y.toFixed(2)}px, 0) scale(${scale.toFixed(4)})`;
       });
 
       requestAnimationFrame(tick);
