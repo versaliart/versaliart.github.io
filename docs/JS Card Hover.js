@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.1 */
+/* Squarespace Opposing Card Float — v1.2 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -33,7 +33,7 @@
       { elements: group2, phaseShift: Math.PI },
     ].filter((group) => group.elements.length > 0);
 
-    [...card1, ...card2].forEach((element) => {
+    [...group1, ...group2].forEach((element) => {
       element.style.willChange = 'transform';
     });
 
@@ -54,25 +54,20 @@
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-
-      const upOffset = -offset;
-      const downOffset = offset;
+      const offset = ((Math.sin(phase) + 1) / 2) * AMPLITUDE_PX;
 
       const scaleForOffset = (value) => {
         const progress = Math.max(0, Math.min(1, (-value) / AMPLITUDE_PX));
         return 1 + (progress * 0.05);
       };
 
-      card1.forEach((element) => {
-        const y = upOffset.toFixed(2);
-        const scale = scaleForOffset(upOffset).toFixed(4);
-        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
-      });
-
-      card2.forEach((element) => {
-        const y = downOffset.toFixed(2);
-        const scale = scaleForOffset(downOffset).toFixed(4);
-        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+      groups.forEach(({ elements, phaseShift }) => {
+        const groupOffset = -(((Math.sin(phase + phaseShift) + 1) / 2) * AMPLITUDE_PX);
+        const y = groupOffset.toFixed(2);
+        const scale = scaleForOffset(groupOffset).toFixed(4);
+        elements.forEach((element) => {
+          element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+        });
       });
 
       requestAnimationFrame(tick);
@@ -83,14 +78,14 @@
 
   onReady(() => {
     const initialGroups = collectGroups();
-    if (initialGroups) {
+    if (initialGroups.length > 0) {
       startAnimation(initialGroups);
       return;
     }
 
     const observer = new MutationObserver(() => {
       const groups = collectGroups();
-      if (!groups) return;
+      if (groups.length === 0) return;
       observer.disconnect();
       startAnimation(groups);
     });
