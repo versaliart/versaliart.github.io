@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.0 */
+/* Squarespace Opposing Card Float — v1.1 */
 
 (() => {
   const CARD_1_SELECTORS = [
