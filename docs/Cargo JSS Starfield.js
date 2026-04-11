@@ -55,6 +55,21 @@
     let layer = host.querySelector(':scope > .shape-edge-sparkles');
     if (!layer){ layer = document.createElement('div'); layer.className = 'shape-edge-sparkles'; host.appendChild(layer); }
     const st = layer.style; st.position='absolute'; st.left='0'; st.top='0'; st.right='0'; st.bottom='0'; st.pointerEvents='none'; st.zIndex='2';
+    let stack = layer.querySelector(':scope > .stars-stack');
+    if (!stack){
+      stack = document.createElement('div');
+      stack.className = 'stars-stack';
+      const front = document.createElement('div');
+      front.className = 'stars-plane stars-plane--front';
+      const mid = document.createElement('div');
+      mid.className = 'stars-plane stars-plane--mid';
+      const back = document.createElement('div');
+      back.className = 'stars-plane stars-plane--back';
+      stack.appendChild(front);
+      stack.appendChild(mid);
+      stack.appendChild(back);
+      layer.appendChild(stack);
+    }
     return layer;
   }
   function readyToDraw(host){ const r = host?.getBoundingClientRect(); return !!r && r.width >= 4 && r.height >= 4; }
@@ -178,8 +193,6 @@
     const gcsBody = getComputedStyle(body), gcsRoot = getComputedStyle(root);
     const bodyStarColor = gcsBody.getPropertyValue('--star-color') || '#9989EC';
     const count   = Math.max(0, Math.round(parseFloat(gcsBody.getPropertyValue('--star-count')) || 40));
-    const durMin  = parseFloat(gcsBody.getPropertyValue('--twinkle-min')) || 0.5;
-    const durMax  = parseFloat(gcsBody.getPropertyValue('--twinkle-max')) || 2.0;
     const opMin   = parseFloat(gcsBody.getPropertyValue('--opacity-min')) || 0.15;
     const opMax   = parseFloat(gcsBody.getPropertyValue('--opacity-max')) || 1.00;
     const blurMax = parseFloat(gcsBody.getPropertyValue('--max-blur')) || 0.12;
@@ -235,7 +248,15 @@
 
     nextFrame2(() => {
       const layerRect = layer.getBoundingClientRect();
-      layer.innerHTML = '';
+      const stack = layer.querySelector(':scope > .stars-stack');
+      if (!stack) return;
+      const frontPlane = stack.querySelector('.stars-plane--front');
+      const midPlane   = stack.querySelector('.stars-plane--mid');
+      const backPlane  = stack.querySelector('.stars-plane--back');
+      if (!frontPlane || !midPlane || !backPlane) return;
+      frontPlane.innerHTML = '';
+      midPlane.innerHTML = '';
+      backPlane.innerHTML = '';
       const placed = [];
 
       function pushStar(x, y, sizeRem, inlineStyles){
@@ -243,31 +264,31 @@
         if (!canPlace(placed, x, y, r)) return false;
 
         const opacity = rand(opMin, opMax);
-        const twDur   = rand(durMin, durMax);
-        const twDelay = -Math.random() * twDur;
         const blurPx  = rand(0, blurMax * remPx());
 
-        const star = document.createElement('span');
-        star.className = 'star';
-        star.style.left = x + 'px';
-        star.style.top  = y + 'px';
-        if (inlineStyles){
-          star.style.position = 'absolute';
-          star.style.transform = 'translate(-50%, -50%)';
-          star.style.width = 'var(--size, 1rem)';
-          star.style.height = 'var(--size, 1rem)';
-          star.style.background = 'currentColor';
-          star.style.color = bodyStarColor;
-          star.style.willChange = 'opacity, transform';
-          star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
-          star.style.animation = 'twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay,0s) infinite alternate';
+        function makeStar(opacityMult){
+          const star = document.createElement('span');
+          star.className = 'star';
+          star.style.left = x + 'px';
+          star.style.top  = y + 'px';
+          if (inlineStyles){
+            star.style.position = 'absolute';
+            star.style.transform = 'translate(-50%, -50%)';
+            star.style.width = 'var(--size, 1rem)';
+            star.style.height = 'var(--size, 1rem)';
+            star.style.background = 'currentColor';
+            star.style.color = bodyStarColor;
+            star.style.willChange = 'opacity, transform';
+            star.style.filter = 'drop-shadow(0 0 var(--blur,0) currentColor)';
+          }
+          star.style.setProperty('--size', sizeRem + 'rem');
+          star.style.setProperty('--o', Math.max(0, Math.min(1, opacity * opacityMult)).toFixed(2));
+          star.style.setProperty('--blur', blurPx.toFixed(2) + 'px');
+          return star;
         }
-        star.style.setProperty('--size',     sizeRem + 'rem');
-        star.style.setProperty('--o',        opacity.toFixed(2));
-        star.style.setProperty('--twinkle',  twDur.toFixed(2) + 's');
-        star.style.setProperty('--tw-delay', twDelay.toFixed(2) + 's');
-        star.style.setProperty('--blur',     blurPx.toFixed(2) + 'px');
-        layer.appendChild(star);
+        frontPlane.appendChild(makeStar(1.0));
+        midPlane.appendChild(makeStar(0.8));
+        backPlane.appendChild(makeStar(0.6));
 
         placed.push({ x, y, r });
         return true;
