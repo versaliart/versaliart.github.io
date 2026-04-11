@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.0 */
+/* Squarespace Opposing Card Float — v1.2 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -15,27 +15,33 @@
     '#block-yui_3_17_2_1_1772052368029_9026',
   ];
 
-  const AMPLITUDE_PX = 8;      // max vertical movement up/down
-  const CYCLE_MS = 3600;       // time for a full up+down cycle
+  const AMPLITUDE_PX = 8; // max upward movement
+  const CYCLE_MS = 3600;  // full cycle: 0 -> up -> 0
 
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReducedMotion) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const getElements = (selectors) => selectors
     .map((selector) => document.querySelector(selector))
     .filter(Boolean);
 
-  const ensureElements = () => {
-    const card1 = getElements(CARD_1_SELECTORS);
-    const card2 = getElements(CARD_2_SELECTORS);
+  const collectGroups = () => {
+    const group1 = getElements(CARD_1_SELECTORS);
+    const group2 = getElements(CARD_2_SELECTORS);
 
-    if (!card1.length || !card2.length) return null;
+    const groups = [
+      { elements: group1, phaseShift: 0 },
+      { elements: group2, phaseShift: Math.PI },
+    ].filter((group) => group.elements.length > 0);
 
-    [...card1, ...card2].forEach((element) => {
-      element.style.willChange = 'translate';
+    if (!groups.length) return null;
+
+    groups.forEach((group) => {
+      group.elements.forEach((element) => {
+        element.style.willChange = 'transform';
+      });
     });
 
-    return { card1, card2 };
+    return groups;
   };
 
   const onReady = (fn) => {
@@ -46,23 +52,22 @@
     fn();
   };
 
-  const startAnimation = ({ card1, card2 }) => {
+  const startAnimation = (groups) => {
     const startTime = performance.now();
 
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-      const offset = Math.sin(phase) * AMPLITUDE_PX;
 
-      const upValue = `${(-offset).toFixed(2)}px`;
-      const downValue = `${offset.toFixed(2)}px`;
+      groups.forEach(({ elements, phaseShift }) => {
+        const progress = 0.5 - (0.5 * Math.cos(phase + phaseShift)); // 0..1..0
+        const y = (-AMPLITUDE_PX * progress).toFixed(2);
+        const scale = (1 + (progress * 0.05)).toFixed(4);
+        const transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
 
-      card1.forEach((element) => {
-        element.style.translate = `0 ${upValue}`;
-      });
-
-      card2.forEach((element) => {
-        element.style.translate = `0 ${downValue}`;
+        elements.forEach((element) => {
+          element.style.transform = transform;
+        });
       });
 
       requestAnimationFrame(tick);
@@ -72,21 +77,20 @@
   };
 
   onReady(() => {
-    const initial = ensureElements();
-    if (initial) {
-      startAnimation(initial);
+    const initialGroups = collectGroups();
+    if (initialGroups) {
+      startAnimation(initialGroups);
       return;
     }
 
     const observer = new MutationObserver(() => {
-      const elements = ensureElements();
-      if (!elements) return;
+      const groups = collectGroups();
+      if (!groups) return;
       observer.disconnect();
-      startAnimation(elements);
+      startAnimation(groups);
     });
 
     observer.observe(document.documentElement, { childList: true, subtree: true });
-
     setTimeout(() => observer.disconnect(), 10000);
   });
 })();
