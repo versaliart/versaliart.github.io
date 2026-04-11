@@ -288,8 +288,8 @@ button.sqs-add-to-cart-button{
    #block-XXXX { --tb-pad-x: calc(var(--tb-pad-x) + 0.5rem); }
 */
 :root{
-  --tb-pad-y: 0.5rem;
-  --tb-pad-x: 0.5rem;
+  --tb-pad-y: 0.25rem;
+  --tb-pad-x: 0.25rem;
 
   /* Text blocks with background color (easy to tweak) */
   --text-block-background-padding-inline: 2rem;
