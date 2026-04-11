@@ -1,7 +1,7 @@
 /* =========================================================
-   Starfield v4.0 — EDGE-ONLY + 3D depth fly animation
-   - Uses image-masked stars from --star-url (existing sparkle asset)
-   - 3 stacked planes (front/mid/back) with perspective fly + fade
+   Starfield v3.0 — EDGE-ONLY (outline sparkles for Shape Block)
+   - No ambient .star-container layer is used or referenced
+   - Quantity, sizing, and timing all inherit from CSS vars
    - Works with the edge-sampler JS that targets an exact block ID
 ========================================================= */
 
@@ -18,14 +18,9 @@ body.has-starfield{
   /* distribution balance: 0 = even, 1 = random */
   --star-randomize: 0;
 
-  /* Legacy twinkle values still read by JS for variation */
+  /* Twinkle timing (seconds) */
   --twinkle-min: 0.5;
   --twinkle-max: 2.0;
-
-  /* 3D fly animation controls (from requested method) */
-  --star-depth: 300px;
-  --star-speed: 3s;
-  --star-perspective: 340px;
 
   /* Opacity range for stars */
   --opacity-min: 0.15;
@@ -56,33 +51,6 @@ body.has-starfield{
   inset: 0;
   pointer-events: none;
   z-index: 2;
-  overflow: hidden;
-  perspective: var(--star-perspective);
-  transform-style: preserve-3d;
-}
-
-.shape-edge-sparkles .stars-stack{
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform-origin: 50% 50%;
-  animation: fly var(--star-speed) linear infinite;
-}
-
-.shape-edge-sparkles .stars-plane{
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-}
-
-.shape-edge-sparkles .stars-plane--mid{
-  transform: translateZ(calc(-1 * var(--star-depth)));
-  animation: fade1 var(--star-speed) linear infinite;
-}
-
-.shape-edge-sparkles .stars-plane--back{
-  transform: translateZ(calc(-2 * var(--star-depth)));
-  animation: fade2 var(--star-speed) linear infinite;
 }
 
 /* Individual stars (mask uses your sparkle SVG) */
@@ -101,25 +69,15 @@ body.has-starfield{
 
   filter: drop-shadow(0 0 var(--blur, 0) currentColor);
   will-change: opacity, transform;
+  animation: twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay, 0s) infinite alternate;
 }
 
-@keyframes fly{
-  from { transform: translateZ(0); }
-  to { transform: translateZ(var(--star-depth)); }
-}
-
-@keyframes fade1{
-  from { opacity: .5; }
-  to { opacity: 1; }
-}
-
-@keyframes fade2{
-  from { opacity: 0; }
-  to { opacity: .5; }
+@keyframes twinkle{
+  0%   { opacity: 0.15; }
+  50%  { opacity: 1; }
+  100% { opacity: 0.25; }
 }
 
 @media (prefers-reduced-motion: reduce){
-  .shape-edge-sparkles .stars-stack,
-  .shape-edge-sparkles .stars-plane{ animation: none !important; }
-  .shape-edge-sparkles .star{ opacity: 0.6; }
+  .shape-edge-sparkles .star{ animation: none !important; opacity: 0.6; }
 }
