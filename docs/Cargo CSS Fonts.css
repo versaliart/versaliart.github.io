@@ -337,7 +337,7 @@ button.sqs-add-to-cart-button{
 /* 2) One predictable gap between siblings */
 .sqs-block-html .sqs-block-content > * + *,
 .sqs-block-html .sqs-html-content   > * + *{
-  margin-top: 0.25rem !important;   /* base gap — tweak if you want a global change */
+  margin-top: 0.55rem !important;   /* base gap — tweak if you want a global change */
 }
 
 /* 3) Tighter gap only after display paragraphs, not headings */
