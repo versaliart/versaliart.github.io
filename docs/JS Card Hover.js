@@ -32,7 +32,7 @@
     if (!card1.length || !card2.length) return null;
 
     [...card1, ...card2].forEach((element) => {
-      element.style.willChange = 'translate, scale';
+      element.style.willChange = 'transform';
     });
 
     return { card1, card2 };
@@ -65,15 +65,13 @@
       card1.forEach((element) => {
         const y = upOffset.toFixed(2);
         const scale = scaleForOffset(upOffset).toFixed(4);
-        element.style.translate = `0 ${y}px`;
-        element.style.scale = scale;
+        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
       });
 
       card2.forEach((element) => {
         const y = downOffset.toFixed(2);
         const scale = scaleForOffset(downOffset).toFixed(4);
-        element.style.translate = `0 ${y}px`;
-        element.style.scale = scale;
+        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
       });
 
       requestAnimationFrame(tick);
