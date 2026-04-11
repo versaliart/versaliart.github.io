@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.2 */
+/* Squarespace Opposing Card Float — v1.1 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -33,12 +33,8 @@
       { elements: group2, phaseShift: Math.PI },
     ].filter((group) => group.elements.length > 0);
 
-    if (!groups.length) return null;
-
-    groups.forEach((group) => {
-      group.elements.forEach((element) => {
-        element.style.willChange = 'transform';
-      });
+    [...card1, ...card2].forEach((element) => {
+      element.style.willChange = 'transform';
     });
 
     return groups;
@@ -59,15 +55,24 @@
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
 
-      groups.forEach(({ elements, phaseShift }) => {
-        const progress = 0.5 - (0.5 * Math.cos(phase + phaseShift)); // 0..1..0
-        const y = (-AMPLITUDE_PX * progress).toFixed(2);
-        const scale = (1 + (progress * 0.05)).toFixed(4);
-        const transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+      const upOffset = -offset;
+      const downOffset = offset;
 
-        elements.forEach((element) => {
-          element.style.transform = transform;
-        });
+      const scaleForOffset = (value) => {
+        const progress = Math.max(0, Math.min(1, (-value) / AMPLITUDE_PX));
+        return 1 + (progress * 0.05);
+      };
+
+      card1.forEach((element) => {
+        const y = upOffset.toFixed(2);
+        const scale = scaleForOffset(upOffset).toFixed(4);
+        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+      });
+
+      card2.forEach((element) => {
+        const y = downOffset.toFixed(2);
+        const scale = scaleForOffset(downOffset).toFixed(4);
+        element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
       });
 
       requestAnimationFrame(tick);
