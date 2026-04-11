@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float — v1.0 */
+/* Squarespace Opposing Card Float — v1.1 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -52,7 +52,6 @@
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-      const offset = Math.sin(phase) * AMPLITUDE_PX;
 
       const upOffset = -offset;
       const downOffset = offset;
