@@ -343,7 +343,7 @@ button.sqs-add-to-cart-button{
 /* 3) Tighter gap only after display paragraphs, not headings */
 .sqs-block-html .sqs-block-content > :is(p.sqsrte-large,p.sqsrte-medium) + *,
 .sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium) + *{
-  margin-top: 0.45rem !important;
+  margin-top: 0.65rem !important;
 }
 
 
