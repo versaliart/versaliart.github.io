@@ -1,15 +1,10 @@
 /* Mystic Munson — Header v2.6 */
 (function(){
   function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
-  function pathnameFromUrl(u){
-    try { return new URL(u, location.origin).pathname; }
-    catch (_) { return ''; }
-  }
   function isHome(){
     if (normalizePath(location.pathname) === '/') return true;
-
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical && normalizePath(pathnameFromUrl(canonical.href)) === '/') return true;
+    // Some templates keep the homepage canonical URL on every page.
+    // Rely on the real pathname/body routing attrs instead.
 
     const body = document.body;
     if (!body) return false;
@@ -56,6 +51,7 @@
       }
 
       const STICKY = pxVar('--mm-sticky-top', 12);
+      const NON_HOME_EXTRA = pxVar('--mm-nonhome-top-extra', pxVar('--mm-fluid-row-h', 48) * 2);
 
       function applyMobileFrame(){
         const mobile = window.matchMedia('(max-width: 767px)').matches;
@@ -97,10 +93,14 @@
           document.body.style.setProperty('padding-top', '0px', 'important');
           document.body.style.setProperty('margin-top', '0px', 'important');
         } else {
-          if (!page) return;
           const h = parseFloat(getComputedStyle(hdr).height) || 52;
-          page.style.setProperty('padding-top', (h + STICKY) + 'px');
-          document.body.style.removeProperty('padding-top');
+          const padTop = h + STICKY + NON_HOME_EXTRA;
+          if (page){
+            page.style.setProperty('padding-top', padTop + 'px');
+            document.body.style.removeProperty('padding-top');
+          } else {
+            document.body.style.setProperty('padding-top', padTop + 'px', 'important');
+          }
           document.body.style.removeProperty('margin-top');
         }
       }
