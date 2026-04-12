@@ -1,51 +1,39 @@
 /* =========================================================
-   Starfield v4.0 — EDGE EMITTER + SECTION FIELD
-   - Emits from the sampled edge of the targeted Shape Block
-   - Stars move outward through the current section only
-   - Continuous spawning; stars fade as they approach/leave viewport
-   - No ambient global .star-container layer
+   Starfield v4.0 — EDGE-ONLY / SECTION-FLOW
+   - Stars spawn from the target shape edge
+   - Drift outward across the CURRENT SECTION only
+   - Fade to 0 as they cross the section boundary
+   - Continuous spawning / moving star field
 ========================================================= */
 
+/* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
-  /* emitter density */
+  /* source distribution */
   --star-count: 150;
   --star-min-gap: 4px;
 
-  /* spawn system */
-  --spawn-interval: 140;         /* ms between spawn bursts */
-  --spawn-per-tick: 2;           /* stars spawned each burst */
-  --max-live-stars: 180;         /* hard cap per target */
-
-  /* outward offset from edge at spawn */
+  /* outward offset from the sampled edge */
   --jitter-min: 0.10rem;
   --jitter-max: 2.00rem;
 
-  /* distribution balance: 0 = even, 1 = random */
+  /* distribution balance: 0 = even, 1 = more random */
   --star-randomize: 0;
 
-  /* optional twinkle overlay */
-  --twinkle-min: 1.2;
-  --twinkle-max: 2.8;
+  /* twinkle timing */
+  --twinkle-min: 0.5;
+  --twinkle-max: 2.0;
 
-  /* opacity range at spawn */
-  --opacity-min: 0.35;
+  /* opacity */
+  --opacity-min: 0.15;
   --opacity-max: 1.0;
 
-  /* motion */
-  --drift-speed-min: 22;         /* px/sec */
-  --drift-speed-max: 58;         /* px/sec */
-  --drift-overshoot: 80;         /* px past viewport edge before recycle */
-  --drift-wobble: 0.18rem;       /* tiny sideways drift */
-  --drift-scale-min: 0.92;
-  --drift-scale-max: 1.10;
-
-  /* size quantization using φ */
+  /* size quantization */
   --phi: 1.618;
   --size-large: 1.5rem;
   --size-medium: calc(var(--size-large) / var(--phi));
   --size-small:  calc(var(--size-medium) / var(--phi));
 
-  /* angle avoidance */
+  /* shape-distribution avoidance */
   --avoid-vert-strength: 1;
   --avoid-vert-width-deg: 45;
 
@@ -56,32 +44,34 @@ body.has-starfield{
 
   --jitter-fallback-mult: 2;
   --jitter-fallback-steps: 3;
+
+  /* motion controls */
+  --star-max-live: 170;          /* live particles at once */
+  --spawn-rate: 22;              /* particles per second */
+  --drift-min: 1.2rem;           /* minimum outward drift speed per second */
+  --drift-max: 3.8rem;           /* maximum outward drift speed per second */
+  --edge-fade-width: 7rem;       /* how gradually they fade near/outside section edge */
 }
 
-/* nearest Squarespace section becomes the clip area */
-.starfield-section{
-  position: relative !important;
-  overflow: hidden !important;
-}
-
-/* full-section particle layer */
+/* Section-level overlay injected by JS */
 .shape-edge-sparkles{
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 3;
-  overflow: hidden;
+  overflow: visible;
+  contain: layout style paint;
 }
 
-/* individual star */
+/* Individual stars */
 .shape-edge-sparkles .star{
   position: absolute;
   left: 0;
   top: 0;
   width: var(--size, 1rem);
   height: var(--size, 1rem);
-  transform: translate(-50%, -50%) scale(var(--scale, 1));
-  opacity: var(--o, 0.85);
+  transform: translate(-50%, -50%);
+  opacity: 0;
   color: var(--star-color);
   background: currentColor;
 
@@ -95,8 +85,8 @@ body.has-starfield{
 
 @keyframes twinkle{
   0%   { filter: drop-shadow(0 0 var(--blur, 0) currentColor); }
-  50%  { filter: drop-shadow(0 0 calc(var(--blur, 0) * 1.35) currentColor); }
-  100% { filter: drop-shadow(0 0 calc(var(--blur, 0) * 0.8) currentColor); }
+  50%  { filter: drop-shadow(0 0 calc(var(--blur, 0) * 1.25) currentColor); }
+  100% { filter: drop-shadow(0 0 calc(var(--blur, 0) * 0.85) currentColor); }
 }
 
 @media (prefers-reduced-motion: reduce){

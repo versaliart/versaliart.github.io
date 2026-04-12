@@ -1,37 +1,66 @@
-// v4.0 — Edge emitter with continuous outward section-clipped drift
+// v4.0 — Section-flow starfield for exact target block
+// Injects overlay into nearest section so stars can travel across the whole section.
 
-(function(){
+(function () {
   const TARGETS = [
     { sel: '#block-yui_3_17_2_1_1756944426569_9957', fallback: 'ellipse' } // 'ellipse' | 'rect'
   ];
   if (!TARGETS.length) return;
 
-  function onReady(fn){
+  const root = document.documentElement;
+  const body = document.body;
+  const DEG = Math.PI / 180;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const clamp01 = v => clamp(v, 0, 1);
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const now = () => performance.now();
+  const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
+
+  function onReady(fn) {
     if (document.readyState !== 'loading') fn();
-    else document.addEventListener('DOMContentLoaded', fn, { once:true });
+    else document.addEventListener('DOMContentLoaded', fn, { once: true });
   }
 
-  function whenSelector(sel, cb){
+  function whenSelector(sel, cb) {
     const el = document.querySelector(sel);
     if (el) return cb(el);
     const mo = new MutationObserver(() => {
-      const n = document.querySelector(sel);
-      if (n){
+      const found = document.querySelector(sel);
+      if (found) {
         mo.disconnect();
-        cb(n);
+        cb(found);
       }
     });
-    mo.observe(document.documentElement, { childList:true, subtree:true });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  const root = document.documentElement;
-  const body = document.body;
-  const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
-  const clamp01 = v => Math.max(0, Math.min(1, v));
-  const rand = (a, b) => a + Math.random() * (b - a);
-  const DEG = Math.PI / 180;
+  function rateLimited(fn, gapMs) {
+    let last = 0;
+    return function () {
+      const t = performance.now();
+      if (t - last < gapMs) return;
+      last = t;
+      fn();
+    };
+  }
 
-  function svgToClient(svg, x, y){
+  function getNumVar(style, name, fallback) {
+    const raw = style.getPropertyValue(name).trim();
+    const n = parseFloat(raw);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function getPxVar(style, name, fallbackPx) {
+    const raw = style.getPropertyValue(name).trim();
+    if (!raw) return fallbackPx;
+    const n = parseFloat(raw);
+    if (!Number.isFinite(n)) return fallbackPx;
+    if (raw.endsWith('rem')) return n * remPx();
+    return n;
+  }
+
+  function svgToClient(svg, x, y) {
     const ctm = svg.getScreenCTM();
     if (!ctm) return null;
     const pt = svg.createSVGPoint();
@@ -42,197 +71,115 @@
     return { x: out.x, y: out.y };
   }
 
-  function sampleEllipsePerimeter(rect, t){
+  function sampleEllipsePerimeter(rect, t) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const rx = rect.width / 2;
     const ry = rect.height / 2;
     const theta = t * Math.PI * 2;
-    return {
-      x: cx + rx * Math.cos(theta),
-      y: cy + ry * Math.sin(theta),
-      theta,
-      cx,
-      cy
-    };
+    return { x: cx + rx * Math.cos(theta), y: cy + ry * Math.sin(theta), cx, cy, theta };
   }
 
-  function sampleRectPerimeter(rect, t){
+  function sampleRectPerimeter(rect, t) {
     const per = 2 * (rect.width + rect.height);
     const d = t * per;
     let x, y;
-
-    if (d <= rect.width){
+    if (d <= rect.width) {
       x = rect.left + d;
       y = rect.top;
-    } else if (d <= rect.width + rect.height){
+    } else if (d <= rect.width + rect.height) {
       x = rect.right;
       y = rect.top + (d - rect.width);
-    } else if (d <= rect.width * 2 + rect.height){
+    } else if (d <= rect.width * 2 + rect.height) {
       x = rect.right - (d - rect.width - rect.height);
       y = rect.bottom;
     } else {
       x = rect.left;
       y = rect.bottom - (d - rect.width * 2 - rect.height);
     }
-
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     return { x, y, cx, cy };
   }
 
-  function outwardSignSVG(path, svg, px, py, nx, ny){
-    if (typeof path.isPointInFill === 'function'){
+  function outwardSignSVG(path, svg, px, py, nx, ny) {
+    if (typeof path.isPointInFill === 'function') {
       const plus = svg.createSVGPoint();
       plus.x = px + nx;
       plus.y = py + ny;
-
       const minus = svg.createSVGPoint();
       minus.x = px - nx;
       minus.y = py - ny;
-
       const inPlus = path.isPointInFill(plus);
       const inMinus = path.isPointInFill(minus);
-
       if (inPlus && !inMinus) return -1;
-      if (!inPlus && inMinus) return +1;
-      if (!inPlus && !inMinus) return +1;
-      return +1;
+      if (!inPlus && inMinus) return 1;
+      if (!inPlus && !inMinus) return 1;
+      return 1;
     }
 
     const vb = svg.viewBox && svg.viewBox.baseVal
       ? svg.viewBox.baseVal
-      : { x:0, y:0, width:svg.clientWidth, height:svg.clientHeight };
+      : { x: 0, y: 0, width: svg.clientWidth, height: svg.clientHeight };
 
     const cx = vb.x + vb.width / 2;
     const cy = vb.y + vb.height / 2;
     const vx = px - cx;
     const vy = py - cy;
-    return (vx * nx + vy * ny) >= 0 ? +1 : -1;
+    return (vx * nx + vy * ny) >= 0 ? 1 : -1;
   }
 
-  function angleDeg(cx, cy, px, py){
+  function angleDeg(cx, cy, px, py) {
     const ang = Math.atan2(py - cy, px - cx) / DEG;
     return (ang + 360) % 360;
   }
 
-  function avoidAngle(aDeg, widthDeg){
-    const dTop = Math.min(Math.abs(aDeg - 90), 360 - Math.abs(aDeg - 90));
-    const dBot = Math.min(Math.abs(aDeg - 270), 360 - Math.abs(aDeg - 270));
-    return (dTop <= widthDeg) || (dBot <= widthDeg);
+  function cosineWindow(distDeg, halfWidthDeg) {
+    if (distDeg >= halfWidthDeg) return 0;
+    return 0.5 * (1 + Math.cos(Math.PI * (distDeg / halfWidthDeg)));
   }
 
-  function clampInt(n, lo, hi){
-    return Math.max(lo, Math.min(hi, n));
-  }
+  function makeAngleGate(strength, halfWidthDeg) {
+    const s = clamp01(strength || 0);
+    const w = Math.max(0, halfWidthDeg || 0);
 
-  function pickEvenlySpacedIndices(len, k){
-    if (k <= 0 || len <= 0) return [];
-    const out = [];
-    const step = len / k;
-    for (let i = 0; i < k; i++){
-      out.push(Math.min(len - 1, Math.floor(i * step + step / 2)));
-    }
-    const seen = new Set();
-    return out.filter(i => {
-      if (seen.has(i)) return false;
-      seen.add(i);
-      return true;
-    });
-  }
-
-  function chooseSizesPlanBalanced(N){
-    const minL = Math.ceil(N * 0.25);
-    const maxL = Math.floor(N * (1 / 3));
-    const target = Math.floor(N * 0.30);
-    const Lcount = clampInt(target, minL, maxL);
-
-    const rest = N - Lcount;
-    const restPlan = new Array(rest);
-    let flip = 0;
-    for (let i = 0; i < rest; i++){
-      restPlan[i] = (flip++ % 5 < 3) ? 'M' : 'S';
-    }
-    return { Lcount, restPlan };
-  }
-
-  function makeParamList(count, phase){
-    const N = Math.max(0, count | 0);
-    const T = new Array(N);
-    for (let i = 0; i < N; i++){
-      T[i] = ((i + 0.5) / N + phase) % 1;
-    }
-    return T;
-  }
-
-  function readyToDraw(el){
-    const r = el?.getBoundingClientRect();
-    return !!r && r.width >= 4 && r.height >= 4;
-  }
-
-  function nextFrame2(fn){
-    requestAnimationFrame(() => requestAnimationFrame(fn));
-  }
-
-  function rateLimited(fn, gapMs){
-    let last = 0;
-    return function(){
-      const now = performance.now();
-      if (now - last < gapMs) return;
-      last = now;
-      fn();
+    return function accept(cx, cy, px, py) {
+      const a = angleDeg(cx, cy, px, py);
+      const dTop = Math.min(Math.abs(a - 90), 360 - Math.abs(a - 90));
+      const dBot = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
+      const penalty = Math.max(cosineWindow(dTop, w), cosineWindow(dBot, w));
+      const acceptProb = 1 - s * penalty;
+      return Math.random() < acceptProb;
     };
   }
 
-  const ro = new ResizeObserver(entries => {
-    for (const e of entries){
-      const cb = e.target.__edgeCb;
-      if (!cb) continue;
-      clearTimeout(e.target.__edgeTo);
-      e.target.__edgeTo = setTimeout(cb, 120);
-    }
-  });
+  function chooseSize(style) {
+    const phi = getNumVar(style, '--phi', 1.618);
+    const sizeL = getNumVar(style, '--size-large', 1.5);
+    const sizeM = getNumVar(style, '--size-medium', sizeL / phi);
+    const sizeS = getNumVar(style, '--size-small', sizeM / phi);
 
-  function observeResize(el, cb){
-    el.__edgeCb = cb;
-    ro.observe(el);
+    const r = Math.random();
+    if (r < 0.30) return sizeL;
+    if (r < 0.72) return sizeM;
+    return sizeS;
   }
 
-  function watchHost(host, cb){
-    const mo = new MutationObserver(muts => {
-      for (const m of muts){
-        if (
-          m.type === 'childList' ||
-          (m.type === 'attributes' && (m.attributeName === 'style' || m.attributeName === 'class'))
-        ){
-          clearTimeout(host.__edgeMoT);
-          host.__edgeMoT = setTimeout(cb, 120);
-          break;
-        }
-      }
-    });
-    mo.observe(host, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['style', 'class']
-    });
-    host.__edgeMo = mo;
-  }
-
-  function findSectionFor(host){
+  function findSection(host) {
     return (
       host.closest('[data-section-id]') ||
       host.closest('section') ||
-      host.parentElement ||
-      host
+      host.closest('.page-section') ||
+      host.parentElement
     );
   }
 
-  function ensureLayer(section){
-    section.classList.add('starfield-section');
+  function ensureOverlay(section) {
+    const cs = getComputedStyle(section);
+    if (cs.position === 'static') section.style.position = 'relative';
+
     let layer = section.querySelector(':scope > .shape-edge-sparkles');
-    if (!layer){
+    if (!layer) {
       layer = document.createElement('div');
       layer.className = 'shape-edge-sparkles';
       section.appendChild(layer);
@@ -240,488 +187,349 @@
     return layer;
   }
 
-  function destroyField(layer){
-    if (!layer) return;
-    if (layer.__starfield){
-      layer.__starfield.stop();
-      layer.__starfield = null;
-    }
-    layer.innerHTML = '';
-    delete layer.dataset.sig;
+  function pointToSection(clientPt, sectionRect) {
+    return {
+      x: clientPt.x - sectionRect.left,
+      y: clientPt.y - sectionRect.top
+    };
   }
 
-  function createField(target, host, section, layer, cfg){
-    const stars = new Set();
-    let rafId = 0;
-    let running = true;
-    let lastTs = 0;
-    let spawnCarry = 0;
-    let spawnIndex = 0;
+  function buildSpawner(target) {
+    const host = document.querySelector(target.sel);
+    if (!host) return null;
 
-    function getRects(){
-      return {
-        hostRect: host.getBoundingClientRect(),
-        sectionRect: section.getBoundingClientRect(),
-        viewport: {
-          left: 0,
-          top: 0,
-          right: window.innerWidth,
-          bottom: window.innerHeight
-        }
-      };
-    }
+    const section = findSection(host);
+    if (!section) return null;
 
-    function distanceToViewportEdge(x, y, dx, dy, viewport){
-      const tx = dx > 0
-        ? (viewport.right - x) / dx
-        : dx < 0
-          ? (viewport.left - x) / dx
-          : Infinity;
+    const overlay = ensureOverlay(section);
+    const sectionRect = section.getBoundingClientRect();
+    const hostRect = host.getBoundingClientRect();
+    if (sectionRect.width < 4 || sectionRect.height < 4 || hostRect.width < 4 || hostRect.height < 4) return null;
 
-      const ty = dy > 0
-        ? (viewport.bottom - y) / dy
-        : dy < 0
-          ? (viewport.top - y) / dy
-          : Infinity;
+    const svg = host.querySelector('svg');
+    const path = svg ? svg.querySelector('path') : null;
+    const mode = (svg && path) ? 'svg' : 'box';
 
-      const t = Math.min(
-        tx > 0 ? tx : Infinity,
-        ty > 0 ? ty : Infinity
-      );
+    const bodyStyle = getComputedStyle(body);
+    const angleGate = makeAngleGate(
+      getNumVar(bodyStyle, '--avoid-vert-strength', 0),
+      getNumVar(bodyStyle, '--avoid-vert-width-deg', 0)
+    );
 
-      return Number.isFinite(t) ? t : 0;
-    }
+    const jitterMinPx = getNumVar(bodyStyle, '--jitter-min', 0.10) * remPx();
+    const jitterMaxPx = Math.max(jitterMinPx, getNumVar(bodyStyle, '--jitter-max', 2.00) * remPx());
+    const randomize = clamp01(getNumVar(bodyStyle, '--star-randomize', 0));
+    const seed = getNumVar(bodyStyle, '--star-seed', Math.random());
+    const basePhase = seed - Math.floor(seed);
 
-    function buildSpawnPool(){
-      const svg = host.querySelector('svg');
-      const path = svg ? svg.querySelector('path') : null;
-      const mode = (svg && path) ? 'svg' : 'box';
+    const sectionCenter = {
+      x: sectionRect.width / 2,
+      y: sectionRect.height / 2
+    };
 
-      const {
-        starCount,
-        randomize,
-        avoidStrength,
-        avoidWidthDeg,
-        jitterMinPx,
-        jitterMaxPx,
-        sizeLrem,
-        sizeMrem,
-        sizeSrem,
-        seedPhase
-      } = cfg;
+    const pathTotalLength = mode === 'svg' ? path.getTotalLength() : 0;
+    let svgCenter = null;
 
-      const T_all = makeParamList(starCount, seedPhase);
-      const { Lcount, restPlan } = chooseSizesPlanBalanced(starCount);
-
-      const hostRect = host.getBoundingClientRect();
-      const pathTotalLength = mode === 'svg' ? path.getTotalLength() : 0;
-
-      let svgCenter = null;
-      if (mode === 'svg'){
-        if (typeof path.getBBox === 'function'){
-          const bb = path.getBBox();
-          svgCenter = { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 };
-        } else {
-          const vb = svg.viewBox && svg.viewBox.baseVal
-            ? svg.viewBox.baseVal
-            : { x:0, y:0, width:svg.clientWidth, height:svg.clientHeight };
-          svgCenter = { x: vb.x + vb.width / 2, y: vb.y + vb.height / 2 };
-        }
+    if (mode === 'svg') {
+      if (typeof path.getBBox === 'function') {
+        const bb = path.getBBox();
+        svgCenter = { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 };
+      } else {
+        const vb = svg.viewBox && svg.viewBox.baseVal
+          ? svg.viewBox.baseVal
+          : { x: 0, y: 0, width: svg.clientWidth, height: svg.clientHeight };
+        svgCenter = { x: vb.x + vb.width / 2, y: vb.y + vb.height / 2 };
       }
+    }
 
-      const leftIdx = [];
-      const rightIdx = [];
+    function sampleSpawnPoint() {
+      for (let tries = 0; tries < 40; tries++) {
+        const evenT = Math.random();
+        const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
+        const t = (evenT + dt + basePhase + 1) % 1;
 
-      for (let i = 0; i < T_all.length; i++){
-        const t = T_all[i];
-        if (mode === 'svg'){
-          const d = (t % 1) * pathTotalLength;
+        if (mode === 'svg') {
+          const d = t * pathTotalLength;
           const p = path.getPointAtLength(d);
-          const isLeft = svgCenter ? (p.x < svgCenter.x) : (i < T_all.length / 2);
-          (isLeft ? leftIdx : rightIdx).push(i);
+          const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
+
+          if (svgCenter && !angleGate(svgCenter.x, svgCenter.y, p.x, p.y)) continue;
+
+          let nx = -(p2.y - p.y);
+          let ny = (p2.x - p.x);
+          const nlen = Math.hypot(nx, ny) || 1;
+          nx /= nlen;
+          ny /= nlen;
+
+          const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
+          const jitter = sign * rand(jitterMinPx, jitterMaxPx);
+
+          const client = svgToClient(svg, p.x + nx * jitter, p.y + ny * jitter);
+          if (!client) continue;
+
+          const pos = pointToSection(client, sectionRect);
+          const dirX = pos.x - sectionCenter.x;
+          const dirY = pos.y - sectionCenter.y;
+          const dirLen = Math.hypot(dirX, dirY) || 1;
+
+          return {
+            x: pos.x,
+            y: pos.y,
+            vx: dirX / dirLen,
+            vy: dirY / dirLen
+          };
         } else {
           const hit = (target.fallback || 'ellipse') === 'rect'
             ? sampleRectPerimeter(hostRect, t)
             : sampleEllipsePerimeter(hostRect, t);
-          const isLeft = hit.x < hit.cx;
-          (isLeft ? leftIdx : rightIdx).push(i);
-        }
-      }
 
-      const LleftTarget = Math.floor(Lcount / 2);
-      const LrightTarget = Lcount - LleftTarget;
+          if (!angleGate(hit.cx, hit.cy, hit.x, hit.y)) continue;
 
-      let pickLeft = pickEvenlySpacedIndices(leftIdx.length, LleftTarget).map(j => leftIdx[j]);
-      let pickRight = pickEvenlySpacedIndices(rightIdx.length, LrightTarget).map(j => rightIdx[j]);
-
-      const deficitLeft = LleftTarget - pickLeft.length;
-      const deficitRight = LrightTarget - pickRight.length;
-
-      if (deficitLeft > 0 && rightIdx.length > pickRight.length){
-        const extra = pickEvenlySpacedIndices(rightIdx.length, pickRight.length + deficitLeft)
-          .slice(pickRight.length)
-          .map(j => rightIdx[j]);
-        pickRight = pickRight.concat(extra);
-      }
-
-      if (deficitRight > 0 && leftIdx.length > pickLeft.length){
-        const extra = pickEvenlySpacedIndices(leftIdx.length, pickLeft.length + deficitRight)
-          .slice(pickLeft.length)
-          .map(j => leftIdx[j]);
-        pickLeft = pickLeft.concat(extra);
-      }
-
-      const largeIndices = new Set([...pickLeft, ...pickRight]);
-      const usedIdx = new Set();
-      const pool = [];
-
-      function buildPointAtT(t, sizeRem){
-        if (mode === 'svg'){
-          const d = (t % 1) * pathTotalLength;
-          const p = path.getPointAtLength(d);
-
-          if (avoidStrength > 0 && avoidWidthDeg > 0 && svgCenter){
-            const a = angleDeg(svgCenter.x, svgCenter.y, p.x, p.y);
-            if (avoidAngle(a, avoidWidthDeg)) return null;
+          let px, py;
+          if ((target.fallback || 'ellipse') === 'rect') {
+            const dx = hit.x - hit.cx;
+            const dy = hit.y - hit.cy;
+            const dl = Math.hypot(dx, dy) || 1;
+            const j = rand(jitterMinPx, jitterMaxPx);
+            px = hit.x + (dx / dl) * j;
+            py = hit.y + (dy / dl) * j;
+          } else {
+            const j = rand(jitterMinPx, jitterMaxPx);
+            px = hit.x + Math.cos(hit.theta) * j;
+            py = hit.y + Math.sin(hit.theta) * j;
           }
 
-          const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
-          let nx = -(p2.y - p.y);
-          let ny = (p2.x - p.x);
-          const nLen = Math.hypot(nx, ny) || 1;
-          nx /= nLen;
-          ny /= nLen;
+          const pos = {
+            x: px - sectionRect.left,
+            y: py - sectionRect.top
+          };
 
-          const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-          const j = sign * rand(jitterMinPx, jitterMaxPx);
-
-          const edgeScr = svgToClient(svg, p.x, p.y);
-          const spawnScr = svgToClient(svg, p.x + nx * j, p.y + ny * j);
-          if (!edgeScr || !spawnScr) return null;
-
-          let dx = spawnScr.x - edgeScr.x;
-          let dy = spawnScr.y - edgeScr.y;
-          const len = Math.hypot(dx, dy) || 1;
-          dx /= len;
-          dy /= len;
-
-          const side = (spawnScr.x < hostRect.left + hostRect.width / 2) ? 'L' : 'R';
+          const dirX = pos.x - sectionCenter.x;
+          const dirY = pos.y - sectionCenter.y;
+          const dirLen = Math.hypot(dirX, dirY) || 1;
 
           return {
-            x: spawnScr.x,
-            y: spawnScr.y,
-            dx,
-            dy,
-            sizeRem,
-            side
+            x: pos.x,
+            y: pos.y,
+            vx: dirX / dirLen,
+            vy: dirY / dirLen
           };
         }
-
-        const hit = (target.fallback || 'ellipse') === 'rect'
-          ? sampleRectPerimeter(hostRect, t)
-          : sampleEllipsePerimeter(hostRect, t);
-
-        if (avoidStrength > 0 && avoidWidthDeg > 0){
-          const a = angleDeg(hit.cx, hit.cy, hit.x, hit.y);
-          if (avoidAngle(a, avoidWidthDeg)) return null;
-        }
-
-        let px, py, dx, dy;
-
-        if ((target.fallback || 'ellipse') === 'rect'){
-          dx = hit.x - hit.cx;
-          dy = hit.y - hit.cy;
-          const vLen = Math.hypot(dx, dy) || 1;
-          dx /= vLen;
-          dy /= vLen;
-          const j = rand(jitterMinPx, jitterMaxPx);
-          px = hit.x + dx * j;
-          py = hit.y + dy * j;
-        } else {
-          dx = Math.cos(hit.theta);
-          dy = Math.sin(hit.theta);
-          const j = rand(jitterMinPx, jitterMaxPx);
-          px = hit.x + dx * j;
-          py = hit.y + dy * j;
-        }
-
-        const side = px < hit.cx ? 'L' : 'R';
-
-        return {
-          x: px,
-          y: py,
-          dx,
-          dy,
-          sizeRem,
-          side
-        };
       }
 
-      if (largeIndices.size > 0){
-        const seq = [];
-        const Larr = [...pickLeft];
-        const Rarr = [...pickRight];
-        const maxLen = Math.max(Larr.length, Rarr.length);
-        for (let i = 0; i < maxLen; i++){
-          if (i < Larr.length) seq.push(Larr[i]);
-          if (i < Rarr.length) seq.push(Rarr[i]);
-        }
-
-        for (const idx of seq){
-          usedIdx.add(idx);
-          const baseT = T_all[idx];
-          let made = null;
-          let tries = 0;
-
-          while (!made && tries < 40){
-            tries++;
-            const dt = randomize > 0 ? (Math.random() - 0.5) * (1 / Math.max(6, starCount)) : 0;
-            const t = (baseT + dt + 1) % 1;
-            made = buildPointAtT(t, sizeLrem) || buildPointAtT((t + 0.5) % 1, sizeLrem);
-          }
-
-          if (made) pool.push(made);
-        }
-      }
-
-      const restTs = [];
-      for (let i = 0; i < T_all.length; i++){
-        if (!usedIdx.has(i)) restTs.push(T_all[i]);
-      }
-
-      for (let k = restTs.length - 1; k > 0; k--){
-        const j = Math.floor(Math.random() * (k + 1));
-        [restTs[k], restTs[j]] = [restTs[j], restTs[k]];
-      }
-
-      let ti = 0;
-      for (let i = 0; i < restPlan.length && ti < restTs.length; i++){
-        const sizeRem = restPlan[i] === 'M' ? sizeMrem : sizeSrem;
-        let made = null;
-        let tries = 0;
-
-        while (!made && tries < 40 && ti < restTs.length){
-          const t = restTs[ti++];
-          tries++;
-          made = buildPointAtT(t, sizeRem) || buildPointAtT((t + 0.5) % 1, sizeRem);
-        }
-
-        if (made) pool.push(made);
-      }
-
-      return pool;
+      return null;
     }
 
-    let spawnPool = buildSpawnPool();
-    if (!spawnPool.length) return null;
+    return {
+      host,
+      section,
+      overlay,
+      rect: sectionRect,
+      sampleSpawnPoint
+    };
+  }
 
-    function spawnStar(){
-      if (!running) return;
-      if (stars.size >= cfg.maxLiveStars) return;
-      if (!spawnPool.length) return;
+  function createEngine(target) {
+    let spawner = buildSpawner(target);
+    if (!spawner) return null;
 
-      const sectionRect = section.getBoundingClientRect();
-      const viewport = {
-        left: 0,
-        top: 0,
-        right: window.innerWidth,
-        bottom: window.innerHeight
+    const overlay = spawner.overlay;
+    const stars = [];
+    let rafId = 0;
+    let lastTs = 0;
+    let spawnCarry = 0;
+
+    function getConfig() {
+      const s = getComputedStyle(body);
+      return {
+        starColor: s.getPropertyValue('--star-color').trim() || '#9989EC',
+        maxLive: Math.max(1, Math.round(getNumVar(s, '--star-max-live', 170))),
+        spawnRate: Math.max(0, getNumVar(s, '--spawn-rate', 22)),
+        driftMin: Math.max(0, getNumVar(s, '--drift-min', 1.2) * remPx()),
+        driftMax: Math.max(0, getNumVar(s, '--drift-max', 3.8) * remPx()),
+        edgeFade: Math.max(1, getNumVar(s, '--edge-fade-width', 7) * remPx()),
+        opacityMin: clamp01(getNumVar(s, '--opacity-min', 0.15)),
+        opacityMax: clamp01(getNumVar(s, '--opacity-max', 1.0)),
+        blurMax: Math.max(0, getNumVar(s, '--max-blur', 0.22) * remPx()),
+        twinkleMin: Math.max(0.01, getNumVar(s, '--twinkle-min', 0.5)),
+        twinkleMax: Math.max(0.02, getNumVar(s, '--twinkle-max', 2.0))
       };
+    }
 
-      const poolItem = spawnPool[spawnIndex % spawnPool.length];
-      spawnIndex++;
+    function minDistToRectEdge(x, y, rect) {
+      return Math.min(x, rect.width - x, y, rect.height - y);
+    }
 
-      const sideDrift = rand(-cfg.wobblePx, cfg.wobblePx);
-      const perpX = -poolItem.dy;
-      const perpY = poolItem.dx;
+    function outsideDistance(x, y, rect) {
+      const dx = x < 0 ? -x : (x > rect.width ? x - rect.width : 0);
+      const dy = y < 0 ? -y : (y > rect.height ? y - rect.height : 0);
+      return Math.hypot(dx, dy);
+    }
 
-      let dx = poolItem.dx + perpX * (sideDrift / 120);
-      let dy = poolItem.dy + perpY * (sideDrift / 120);
-      const dirLen = Math.hypot(dx, dy) || 1;
-      dx /= dirLen;
-      dy /= dirLen;
+    function totalFadeAlpha(x, y, rect, edgeFade) {
+      const insideMin = minDistToRectEdge(x, y, rect);
+      if (insideMin >= 0) {
+        return clamp01(insideMin / edgeFade);
+      }
+      const out = outsideDistance(x, y, rect);
+      return clamp01(1 - (out / edgeFade));
+    }
 
-      const startX = poolItem.x;
-      const startY = poolItem.y;
-      const distToEdge = distanceToViewportEdge(startX, startY, dx, dy, viewport);
-      const fadeDistance = Math.max(1, distToEdge + cfg.driftOvershootPx);
+    function spawnOne(cfg) {
+      if (stars.length >= cfg.maxLive) return;
 
-      const speed = rand(cfg.speedMin, cfg.speedMax);
-      const baseOpacity = rand(cfg.opacityMin, cfg.opacityMax);
-      const blurPx = rand(0, cfg.blurMaxPx);
-      const twDur = rand(cfg.twinkleMin, cfg.twinkleMax);
-      const twDelay = -Math.random() * twDur;
-      const scale = rand(cfg.scaleMin, cfg.scaleMax);
+      const spawn = spawner.sampleSpawnPoint();
+      if (!spawn) return;
 
       const el = document.createElement('span');
       el.className = 'star';
-      el.style.setProperty('--size', `${poolItem.sizeRem}rem`);
-      el.style.setProperty('--blur', `${blurPx.toFixed(2)}px`);
-      el.style.setProperty('--twinkle', `${twDur.toFixed(2)}s`);
-      el.style.setProperty('--tw-delay', `${twDelay.toFixed(2)}s`);
-      el.style.setProperty('--scale', scale.toFixed(3));
 
-      layer.appendChild(el);
+      const sizeRem = chooseSize(getComputedStyle(body));
+      const baseOpacity = rand(cfg.opacityMin, cfg.opacityMax);
+      const twDur = rand(cfg.twinkleMin, cfg.twinkleMax);
+      const twDelay = -Math.random() * twDur;
+      const blurPx = rand(0, cfg.blurMax);
+      const speed = rand(cfg.driftMin, cfg.driftMax);
+
+      el.style.color = cfg.starColor;
+      el.style.setProperty('--size', sizeRem + 'rem');
+      el.style.setProperty('--blur', blurPx.toFixed(2) + 'px');
+      el.style.setProperty('--twinkle', twDur.toFixed(2) + 's');
+      el.style.setProperty('--tw-delay', twDelay.toFixed(2) + 's');
+
+      overlay.appendChild(el);
 
       const star = {
         el,
-        x: startX,
-        y: startY,
-        startX,
-        startY,
-        dx,
-        dy,
-        speed,
-        life: 0,
-        fadeDistance,
-        baseOpacity,
-        sectionRect
+        x: spawn.x,
+        y: spawn.y,
+        vx: spawn.vx * speed,
+        vy: spawn.vy * speed,
+        baseOpacity
       };
 
-      stars.add(star);
-      renderStar(star);
+      stars.push(star);
+      renderStar(star, cfg);
     }
 
-    function renderStar(star){
-      const x = star.x - star.sectionRect.left;
-      const y = star.y - star.sectionRect.top;
-      star.el.style.left = `${x}px`;
-      star.el.style.top = `${y}px`;
-
-      const traveled = Math.hypot(star.x - star.startX, star.y - star.startY);
-      const fade = 1 - clamp01(traveled / star.fadeDistance);
-      const opacity = star.baseOpacity * fade;
-      star.el.style.opacity = opacity.toFixed(3);
+    function renderStar(star, cfg) {
+      const a = star.baseOpacity * totalFadeAlpha(star.x, star.y, spawner.rect, cfg.edgeFade);
+      star.el.style.left = star.x.toFixed(2) + 'px';
+      star.el.style.top = star.y.toFixed(2) + 'px';
+      star.el.style.opacity = Math.max(0, a).toFixed(3);
     }
 
-    function recycleStar(star){
-      if (star.el && star.el.parentNode === layer){
-        layer.removeChild(star.el);
+    function killStar(i) {
+      const star = stars[i];
+      if (star && star.el && star.el.parentNode) {
+        star.el.parentNode.removeChild(star.el);
       }
-      stars.delete(star);
+      stars.splice(i, 1);
     }
 
-    function step(ts){
-      if (!running) return;
+    function tick(ts) {
       if (!lastTs) lastTs = ts;
-      const dt = Math.min(64, ts - lastTs) / 1000;
+      const dt = Math.min(0.05, (ts - lastTs) / 1000);
       lastTs = ts;
 
-      const { sectionRect, viewport } = getRects();
+      const cfg = getConfig();
 
-      spawnCarry += dt * 1000;
-      while (spawnCarry >= cfg.spawnIntervalMs){
-        spawnCarry -= cfg.spawnIntervalMs;
-        for (let i = 0; i < cfg.spawnPerTick; i++) spawnStar();
+      spawnCarry += cfg.spawnRate * dt;
+      while (spawnCarry >= 1) {
+        spawnOne(cfg);
+        spawnCarry -= 1;
       }
 
-      for (const star of stars){
-        star.sectionRect = sectionRect;
-        star.life += dt;
-        star.x += star.dx * star.speed * dt;
-        star.y += star.dy * star.speed * dt;
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const s = stars[i];
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
 
-        renderStar(star);
+        const alpha = totalFadeAlpha(s.x, s.y, spawner.rect, cfg.edgeFade);
+        if (alpha <= 0) {
+          killStar(i);
+          continue;
+        }
 
-        const traveled = Math.hypot(star.x - star.startX, star.y - star.startY);
-        const outPastViewport =
-          star.x < viewport.left - cfg.driftOvershootPx ||
-          star.x > viewport.right + cfg.driftOvershootPx ||
-          star.y < viewport.top - cfg.driftOvershootPx ||
-          star.y > viewport.bottom + cfg.driftOvershootPx ||
-          traveled > star.fadeDistance + cfg.driftOvershootPx;
+        renderStar(s, cfg);
+      }
 
-        if (outPastViewport || parseFloat(star.el.style.opacity || '0') <= 0.001){
-          recycleStar(star);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function rebuild() {
+      const fresh = buildSpawner(target);
+      if (!fresh) return;
+
+      spawner = fresh;
+
+      for (let i = stars.length - 1; i >= 0; i--) {
+        const s = stars[i];
+        if (!spawner.overlay.contains(s.el)) {
+          spawner.overlay.appendChild(s.el);
         }
       }
-
-      rafId = requestAnimationFrame(step);
     }
 
-    function stop(){
-      running = false;
-      cancelAnimationFrame(rafId);
-      for (const star of stars){
-        if (star.el && star.el.parentNode === layer) layer.removeChild(star.el);
-      }
-      stars.clear();
-    }
-
-    function rebuild(){
-      spawnPool = buildSpawnPool();
-      if (!spawnPool.length) return;
-      for (const star of [...stars]) recycleStar(star);
-      spawnIndex = 0;
+    function start() {
+      if (rafId) cancelAnimationFrame(rafId);
+      lastTs = 0;
       spawnCarry = 0;
-
-      const initial = Math.min(cfg.maxLiveStars, Math.max(24, Math.floor(cfg.starCount * 0.45)));
-      for (let i = 0; i < initial; i++) spawnStar();
+      rafId = requestAnimationFrame(tick);
     }
 
-    layer.__starfield = { stop, rebuild };
+    function stop() {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+      while (stars.length) killStar(stars.length - 1);
+    }
 
-    rebuild();
-    rafId = requestAnimationFrame(step);
-
-    return { stop, rebuild };
+    return { rebuild, start, stop, get section() { return spawner.section; }, get host() { return spawner.host; } };
   }
 
-  function buildFor(target, attempt = 0){
-    const host = document.querySelector(target.sel);
-    if (!host) return;
+  const engines = new Map();
+  const rebuildAll = rateLimited(() => {
+    for (const engine of engines.values()) engine.rebuild();
+  }, 120);
 
-    if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
-    if (!readyToDraw(host)){
-      if (attempt < 40) setTimeout(() => buildFor(target, attempt + 1), 100);
-      return;
-    }
+  const ro = new ResizeObserver(() => rebuildAll());
 
-    const section = findSectionFor(host);
-    if (!section || !readyToDraw(section)){
-      if (attempt < 40) setTimeout(() => buildFor(target, attempt + 1), 100);
-      return;
-    }
+  function watchMutations(el) {
+    const mo = new MutationObserver(() => rebuildAll());
+    mo.observe(el, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class']
+    });
+    return mo;
+  }
 
-    const layer = ensureLayer(section);
+  onReady(() => {
+    body.classList.add('has-starfield');
 
-    const gcsBody = getComputedStyle(body);
-    const gcsRoot = getComputedStyle(root);
-    const phi = parseFloat(gcsBody.getPropertyValue('--phi')) || 1.618;
+    TARGETS.forEach(target => {
+      whenSelector(target.sel, () => {
+        if (engines.has(target.sel)) return;
 
-    const cfg = {
-      starCount: Math.max(0, Math.round(parseFloat(gcsBody.getPropertyValue('--star-count')) || 40)),
-      randomize: clamp01(parseFloat(gcsBody.getPropertyValue('--star-randomize')) || 0),
-      opacityMin: parseFloat(gcsBody.getPropertyValue('--opacity-min')) || 0.35,
-      opacityMax: parseFloat(gcsBody.getPropertyValue('--opacity-max')) || 1.0,
-      twinkleMin: parseFloat(gcsBody.getPropertyValue('--twinkle-min')) || 1.2,
-      twinkleMax: parseFloat(gcsBody.getPropertyValue('--twinkle-max')) || 2.8,
-      blurMaxPx: (parseFloat(gcsBody.getPropertyValue('--max-blur')) || 0.22) * remPx(),
-      jitterMinPx: (parseFloat(gcsBody.getPropertyValue('--jitter-min')) || 0.10) * remPx(),
-      jitterMaxPx: Math.max(
-        (parseFloat(gcsBody.getPropertyValue('--jitter-min')) || 0.10) * remPx(),
-        (parseFloat(gcsBody.getPropertyValue('--jitter-max')) || 2.0) * remPx()
-      ),
-      avoidStrength: clamp01(parseFloat(gcsBody.getPropertyValue('--avoid-vert-strength')) || 0),
-      avoidWidthDeg: Math.max(0, parseFloat(gcsBody.getPropertyValue('--avoid-vert-width-deg')) || 0),
-      sizeLrem: parseFloat(gcsRoot.getPropertyValue('--size-large')) || 1.5,
-      sizeMrem: parseFloat(gcsRoot.getPropertyValue('--size-medium')) || (1.5 / phi),
-      sizeSrem: parseFloat(gcsRoot.getPropertyValue('--size-small')) || ((1.5 / phi) / phi),
-      speedMin: parseFloat(gcsBody.getPropertyValue('--drift-speed-min')) || 22,
-      speedMax: parseFloat(gcsBody.getPropertyValue('--drift-speed-max')) || 58,
-      driftOvershootPx: parseFloat(gcsBody.getPropertyValue('--drift-overshoot')) || 80,
-      wobblePx: (parseFloat(gcsBody.getPropertyValue('--drift-wobble')) || 0.18) * remPx(),
-      scaleMin: parseFloat(gcsBody.getPropertyValue('--drift-scale-min')) || 0.92,
-      scaleMax: parseFloat(gcsBody.getPropertyValue('--drift-scale-max')) || 1.10,
-      spawnIntervalMs: Math.max(16, parseFloat(gcsBody.getPropertyValue('--spawn-interval')) || 140),
-      spawnPerTick: Math.max(1, Math.round(parseFloat(gcsBody.getPropertyValue('--spawn-per-tick')) || 2)),
-      maxLiveStars: Math.max(8, Math.round(parseFloat(gcsBody.getPropertyValue('--max-live-stars')) || 180)),
-      seedPhase: (() => {
-        const seedVal = parseFloat(gcsBody.getPropertyValue('--star-seed'));
-        const v = Number.isFinite(seedVal) ? seedVal : Math.random();
-        return v - Math.floor(v);
-      })()
-    };
+        const engine = createEngine(target);
+        if (!engine) return;
 
-    const svg = host.querySelector('svg');
-    const path = svg ? svg.querySelector('path')
+        engines.set(target.sel, engine);
+        engine.start();
+
+        ro.observe(engine.host);
+        ro.observe(engine.section);
+
+        const svg = engine.host.querySelector('svg');
+        if (svg) ro.observe(svg);
+
+        watchMutations(engine.host);
+        watchMutations(engine.section);
+      });
+    });
+
+    window.addEventListener('resize', rebuildAll, { passive: true });
+    window.addEventListener('load', rebuildAll, { passive: true });
+  });
+})();
