@@ -912,17 +912,14 @@ button.sqs-button-element--secondary:active,
 }
 
 
-
-
 /* -----------------------------------------
    SPECIFIC BLOCK FIXES
    ----------------------------------------- */
 
-
 #block-yui_3_17_2_1_1757554504439_2552,
 #block-3fd5474bac7cfdc5bd19 {
   text-shadow: 3px 4px 3px
-  rgba(0,0,0,.6);
+  rgba(20,0,10,.6);
 }
 
 /* Page-level override: bigger intro line for this one block */
@@ -970,111 +967,4 @@ button.sqs-button-element--secondary:active,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
   margin-bottom: 1rem !important;
-}
-
-
-/* =========================================================
-   FE Text blocks — remove vertical padding when centered/bottom
-   (reliable: scopes to the same .fe-block)
-========================================================= */
-
-.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
-  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
-.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
-  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
-.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
-  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
-.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
-  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
-  padding-top: 0;
-  padding-bottom: 0;
-}
-
-
-/* =========================================================
-   FLUID ENGINE — TRUE VERTICAL CENTERING FOR TEXT BLOCKS
-   Applies only when FE vertical-align is center or bottom
-========================================================= */
-
-@supports selector(.fe-block:has(*)) {
-
-  /* Make the FE cell's text content fill the available height */
-  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"])),
-  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"])) {
-
-    /* block + wrappers must allow full height */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] > .sqs-block-content {
-      height: 100%;
-    }
-
-    /* the actual text container does the centering */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-
-      /* kill baseline token padding so FE centering optics are correct;
-         block-level Squarespace padding can still override this */
-      padding-top: 0;
-      padding-bottom: 0;
-    }
-
-    /* neutralize margin-based spacing */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > *,
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content > * {
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
-    }
-
-    /* reintroduce spacing in a way FE *counts* */
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
-      row-gap: 0.55rem; /* sync with your system */
-    }
-  }
-}
-
-/* -----------------------------------------
-   BLOCK-SPECIFIC SAFEGUARD — multiline intro copy
-   Prevent FE height/overflow clipping when the text wraps or uses <br>
-   ----------------------------------------- */
-#block-acd0f3e46c397008843b,
-#block-acd0f3e46c397008843b .sqs-block-content,
-#block-acd0f3e46c397008843b .sqs-text-block-container,
-#block-acd0f3e46c397008843b .sqs-html-content {
-  height: auto !important;
-  max-height: none !important;
-  min-height: 0 !important;
-  overflow: visible !important;
-}
-
-#block-acd0f3e46c397008843b .sqs-html-content {
-  display: block !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-#block-acd0f3e46c397008843b .sqs-html-content p {
-  white-space: normal !important;
-}
-
-/* Force text rendering for this block in case component-level FX are applied */
-.fe-block-acd0f3e46c397008843b {
-  --blur-value: blur(0px) !important;
-}
-
-#block-acd0f3e46c397008843b .sqs-html-content,
-#block-acd0f3e46c397008843b .sqs-html-content p {
-  filter: none !important;
-  -webkit-filter: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  mix-blend-mode: normal !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  color: var(--paragraphMediumColor, currentColor) !important;
-  -webkit-text-fill-color: currentColor !important;
 }
