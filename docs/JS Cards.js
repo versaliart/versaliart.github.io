@@ -31,13 +31,25 @@
     let discardZ = 0;
     if (!drawPile || !discardPile || !seedRoot) return;
 
+const backAssets = (() => {
+  try {
+    const raw = seedRoot.getAttribute('data-back-assets');
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+})();
+
 const makeCard = (seedNode, idx) => {
-  const backURL  = seedNode.getAttribute('data-back') || '';
+  const backKey = seedNode.getAttribute('data-back-key') || '';
+  const backURL  = seedNode.getAttribute('data-back') || backAssets[backKey] || '';
   const textHTML = $('.front-content', seedNode)?.innerHTML || '';
 
   const card = document.createElement('div');
   card.className = 'cdp-card';
   card.dataset.index = String(idx);
+  card.dataset.backUrl = backURL;
+  card.dataset.backApplied = '0';
 
   const shuttle = document.createElement('div');
   shuttle.className = 'cdp-shuttle';
@@ -50,7 +62,6 @@ const makeCard = (seedNode, idx) => {
 
   const back = document.createElement('div');
   back.className = 'cdp-face cdp-back';
-  back.style.backgroundImage = `url("${backURL}")`;
 
   const front = document.createElement('div');
   front.className = 'cdp-face cdp-front';
@@ -64,6 +75,16 @@ const makeCard = (seedNode, idx) => {
   shuttle.appendChild(flipper);
   card.appendChild(shuttle);
   return card;
+};
+
+const ensureBackImage = (card) => {
+  if (!card || card.dataset.backApplied === '1') return;
+  const backURL = card.dataset.backUrl || '';
+  if (!backURL) return;
+  const backFace = card.querySelector('.cdp-back');
+  if (!backFace) return;
+  backFace.style.backgroundImage = `url("${backURL}")`;
+  card.dataset.backApplied = '1';
 };
 
 
@@ -229,7 +250,10 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
       const cardsInDraw = getDrawCards();
       cardsInDraw.forEach(c => c.style.pointerEvents = 'none');
       const top = cardsInDraw.at(-1);
-      if (top) top.style.pointerEvents = '';
+      if (top) {
+        ensureBackImage(top);
+        top.style.pointerEvents = '';
+      }
     };
 
 const onCardClick = (ev) => {
@@ -237,6 +261,7 @@ const onCardClick = (ev) => {
 
   // only the top card in draw acts
   if (getDrawCards().at(-1) !== card) return;
+  ensureBackImage(card);
 
   // First click → open
   if (!card.classList.contains('is-flipped')) {
