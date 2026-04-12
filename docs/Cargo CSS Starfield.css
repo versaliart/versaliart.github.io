@@ -1,83 +1,106 @@
 /* =========================================================
-   Starfield v3.0 — EDGE-ONLY (outline sparkles for Shape Block)
-   - No ambient .star-container layer is used or referenced
-   - Quantity, sizing, and timing all inherit from CSS vars
-   - Works with the edge-sampler JS that targets an exact block ID
+   Starfield v4.0 — EDGE EMITTER + SECTION FIELD
+   - Emits from the sampled edge of the targeted Shape Block
+   - Stars move outward through the current section only
+   - Continuous spawning; stars fade as they approach/leave viewport
+   - No ambient global .star-container layer
 ========================================================= */
 
-/* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
-  /* How many stars to place ALONG the SVG PATH (edge sampler reads this) */
+  /* emitter density */
   --star-count: 150;
   --star-min-gap: 4px;
 
-  /* outward jitter range (rem units) */
+  /* spawn system */
+  --spawn-interval: 140;         /* ms between spawn bursts */
+  --spawn-per-tick: 2;           /* stars spawned each burst */
+  --max-live-stars: 180;         /* hard cap per target */
+
+  /* outward offset from edge at spawn */
   --jitter-min: 0.10rem;
   --jitter-max: 2.00rem;
 
   /* distribution balance: 0 = even, 1 = random */
   --star-randomize: 0;
 
-  /* Twinkle timing (seconds) */
-  --twinkle-min: 0.5;
-  --twinkle-max: 2.0;
+  /* optional twinkle overlay */
+  --twinkle-min: 1.2;
+  --twinkle-max: 2.8;
 
-  /* Opacity range for stars */
-  --opacity-min: 0.15;
+  /* opacity range at spawn */
+  --opacity-min: 0.35;
   --opacity-max: 1.0;
 
-  /* Size quantization using φ (golden ratio) */
-  --phi: 1.618;
-  --size-large: 1.5rem;                                 /* L base */
-  --size-medium: calc(var(--size-large) / var(--phi));  /* ≈ 0.927rem */
-  --size-small:  calc(var(--size-medium) / var(--phi)); /* ≈ 0.573rem */
+  /* motion */
+  --drift-speed-min: 22;         /* px/sec */
+  --drift-speed-max: 58;         /* px/sec */
+  --drift-overshoot: 80;         /* px past viewport edge before recycle */
+  --drift-wobble: 0.18rem;       /* tiny sideways drift */
+  --drift-scale-min: 0.92;
+  --drift-scale-max: 1.10;
 
-  /* 0 = no avoidance, 1 = strongest avoidance */
+  /* size quantization using φ */
+  --phi: 1.618;
+  --size-large: 1.5rem;
+  --size-medium: calc(var(--size-large) / var(--phi));
+  --size-small:  calc(var(--size-medium) / var(--phi));
+
+  /* angle avoidance */
   --avoid-vert-strength: 1;
   --avoid-vert-width-deg: 45;
 
-  /* Soft glow */
+  /* glow + art */
   --max-blur: 0.22rem;
   --star-color: #9989EC;
   --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
 
-  --jitter-fallback-mult: 2;   /* default 2.0 if omitted */
-  --jitter-fallback-steps: 3;     /* default 3 if omitted */
+  --jitter-fallback-mult: 2;
+  --jitter-fallback-steps: 3;
 }
 
-/* The overlay layer the JS injects inside your Shape Block */
+/* nearest Squarespace section becomes the clip area */
+.starfield-section{
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+/* full-section particle layer */
 .shape-edge-sparkles{
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 2;
+  z-index: 3;
+  overflow: hidden;
 }
 
-/* Individual stars (mask uses your sparkle SVG) */
+/* individual star */
 .shape-edge-sparkles .star{
   position: absolute;
-  left: 0; top: 0;              /* set via inline left/top + translate */
+  left: 0;
+  top: 0;
   width: var(--size, 1rem);
   height: var(--size, 1rem);
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--scale, 1));
   opacity: var(--o, 0.85);
   color: var(--star-color);
   background: currentColor;
 
-  -webkit-mask: var(--star-url) center/contain no-repeat;
-          mask: var(--star-url) center/contain no-repeat;
+  -webkit-mask: var(--star-url) center / contain no-repeat;
+          mask: var(--star-url) center / contain no-repeat;
 
   filter: drop-shadow(0 0 var(--blur, 0) currentColor);
-  will-change: opacity, transform;
+  will-change: transform, opacity;
   animation: twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay, 0s) infinite alternate;
 }
 
 @keyframes twinkle{
-  0%   { opacity: 0.15; }
-  50%  { opacity: 1; }
-  100% { opacity: 0.25; }
+  0%   { filter: drop-shadow(0 0 var(--blur, 0) currentColor); }
+  50%  { filter: drop-shadow(0 0 calc(var(--blur, 0) * 1.35) currentColor); }
+  100% { filter: drop-shadow(0 0 calc(var(--blur, 0) * 0.8) currentColor); }
 }
 
 @media (prefers-reduced-motion: reduce){
-  .shape-edge-sparkles .star{ animation: none !important; opacity: 0.6; }
+  .shape-edge-sparkles .star{
+    animation: none !important;
+  }
 }
