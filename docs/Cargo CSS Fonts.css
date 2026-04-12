@@ -221,25 +221,6 @@ nav .subnav a{
   text-transform:none;
 }
 
-/* ===============================
-   BUTTONS
-================================*/
-.sqs-block-button .sqs-button-element,
-.sqs-button-element,
-button.sqs-add-to-cart-button{
-  font-family:"Maax",sans-serif !important;
-  font-weight:700 !important;          /* Bold */
-  font-size:1rem !important;
-  line-height:1.2;
-  letter-spacing:.03em !important;
-  text-transform:uppercase !important;
-}
-
-.sqs-button-element--secondary{
-  font-weight:500 !important;          /* Medium */
-  letter-spacing:.02em !important;
-  text-transform:none !important;
-}
 
 /* ===============================
    FOOTER
@@ -454,7 +435,11 @@ button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg pat
   stroke: var(--your-accent-color, white) !important;
 }
 
-/* ===== Buttons: force Maax on all variants + inner label ===== */
+
+/* ===============================
+   BUTTONS
+================================*/
+
 /* Core button anchors (7.1) */
 a.sqs-button-element,
 a.sqs-button-element--primary,
