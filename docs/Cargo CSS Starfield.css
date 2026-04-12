@@ -53,6 +53,12 @@ body.has-starfield{
   --edge-fade-width: 7rem;       /* how gradually they fade near/outside section edge */
 }
 
+@media screen and (max-width: 767px){
+  body.has-starfield{
+    --edge-fade-width: 2.5rem;
+  }
+}
+
 /* Section-level overlay injected by JS */
 .shape-edge-sparkles{
   position: absolute;
