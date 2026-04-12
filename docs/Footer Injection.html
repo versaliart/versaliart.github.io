@@ -221,13 +221,13 @@
     : new Promise(function (r) { document.addEventListener('DOMContentLoaded', r, { once: true }); });
 
   domReady
-    .then(function () { return loadScript('https://versaliart.github.io/Cargo%20JSS%20Borderlines.js'); })
+    .then(function () { return loadScript('https://versaliart.github.io/Borderlines.js'); })
     .then(function () {
       console.log('[Loader] Borderlines loaded');
       // prove the file executed (v1.37+ exposes this)
       console.log(window.MOTIF_RAILS && window.MOTIF_RAILS.ping ? window.MOTIF_RAILS.ping() : '[motif] ping missing');
     })
-    .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Borderlines.js'); });
+    .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Borderlines.js'); });
 
   function whenSelector(sel, cb) {
     var fired = false;
@@ -252,57 +252,57 @@
   }
 
   whenSelector('#starfield-enable', function () {
-    loadScript('https://versaliart.github.io/Cargo%20JSS%20Starfield.js')
+    loadScript('https://versaliart.github.io/Starfield.js')
       .then(function () { return console.log('[Loader] Starfield loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Starfield.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Starfield.js'); });
   });
 
   whenSelector('.tag-pills', function () {
-    loadScript('https://versaliart.github.io/Cargo%20JSS%20Tags.js')
+    loadScript('https://versaliart.github.io/Tags.js')
       .then(function () { return console.log('[Loader] Tags loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Tags.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Tags.js'); });
   });
 
   whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
-    loadScript('https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js')
+    loadScript('https://versaliart.github.io/Flipblock.js')
       .then(function () { return console.log('[Loader] Topblock loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Flipblock.js'); });
   });
 
   whenSelector('header#header[data-test="header"]', function () {
-    loadScript('https://versaliart.github.io/Cargo%20JSS%20Header.js')
+    loadScript('https://versaliart.github.io/Header.js')
       .then(function () { return console.log('[Loader] Header loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Header.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Header.js'); });
   });
 
   whenSelector('[data-snap-scroll]', function () {
-    loadScript('https://versaliart.github.io/JS%20Scroll.js')
+    loadScript('https://versaliart.github.io/Scrollsnap.js')
       .then(function () { return console.log('[Loader] SnapScroll loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Scroll.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Scrollsnap.js'); });
   });
 
   whenSelector('.card-table', function () {
-    loadScript('https://versaliart.github.io/JS%20Cards.js')
+    loadScript('https://versaliart.github.io/Flipcards.js')
       .then(function () { return console.log('[Loader] TarotStack loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Cards.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Flipcards.js'); });
   });
 
   whenSelector('.mm-marquee', function () {
-    loadScript('https://versaliart.github.io/JS%20Marquee.js')
+    loadScript('https://versaliart.github.io/Marquee.js')
       .then(function () { return console.log('[Loader] Marquee loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Marquee.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Marquee.js'); });
   });
 
   whenSelector('.mm-hero-svg', function () {
-    loadScript('https://versaliart.github.io/JS_Eyes.js')
+    loadScript('https://versaliart.github.io/Eyesfollow.js')
       .then(function () { return console.log('[Loader] EyeTracker loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS_Eyes.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Eyesfollow.js'); });
   });
 
   whenSelector('.mm-cardhover', function () {
-    loadScript('https://versaliart.github.io/JS%20Card%20Hover.js')
+    loadScript('https://versaliart.github.io/Hovercards.js')
       .then(function () { return console.log('[Loader] Card Hover loaded'); })
-      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Card%20Hover.js'); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Hovercards.js'); });
   });
 })();
 </script>
