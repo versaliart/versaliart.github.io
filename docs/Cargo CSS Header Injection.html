@@ -1,28 +1,56 @@
 <!-- Preconnect to your asset host -->
 <link rel="preconnect" href="https://versaliart.github.io">
 
-<!-- External styles (root paths, consistent; crossorigin helps the preload get reused) -->
- <link rel="preload" as="style" href="https://versaliart.github.io/CSS%20Cards.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/CSS%20Cards.css"></noscript>
+<script>
+(function () {
+  if (window.__mmCssInjected) return;
+  window.__mmCssInjected = true;
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Header.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Header.css"></noscript>
+  var urls = [
+    'https://versaliart.github.io/CSS%20Cards.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Header.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Borderlines.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Cursors.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Fonts.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Starfield.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Tags.css',
+    'https://versaliart.github.io/Cargo%20CSS%20Topblock%20flip.css'
+  ];
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Borderlines.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Borderlines.css"></noscript>
+  var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Cursors.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Cursors.css"></noscript>
+  function hasLinkForHref(href) {
+    return !!document.querySelector(
+      'link[rel="preload"][as="style"][href="' + href + '"]' +
+      ',link[rel="stylesheet"][href="' + href + '"]'
+    );
+  }
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Fonts.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Fonts.css"></noscript>
+  urls.forEach(function (href) {
+    if (hasLinkForHref(href)) return;
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Starfield.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Starfield.css"></noscript>
+    var link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'style';
+    link.href = href;
+    link.crossOrigin = '';
+    link.onload = function () {
+      this.onload = null;
+      this.rel = 'stylesheet';
+    };
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Tags.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Tags.css"></noscript>
+    head.appendChild(link);
+  });
+})();
+</script>
 
-<link rel="preload" as="style" href="https://versaliart.github.io/Cargo%20CSS%20Topblock%20flip.css" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Topblock%20flip.css"></noscript>
-
+<noscript>
+  <link rel="stylesheet" href="https://versaliart.github.io/CSS%20Cards.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Header.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Borderlines.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Cursors.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Fonts.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Starfield.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Tags.css">
+  <link rel="stylesheet" href="https://versaliart.github.io/Cargo%20CSS%20Topblock%20flip.css">
+</noscript>
