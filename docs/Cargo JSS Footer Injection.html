@@ -171,10 +171,10 @@
       .catch(function (err) { return console.warn('[Loader] EyeTracker failed', err); });
   });
 
-  // whenSelector('.mm-cardhover', function () {
-  //   loadScript('https://versaliart.github.io/JS%20Card%20Hover.js')
-  //     .then(function () { return console.log('[Loader] Card Hover loaded'); })
-  //     .catch(console.warn);
-  // });
+  whenSelector('.mm-cardhover', function () {
+    loadScript('https://versaliart.github.io/JS%20Card%20Hover.js')
+      .then(function () { return console.log('[Loader] Card Hover loaded'); })
+      .catch(console.warn);
+  });
 })();
 </script>
