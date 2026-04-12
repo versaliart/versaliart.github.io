@@ -18,6 +18,7 @@
 
   let preloadedImageUrls = null;
   let preloadPromise = null;
+  const PRELOAD_VISIBILITY_MAX_WAIT_MS = 4000;
 
   const wait = (ms, signal) => new Promise((resolve, reject) => {
     if (signal?.aborted) {
@@ -46,18 +47,45 @@
     if (preloadedImageUrls) return preloadedImageUrls;
     if (preloadPromise) return preloadPromise;
 
-    preloadPromise = Promise.all(imgs.map(async (src) => {
-      const response = await fetch(src, { cache: 'force-cache' });
-      if (!response.ok) {
-        throw new Error(`Failed to preload image: ${src}`);
-      }
+    const preloadDisabled = document.querySelector('[data-mm-disable-preload="true"]') !== null;
+    if (preloadDisabled) {
+      preloadedImageUrls = [...imgs];
+      return preloadedImageUrls;
+    }
 
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
+    const waitForVisibleDocument = async () => {
+      let backoffMs = 150;
+      while (document.visibilityState !== 'visible') {
+        await wait(backoffMs);
+        backoffMs = Math.min(backoffMs * 2, PRELOAD_VISIBILITY_MAX_WAIT_MS);
+      }
+    };
+
+    const decodeImage = (img) => {
+      if (typeof img.decode === 'function') {
+        return img.decode().catch(() => undefined);
+      }
+      return new Promise((resolve) => {
+        if (img.complete) {
+          resolve();
+          return;
+        }
+        const finalize = () => {
+          img.removeEventListener('load', finalize);
+          img.removeEventListener('error', finalize);
+          resolve();
+        };
+        img.addEventListener('load', finalize, { once: true });
+        img.addEventListener('error', finalize, { once: true });
+      });
+    };
+
+    preloadPromise = Promise.all(imgs.map(async (src) => {
+      await waitForVisibleDocument();
       const decodedImage = new Image();
-      decodedImage.src = objectUrl;
-      await decodedImage.decode();
-      return objectUrl;
+      decodedImage.src = src;
+      await decodeImage(decodedImage);
+      return src;
     })).then((urls) => {
       preloadedImageUrls = urls;
       return urls;
