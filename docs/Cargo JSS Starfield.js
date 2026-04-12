@@ -1,8 +1,10 @@
-// v4.1 — Section-flow starfield for exact target block
+// v4.2 — Section-flow starfield for exact target block
 // - Injects overlay into nearest section
 // - Hard top-only wedge exclusion
 // - Removes stars that drift into the forbidden top wedge
 // - JS-driven twinkle + edge fade
+// - Uses visible SVG bounds as emitter fallback on mobile
+// - Safer jitter handling for very small emitters
 
 (function () {
   const TARGETS = [
@@ -132,10 +134,9 @@
       const ang = Math.atan2(py - cy, px - cx) / DEG;
       const a = (ang + 360) % 360;
 
-      // screen-top is 270deg
+      // Screen-top is 270deg in DOM coordinates
       const dTop = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
 
-      // hard exclusion inside the top wedge
       return dTop >= w;
     };
   }
@@ -190,12 +191,25 @@
 
     const overlay = ensureOverlay(section);
     const sectionRect = section.getBoundingClientRect();
-    const hostRect = host.getBoundingClientRect();
-    if (sectionRect.width < 4 || sectionRect.height < 4 || hostRect.width < 4 || hostRect.height < 4) return null;
 
     const svg = host.querySelector('svg');
     const path = svg ? svg.querySelector('path') : null;
-    const mode = (svg && path) ? 'svg' : 'box';
+    const mode = (svg && path && typeof path.getTotalLength === 'function') ? 'svg' : 'box';
+
+    function getEmitterRect() {
+      if (svg) {
+        const svgRect = svg.getBoundingClientRect();
+        if (svgRect.width >= 4 && svgRect.height >= 4) {
+          return svgRect;
+        }
+      }
+      return host.getBoundingClientRect();
+    }
+
+    const emitterRect = getEmitterRect();
+    if (sectionRect.width < 4 || sectionRect.height < 4 || emitterRect.width < 4 || emitterRect.height < 4) {
+      return null;
+    }
 
     const bodyStyle = getComputedStyle(body);
     const angleGate = makeAngleGate(
@@ -217,10 +231,17 @@
     const pathTotalLength = mode === 'svg' ? path.getTotalLength() : 0;
 
     function sampleSpawnPoint() {
-      for (let tries = 0; tries < 40; tries++) {
+      for (let tries = 0; tries < 120; tries++) {
         const evenT = Math.random();
         const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
         const t = (evenT + dt + basePhase + 1) % 1;
+
+        const currentEmitterRect = getEmitterRect();
+        const maxUsefulJitter = Math.max(
+          8,
+          Math.min(currentEmitterRect.width, currentEmitterRect.height) * 0.18
+        );
+        const cappedJitterMax = Math.max(jitterMinPx, Math.min(jitterMaxPx, maxUsefulJitter));
 
         if (mode === 'svg') {
           const d = t * pathTotalLength;
@@ -234,13 +255,12 @@
           ny /= nlen;
 
           const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-          const jitter = sign * rand(jitterMinPx, jitterMaxPx);
+          const jitter = sign * rand(jitterMinPx, cappedJitterMax);
 
           const client = svgToClient(svg, p.x + nx * jitter, p.y + ny * jitter);
           if (!client) continue;
 
           const pos = pointToSection(client, sectionRect);
-
           if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
 
           const dirX = pos.x - sectionCenter.x;
@@ -255,19 +275,19 @@
           };
         } else {
           const hit = (target.fallback || 'ellipse') === 'rect'
-            ? sampleRectPerimeter(hostRect, t)
-            : sampleEllipsePerimeter(hostRect, t);
+            ? sampleRectPerimeter(currentEmitterRect, t)
+            : sampleEllipsePerimeter(currentEmitterRect, t);
 
           let px, py;
           if ((target.fallback || 'ellipse') === 'rect') {
             const dx = hit.x - hit.cx;
             const dy = hit.y - hit.cy;
             const dl = Math.hypot(dx, dy) || 1;
-            const j = rand(jitterMinPx, jitterMaxPx);
+            const j = rand(jitterMinPx, cappedJitterMax);
             px = hit.x + (dx / dl) * j;
             py = hit.y + (dy / dl) * j;
           } else {
-            const j = rand(jitterMinPx, jitterMaxPx);
+            const j = rand(jitterMinPx, cappedJitterMax);
             px = hit.x + Math.cos(hit.theta) * j;
             py = hit.y + Math.sin(hit.theta) * j;
           }
@@ -276,7 +296,6 @@
             x: px - sectionRect.left,
             y: py - sectionRect.top
           };
-
           if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
 
           const dirX = pos.x - sectionCenter.x;
