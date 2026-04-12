@@ -46,7 +46,7 @@ body.has-starfield{
   --jitter-fallback-steps: 3;
 
   /* motion controls */
-  --star-max-live: 170;          /* live particles at once */
+  --star-max-live: 120;          /* live particles at once */
   --spawn-rate: 5;              /* particles per second */
   --drift-min: 2.2rem;           /* minimum outward drift speed per second */
   --drift-max: 4.8rem;           /* maximum outward drift speed per second */
