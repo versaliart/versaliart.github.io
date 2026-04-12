@@ -5,10 +5,102 @@
 
   var inflightScriptLoads = new Map();
   var completedScriptLoads = new Set();
+  var THROTTLE_WINDOW_MS = 15000;
+  var THROTTLE_FAILURE_LIMIT = 3;
+  var DEFAULT_COOLDOWN_MS = 30000;
+
+  window.__mmRecentLoadFailures = window.__mmRecentLoadFailures || [];
+  window.__mmLoaderPausedUntil = window.__mmLoaderPausedUntil || 0;
+  window.__mmLoaderWarningState = window.__mmLoaderWarningState || {
+    key: '',
+    timeoutId: null,
+    pendingUrls: []
+  };
 
   function canonicalizeUrl(src) {
     var absolute = new URL(src, document.baseURI).href;
     return absolute.replace(/%20/gi, ' ').replace(/\+/g, ' ');
+  }
+
+  function parseRetryAfterMs(retryAfterValue) {
+    if (!retryAfterValue) return 0;
+
+    var trimmed = String(retryAfterValue).trim();
+    if (!trimmed) return 0;
+
+    var delaySeconds = Number(trimmed);
+    if (Number.isFinite(delaySeconds)) {
+      return Math.max(0, delaySeconds * 1000);
+    }
+
+    var retryAt = Date.parse(trimmed);
+    if (!Number.isNaN(retryAt)) {
+      return Math.max(0, retryAt - Date.now());
+    }
+
+    return 0;
+  }
+
+  function updateCooldown(ms) {
+    if (!ms || ms <= 0) return;
+    var pausedUntil = Date.now() + ms;
+    window.__mmLoaderPausedUntil = Math.max(window.__mmLoaderPausedUntil || 0, pausedUntil);
+  }
+
+  function emitConsolidatedWarning(reason) {
+    var state = window.__mmLoaderWarningState;
+    if (state.timeoutId) return;
+
+    state.timeoutId = setTimeout(function () {
+      state.timeoutId = null;
+
+      var uniqueUrls = Array.from(new Set(state.pendingUrls));
+      state.pendingUrls = [];
+
+      var pausedUntil = window.__mmLoaderPausedUntil || 0;
+      var pausedForMs = Math.max(0, pausedUntil - Date.now());
+      var warningKey = reason + '|' + pausedUntil + '|' + uniqueUrls.join('|');
+      if (state.key === warningKey) return;
+      state.key = warningKey;
+
+      console.warn('[Loader] Script loading issues detected (' + reason + ').', {
+        pausedUntil: pausedUntil ? new Date(pausedUntil).toISOString() : null,
+        retryInMs: pausedForMs,
+        failedUrls: uniqueUrls
+      });
+    }, 0);
+  }
+
+  function recordLoadFailure(url, options) {
+    var now = Date.now();
+    var opts = options || {};
+    var recent = window.__mmRecentLoadFailures;
+
+    recent.push({ ts: now, url: url });
+    while (recent.length && (now - recent[0].ts > THROTTLE_WINDOW_MS)) {
+      recent.shift();
+    }
+
+    var retryAfterMs = 0;
+    if (opts.retryAfterHeader != null) {
+      retryAfterMs = parseRetryAfterMs(opts.retryAfterHeader);
+    }
+    if (!retryAfterMs && opts.response && opts.response.headers && typeof opts.response.headers.get === 'function') {
+      retryAfterMs = parseRetryAfterMs(opts.response.headers.get('Retry-After'));
+    }
+    if (retryAfterMs > 0) {
+      updateCooldown(retryAfterMs);
+      emitConsolidatedWarning('retry-after');
+      return;
+    }
+
+    if (recent.length >= THROTTLE_FAILURE_LIMIT) {
+      updateCooldown(DEFAULT_COOLDOWN_MS);
+      emitConsolidatedWarning('throttled');
+      return;
+    }
+
+    emitConsolidatedWarning('load-failure');
   }
 
   function findExistingScript(key) {
@@ -18,6 +110,21 @@
       if (canonicalizeUrl(existingSrc) === key) return scripts[i];
     }
     return null;
+  }
+
+  function canAttemptNewLoads() {
+    var pausedUntil = window.__mmLoaderPausedUntil || 0;
+    if (Date.now() >= pausedUntil) return true;
+    emitConsolidatedWarning('cooldown-active');
+    return false;
+  }
+
+  function createLoadBlockedError(src) {
+    var pausedUntil = window.__mmLoaderPausedUntil || 0;
+    var err = new Error('Loader paused until ' + new Date(pausedUntil).toISOString() + '; skipped ' + src);
+    err.code = 'MM_LOADER_COOLDOWN';
+    err.pausedUntil = pausedUntil;
+    return err;
   }
 
   // deduping loader that appends to <head> (safer than body)
@@ -31,6 +138,10 @@
 
     if (inflightScriptLoads.has(key)) {
       return inflightScriptLoads.get(key);
+    }
+
+    if (!canAttemptNewLoads()) {
+      return Promise.reject(createLoadBlockedError(absoluteSrc));
     }
 
     var existing = findExistingScript(key);
@@ -55,6 +166,7 @@
           inflightScriptLoads.delete(key);
           existing.removeEventListener('load', onLoad);
           existing.removeEventListener('error', onError);
+          recordLoadFailure(absoluteSrc);
           reject(new Error('Failed to load ' + absoluteSrc));
         }
 
@@ -78,6 +190,7 @@
       };
       s.onerror = function () {
         inflightScriptLoads.delete(key);
+        recordLoadFailure(absoluteSrc);
         reject(new Error('Failed to load ' + absoluteSrc));
       };
       (document.head || document.documentElement).appendChild(s);
@@ -85,6 +198,21 @@
 
     inflightScriptLoads.set(key, promise);
     return promise;
+  }
+
+  function handleLoadError(err, src) {
+    if (src) {
+      window.__mmLoaderWarningState.pendingUrls.push(src);
+    }
+
+    if (err && err.code === 'MM_LOADER_COOLDOWN') {
+      emitConsolidatedWarning('cooldown-active');
+      return;
+    }
+
+    if (err && err.message && src && err.message.indexOf(src) === -1) {
+      window.__mmLoaderWarningState.pendingUrls.push(err.message);
+    }
   }
 
   // Always load Borderlines (rails) after DOM is parsed — no selector gate
@@ -99,7 +227,7 @@
       // prove the file executed (v1.37+ exposes this)
       console.log(window.MOTIF_RAILS && window.MOTIF_RAILS.ping ? window.MOTIF_RAILS.ping() : '[motif] ping missing');
     })
-    .catch(function (err) { console.warn('[Loader] Borderlines failed', err); });
+    .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Borderlines.js'); });
 
   function whenSelector(sel, cb) {
     var fired = false;
@@ -126,55 +254,55 @@
   whenSelector('#starfield-enable', function () {
     loadScript('https://versaliart.github.io/Cargo%20JSS%20Starfield.js')
       .then(function () { return console.log('[Loader] Starfield loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Starfield.js'); });
   });
 
   whenSelector('.tag-pills', function () {
     loadScript('https://versaliart.github.io/Cargo%20JSS%20Tags.js')
       .then(function () { return console.log('[Loader] Tags loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Tags.js'); });
   });
 
   whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
     loadScript('https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js')
       .then(function () { return console.log('[Loader] Topblock loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js'); });
   });
 
   whenSelector('header#header[data-test="header"]', function () {
     loadScript('https://versaliart.github.io/Cargo%20JSS%20Header.js')
       .then(function () { return console.log('[Loader] Header loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Cargo%20JSS%20Header.js'); });
   });
 
   whenSelector('[data-snap-scroll]', function () {
     loadScript('https://versaliart.github.io/JS%20Scroll.js')
       .then(function () { return console.log('[Loader] SnapScroll loaded'); })
-      .catch(function (err) { return console.warn('[Loader] SnapScroll failed', err); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Scroll.js'); });
   });
 
   whenSelector('.card-table', function () {
     loadScript('https://versaliart.github.io/JS%20Cards.js')
       .then(function () { return console.log('[Loader] TarotStack loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Cards.js'); });
   });
 
   whenSelector('.mm-marquee', function () {
     loadScript('https://versaliart.github.io/JS%20Marquee.js')
       .then(function () { return console.log('[Loader] Marquee loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Marquee.js'); });
   });
 
   whenSelector('.mm-hero-svg', function () {
     loadScript('https://versaliart.github.io/JS_Eyes.js')
       .then(function () { return console.log('[Loader] EyeTracker loaded'); })
-      .catch(function (err) { return console.warn('[Loader] EyeTracker failed', err); });
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS_Eyes.js'); });
   });
 
   whenSelector('.mm-cardhover', function () {
     loadScript('https://versaliart.github.io/JS%20Card%20Hover.js')
       .then(function () { return console.log('[Loader] Card Hover loaded'); })
-      .catch(console.warn);
+      .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/JS%20Card%20Hover.js'); });
   });
 })();
 </script>
