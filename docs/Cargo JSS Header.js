@@ -1,27 +1,5 @@
-/* Mystic Munson — Header v2.6 */
+/* Mystic Munson — Header v2.7 */
 (function(){
-  function normalizePath(p){ return (p || '/').replace(/\/+$/, '/') || '/'; }
-  function pathnameFromUrl(u){
-    try { return new URL(u, location.origin).pathname; }
-    catch (_) { return ''; }
-  }
-  function isHome(){
-    if (normalizePath(location.pathname) === '/') return true;
-
-    const canonical = document.querySelector('link[rel="canonical"]');
-    if (canonical && normalizePath(pathnameFromUrl(canonical.href)) === '/') return true;
-
-    const body = document.body;
-    if (!body) return false;
-    const homeAttrs = [
-      'data-collection-url',
-      'data-page-url',
-      'data-url',
-      'data-homepage-url'
-    ];
-    return homeAttrs.some((attr) => normalizePath(body.getAttribute(attr)) === '/');
-  }
-
   function onceHeader(cb){
     let hdr = document.querySelector('header#header[data-test="header"]');
     if (hdr) return cb(hdr);
@@ -30,6 +8,10 @@
       if (hdr){ mo.disconnect(); cb(hdr); }
     });
     mo.observe(document.documentElement, {childList:true, subtree:true});
+  }
+
+  function isHome(){
+    return !!document.getElementById('mm-home-marker');
   }
 
   function selectSections(){
@@ -46,7 +28,6 @@
 
   function setup(){
     onceHeader(function(hdr){
-      // === Centered logo ===
       if (!hdr.querySelector('.mm-logo-center')) {
         hdr.insertAdjacentHTML('afterbegin', `
           <img class="mm-logo-center"
@@ -62,18 +43,14 @@
         hdr.style.left = mobile ? '50vw' : '50%';
       }
 
-      // Park the header (no animation)
       Object.assign(hdr.style, {
         position: 'fixed',
         left: '50%',
         top: STICKY + 'px',
-        // Let CSS control the Y drop; we only center on X here:
         transform: 'translateX(-50%)'
       });
       applyMobileFrame();
 
-
-      // Visibility helpers (make hidden truly inert)
       function hideHeader(){
         hdr.classList.remove('mm-visible');
         hdr.setAttribute('aria-hidden','true');
@@ -81,6 +58,7 @@
         hdr.style.pointerEvents = 'none';
         hdr.style.visibility = 'hidden';
       }
+
       function showHeader(){
         hdr.classList.add('mm-visible');
         hdr.removeAttribute('aria-hidden');
@@ -89,8 +67,8 @@
         hdr.style.visibility = 'visible';
       }
 
-      // Page top padding (none on home, space elsewhere)
       const page = document.getElementById('page');
+
       function applyPagePadding(){
         if (isHome()){
           if (page) page.style.setProperty('padding-top', '0px', 'important');
@@ -99,18 +77,26 @@
         } else {
           if (!page) return;
           const h = parseFloat(getComputedStyle(hdr).height) || 52;
-          page.style.setProperty('padding-top', (h + STICKY) + 'px');
+          page.style.setProperty('padding-top', (h + STICKY) + 'px', 'important');
           document.body.style.removeProperty('padding-top');
           document.body.style.removeProperty('margin-top');
         }
       }
 
-      // Home-only reveal threshold (top of Section 2 at viewport top)
       let revealAt = 0;
+
       function computeThreshold(){
-        if (!isHome()){ revealAt = 0; return; }
+        if (!isHome()){
+          revealAt = 0;
+          return;
+        }
+
         const sections = selectSections();
-        if (sections.length < 2){ revealAt = 0; return; }
+        if (sections.length < 2){
+          revealAt = 0;
+          return;
+        }
+
         const r2 = sections[1].getBoundingClientRect();
         revealAt = window.scrollY + r2.top - STICKY;
         if (revealAt < 0) revealAt = 0;
@@ -140,9 +126,6 @@
           update();
         });
       }
-
-      // Make left/right inset equal the vertical “air” inside the bar
-
 
       function ensureMobileButtons(){
         if (window.matchMedia('(min-width: 768px)').matches) return;
@@ -190,7 +173,6 @@
         document.documentElement.style.setProperty('--mm-edge-pad', (vGap + fudge) + 'px');
       }
 
-      // Init
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
@@ -198,16 +180,13 @@
       applyMobileFrame();
       update();
 
-      // Listeners
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
       window.addEventListener('resize', () => scheduleUpdate(true), {passive:true});
 
-      // Re-sync when fonts load (sizes change)
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(syncEdgePad).catch(()=>{});
+        document.fonts.ready.then(() => scheduleUpdate(true)).catch(()=>{});
       }
 
-      // Re-measure once for late DOM shifts (lazy sections, announcement bar)
       let t = null;
       const mo = new MutationObserver(() => {
         clearTimeout(t);
