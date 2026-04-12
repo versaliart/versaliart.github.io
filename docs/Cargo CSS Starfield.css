@@ -10,11 +10,11 @@
 body.has-starfield{
   /* source distribution */
   --star-count: 120;
-  --star-min-gap: 4px;
+  --star-min-gap: 2px;
 
   /* outward offset from the sampled edge */
   --jitter-min: 0.10rem;
-  --jitter-max: 2.00rem;
+  --jitter-max: 1.00rem;
 
   /* distribution balance: 0 = even, 1 = more random */
   --star-randomize: 0;
