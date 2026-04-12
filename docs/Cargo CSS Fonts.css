@@ -32,7 +32,7 @@
   src: url(https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b50125270571f593fcf/1756441424381/Maax-Italic.woff2) format("woff2");
   font-weight: 400;
   font-style: italic;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Medium (500) */
@@ -41,7 +41,7 @@
   src: url(https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12e5f5910144faa05f7ea/1756442207649/Maax-Medium.woff2) format("woff2");
   font-weight: 500;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Medium Italic (500 italic) */
@@ -50,7 +50,7 @@
   src: url(https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12e5dddc0cf4e186922be/1756442205332/Maax-Mediumitalic.woff2) format("woff2");
   font-weight: 500;
   font-style: italic;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Bold (700) */
