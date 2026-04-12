@@ -47,9 +47,9 @@ body.has-starfield{
 
   /* motion controls */
   --star-max-live: 170;          /* live particles at once */
-  --spawn-rate: 22;              /* particles per second */
-  --drift-min: 1.2rem;           /* minimum outward drift speed per second */
-  --drift-max: 3.8rem;           /* maximum outward drift speed per second */
+  --spawn-rate: 12;              /* particles per second */
+  --drift-min: 2.2rem;           /* minimum outward drift speed per second */
+  --drift-max: 4.8rem;           /* maximum outward drift speed per second */
   --edge-fade-width: 7rem;       /* how gradually they fade near/outside section edge */
 }
 
