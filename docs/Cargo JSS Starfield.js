@@ -373,14 +373,18 @@ function sampleSpawnPoint() {
       return Math.hypot(dx, dy);
     }
 
-    function totalFadeAlpha(x, y, rect, edgeFade) {
-      const insideMin = minDistToRectEdge(x, y, rect);
-      if (insideMin >= 0) {
-        return clamp01(insideMin / edgeFade);
-      }
-      const out = outsideDistance(x, y, rect);
-      return clamp01(1 - (out / edgeFade));
-    }
+function totalFadeAlpha(x, y, rect, edgeFade) {
+  const insideMin = minDistToRectEdge(x, y, rect);
+
+  // Outside the section: invisible
+  if (insideMin < 0) return 0;
+
+  // Deep enough inside: fully visible
+  if (insideMin >= edgeFade) return 1;
+
+  // Within fade band near the edge: fade down to 0 at the boundary
+  return clamp01(insideMin / edgeFade);
+}
 
     function spawnOne(cfg) {
       if (stars.length >= cfg.maxLive) return;
@@ -394,15 +398,13 @@ function sampleSpawnPoint() {
       const sizeRem = chooseSize(getComputedStyle(body));
       const baseOpacity = rand(cfg.opacityMin, cfg.opacityMax);
       const twDur = rand(cfg.twinkleMin, cfg.twinkleMax);
-      const twDelay = -Math.random() * twDur;
+      const twPhase = Math.random() * Math.PI * 2;
       const blurPx = rand(0, cfg.blurMax);
       const speed = rand(cfg.driftMin, cfg.driftMax);
 
       el.style.color = cfg.starColor;
       el.style.setProperty('--size', sizeRem + 'rem');
       el.style.setProperty('--blur', blurPx.toFixed(2) + 'px');
-      el.style.setProperty('--twinkle', twDur.toFixed(2) + 's');
-      el.style.setProperty('--tw-delay', twDelay.toFixed(2) + 's');
 
       overlay.appendChild(el);
 
@@ -412,19 +414,28 @@ function sampleSpawnPoint() {
         y: spawn.y,
         vx: spawn.vx * speed,
         vy: spawn.vy * speed,
-        baseOpacity
+        baseOpacity,
+        twDur,
+        twPhase
       };
 
       stars.push(star);
-      renderStar(star, cfg);
+      renderStar(star, cfg, performance.now());
     }
 
-    function renderStar(star, cfg) {
-      const a = star.baseOpacity * totalFadeAlpha(star.x, star.y, spawner.rect, cfg.edgeFade);
-      star.el.style.left = star.x.toFixed(2) + 'px';
-      star.el.style.top = star.y.toFixed(2) + 'px';
-      star.el.style.opacity = Math.max(0, a).toFixed(3);
-    }
+function renderStar(star, cfg, ts) {
+  const fade = totalFadeAlpha(star.x, star.y, spawner.rect, cfg.edgeFade);
+
+  // 0.15 -> 1.0 style twinkle curve
+  const twinkle =
+    0.15 + 0.85 * (0.5 + 0.5 * Math.sin((ts / 1000) * ((Math.PI * 2) / star.twDur) + star.twPhase));
+
+  const a = star.baseOpacity * twinkle * fade;
+
+  star.el.style.left = star.x.toFixed(2) + 'px';
+  star.el.style.top = star.y.toFixed(2) + 'px';
+  star.el.style.opacity = Math.max(0, a).toFixed(3);
+}
 
     function killStar(i) {
       const star = stars[i];
@@ -458,7 +469,7 @@ function sampleSpawnPoint() {
           continue;
         }
 
-        renderStar(s, cfg);
+        renderStar(s, cfg, ts);
       }
 
       rafId = requestAnimationFrame(tick);

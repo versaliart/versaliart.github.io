@@ -80,13 +80,7 @@ body.has-starfield{
 
   filter: drop-shadow(0 0 var(--blur, 0) currentColor);
   will-change: transform, opacity;
-  animation: twinkle var(--twinkle, 2s) ease-in-out var(--tw-delay, 0s) infinite alternate;
-}
-
-@keyframes twinkle{
-  0%   { filter: drop-shadow(0 0 var(--blur, 0) currentColor); }
-  50%  { filter: drop-shadow(0 0 calc(var(--blur, 0) * 1.25) currentColor); }
-  100% { filter: drop-shadow(0 0 calc(var(--blur, 0) * 0.85) currentColor); }
+  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce){
