@@ -80,23 +80,6 @@
   font-display: swap;
 }
 
-
-/* ===============================
-   TYPE SCALE (rem)
-================================*/
-:root{
-  --h1: 3rem;        /* Maax Medium 48pt */
-  --h2: 2.25rem;     /* Maax Medium 36pt */
-  --h3: 2rem;        /* Maax Regular 32pt */
-  --h4: 1.5rem;      /* Maax Regular 24pt */
-
-  --p1: 1rem;     /* Paragraph 1 → Maax Bold 16pt */
-  --p2: 1.25rem;        /* Paragraph 2 → Crimson Pro Medium 20pt */
-  --p3: 1rem;     /* Paragraph 3 → Crimson Pro Regular 16pt */
-
-
-}
-
 /* ===============================
    TEXT BLOCKS WITH BACKGROUND COLOR
    NOTE: keep this token-only section; the real applying rules live
@@ -141,24 +124,24 @@
 ================================*/
 /* Paragraph 1 */
 .sqs-block-content p.sqsrte-large{
-  font-family:"Maax";
-  font-weight:500;            
+  font-family:"Maax",sans-serif;
+  font-weight:500;
   font-size:var(--p1);
-  line-height:1.4;
-  text-transform: uppercase;
-  letter-spacing: .02em;
-  font-feature-settings: "case" 1, "cpsp" 1;
+  line-height:1.25;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  font-feature-settings:"case" 1, "cpsp" 1;
 }
 
 /* Paragraph 2 (default) */
 .sqs-block-content p,
 .sqs-block-content p.sqsrte-body{
   font-family:"Crimson Pro",serif;
-  font-weight:300;             /* Regular */
+  font-weight:300;
   font-size:var(--p2);
-  line-height:1.5;
+  line-height:1.55;
   font-optical-sizing:auto;
-  font-synthesis-weight:none; /* guard against faux bold */
+  font-synthesis-weight:none;
 }
 
 /* Paragraph 3 */
@@ -250,12 +233,17 @@ nav .subnav a{
 }
 
 /* ===============================
-   RESPONSIVE TWEAKS (optional)
+   MOBILE-RESPONSIVE TWEAKS (optional)
 ================================*/
-@media (max-width: 48rem){
-  .sqs-block-content h1{ font-size: calc(var(--h1) * .9); }
-  .sqs-block-content h2{ font-size: calc(var(--h2) * .85); }
-  .sqs-block-content h3{ font-size: calc(var(--h3) * .85); }
+:root{
+  --h1: clamp(2.2rem, 1.6rem + 2.4vw, 3.75rem);
+  --h2: clamp(1.75rem, 1.35rem + 1.6vw, 2.75rem);
+  --h3: clamp(1.5rem, 1.2rem + 1.1vw, 2.25rem);
+  --h4: clamp(1.2rem, 1.05rem + 0.7vw, 1.6rem);
+
+  --p1: clamp(0.9rem, 0.88rem + 0.12vw, 1rem);
+  --p2: clamp(1.05rem, 0.98rem + 0.38vw, 1.22rem);
+  --p3: clamp(0.92rem, 0.9rem + 0.12vw, 1rem);
 }
 
 
@@ -504,39 +492,46 @@ button.sqs-add-to-cart-button {
    Secondary Buttons — #9989EC border + text; white on hover
    ========================================================================== */
 
-/* Base state */
+/* ===============================
+   SECONDARY BUTTON — UPDATED
+================================*/
+
+/* Base (neutral) — outline only */
 a.sqs-button-element--secondary,
 .sqs-button-element--secondary,
 button.sqs-button-element--secondary,
 .sqs-block-button .sqs-button-element--secondary {
-  color: #9989EC !important;
-  border-color: #9989EC !important;
+  color: #FBB03B !important;
+  border-color: #FBB03B !important;
+  background-color: transparent !important;
 }
 
-/* Inner label span */
+/* Inner label */
 .sqs-button-element--secondary .sqs-button-label {
-  color: #9989EC !important;
+  color: #FBB03B !important;
 }
 
-/* Hover: white text, same border */
+/* Hover — filled */
 a.sqs-button-element--secondary:hover,
 button.sqs-button-element--secondary:hover,
 .sqs-button-element--secondary:hover {
-  color: #ffffff !important;
-  border-color: #9989EC !important;
+  color: #3C3361 !important;
+  border-color: #FBB03B !important;
+  background-color: #E5EA91 !important;
 }
 
 /* Hover label */
 .sqs-button-element--secondary:hover .sqs-button-label {
-  color: #ffffff !important;
+  color: #3C3361 !important;
 }
 
-/* Active (pressed) — stays white for clarity */
+/* Active — same as hover */
 a.sqs-button-element--secondary:active,
 button.sqs-button-element--secondary:active,
 .sqs-button-element--secondary:active {
-  color: #ffffff !important;
-  border-color: #9989EC !important;
+  color: #3C3361 !important;
+  border-color: #FBB03B !important;
+  background-color: #E5EA91 !important;
 }
 
 
