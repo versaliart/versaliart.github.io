@@ -68,7 +68,7 @@
   src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12e63d4d51b3335e35ef0/1756442211833/Maax-BoldItalic.woff2") format("woff2");
   font-weight: 700;
   font-style: italic;
-  font-display: swap;
+  font-display: block;
 }
 
 /* Black (900) */
@@ -77,7 +77,7 @@
   src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b50a4f4cc03f3cbdfec/1756441424299/Maax-Black.woff2") format("woff2");
   font-weight: 900;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 /* ===============================

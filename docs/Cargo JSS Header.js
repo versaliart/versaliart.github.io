@@ -47,7 +47,6 @@
         position: 'fixed',
         left: '50%',
         top: STICKY + 'px',
-        transform: 'translateX(-50%)'
       });
       applyMobileFrame();
 
