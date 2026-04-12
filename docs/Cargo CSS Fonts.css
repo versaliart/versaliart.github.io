@@ -264,7 +264,7 @@ nav .subnav a{
      slightly smaller vertical padding so centering stays optical */
   --text-block-background-padding-block-centered: 1rem;
 
-  --gap-hp: 0.5rem;
+  --gap-hp: 0.75rem;  /* gap between Header and Paragraph styles */
 }
 
 /* Mobile: reduce bg-fill padding so wrapped copy does not look top-heavy */
@@ -308,9 +308,9 @@ nav .subnav a{
   margin-bottom: 0 !important;
 }
 
-/* 2) One predictable gap between siblings */
+/* 2) Gap between any two different styles */
 .sqs-block-html .sqs-block-content > * + *,
-.sqs-block-html .sqs-html-content   > * + *{
+.sqs-block-html .sqs-html-content > * + *{
   margin-top: 0.55rem !important;
 }
 
@@ -336,6 +336,12 @@ nav .subnav a{
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
   margin-top: var(--gap-hp) !important;
+}
+
+/* H2 → Anything gap */
+.sqs-block-html .sqs-html-content > h2 + *,
+.sqs-block-html .sqs-block-content > h2 + *{
+  margin-top: 1rem !important;
 }
 
 /* Single-role P1 stacks */
