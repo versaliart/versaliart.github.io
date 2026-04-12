@@ -139,19 +139,23 @@
     return 0.5 * (1 + Math.cos(Math.PI * (distDeg / halfWidthDeg)));
   }
 
-  function makeAngleGate(strength, halfWidthDeg) {
-    const s = clamp01(strength || 0);
-    const w = Math.max(0, halfWidthDeg || 0);
+function makeAngleGate(strength, halfWidthDeg){
+  const s = clamp01(strength || 0);
+  const w = Math.max(0, halfWidthDeg || 0);
 
-    return function accept(cx, cy, px, py) {
-      const a = angleDeg(cx, cy, px, py);
-      const dTop = Math.min(Math.abs(a - 90), 360 - Math.abs(a - 90));
-      const dBot = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
-      const penalty = Math.max(cosineWindow(dTop, w), cosineWindow(dBot, w));
-      const acceptProb = 1 - s * penalty;
-      return Math.random() < acceptProb;
-    };
-  }
+  return function accept(cx, cy, px, py){
+    const ang = Math.atan2(py - cy, px - cx) / DEG;
+    const a = (ang + 360) % 360;
+
+    // ONLY measure distance from top (90°)
+    const dTop = Math.min(Math.abs(a - 90), 360 - Math.abs(a - 90));
+
+    const penalty = cosineWindow(dTop, w);
+    const acceptProb = 1 - s * penalty;
+
+    return Math.random() < acceptProb;
+  };
+}
 
   function chooseSize(style) {
     const phi = getNumVar(style, '--phi', 1.618);

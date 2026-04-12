@@ -35,7 +35,7 @@ body.has-starfield{
 
   /* shape-distribution avoidance */
   --avoid-vert-strength: 1;
-  --avoid-vert-width-deg: 45;
+  --avoid-vert-width-deg: 65;
 
   /* glow + art */
   --max-blur: 0.22rem;
