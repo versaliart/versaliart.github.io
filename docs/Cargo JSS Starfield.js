@@ -1,6 +1,8 @@
-// v4.2 — Section-flow starfield for exact target block
+// v4.3 — Section-flow starfield for exact target block
 // - Injects overlay into nearest section
 // - Hard top-only wedge exclusion
+// - Wedge + movement centered on EMITTER, not section
+// - Fade remains section-based
 // - Removes stars that drift into the forbidden top wedge
 // - JS-driven twinkle + edge fade
 // - Uses visible SVG bounds as emitter fallback on mobile
@@ -8,7 +10,7 @@
 
 (function () {
   const TARGETS = [
-    { sel: '#block-yui_3_17_2_1_1756944426569_9957', fallback: 'ellipse' } // 'ellipse' | 'rect'
+    { sel: '#block-yui_3_17_2_1_1756944426569_9957', fallback: 'ellipse' }
   ];
   if (!TARGETS.length) return;
 
@@ -206,6 +208,14 @@
       return host.getBoundingClientRect();
     }
 
+    function getEmitterCenterInSection() {
+      const r = getEmitterRect();
+      return {
+        x: (r.left - sectionRect.left) + r.width / 2,
+        y: (r.top - sectionRect.top) + r.height / 2
+      };
+    }
+
     const emitterRect = getEmitterRect();
     if (sectionRect.width < 4 || sectionRect.height < 4 || emitterRect.width < 4 || emitterRect.height < 4) {
       return null;
@@ -223,11 +233,6 @@
     const seed = getNumVar(bodyStyle, '--star-seed', Math.random());
     const basePhase = seed - Math.floor(seed);
 
-    const sectionCenter = {
-      x: sectionRect.width / 2,
-      y: sectionRect.height / 2
-    };
-
     const pathTotalLength = mode === 'svg' ? path.getTotalLength() : 0;
 
     function sampleSpawnPoint() {
@@ -237,6 +242,8 @@
         const t = (evenT + dt + basePhase + 1) % 1;
 
         const currentEmitterRect = getEmitterRect();
+        const emitterCenter = getEmitterCenterInSection();
+
         const maxUsefulJitter = Math.max(
           8,
           Math.min(currentEmitterRect.width, currentEmitterRect.height) * 0.18
@@ -261,10 +268,10 @@
           if (!client) continue;
 
           const pos = pointToSection(client, sectionRect);
-          if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
+          if (!angleGate(emitterCenter.x, emitterCenter.y, pos.x, pos.y)) continue;
 
-          const dirX = pos.x - sectionCenter.x;
-          const dirY = pos.y - sectionCenter.y;
+          const dirX = pos.x - emitterCenter.x;
+          const dirY = pos.y - emitterCenter.y;
           const dirLen = Math.hypot(dirX, dirY) || 1;
 
           return {
@@ -296,10 +303,10 @@
             x: px - sectionRect.left,
             y: py - sectionRect.top
           };
-          if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
+          if (!angleGate(emitterCenter.x, emitterCenter.y, pos.x, pos.y)) continue;
 
-          const dirX = pos.x - sectionCenter.x;
-          const dirY = pos.y - sectionCenter.y;
+          const dirX = pos.x - emitterCenter.x;
+          const dirY = pos.y - emitterCenter.y;
           const dirLen = Math.hypot(dirX, dirY) || 1;
 
           return {
@@ -319,6 +326,7 @@
       section,
       overlay,
       rect: sectionRect,
+      getEmitterCenterInSection,
       sampleSpawnPoint
     };
   }
@@ -370,8 +378,9 @@
 
       if (strength <= 0 || widthDeg <= 0) return false;
 
-      const dx = x - spawner.rect.width / 2;
-      const dy = y - spawner.rect.height / 2;
+      const emitterCenter = spawner.getEmitterCenterInSection();
+      const dx = x - emitterCenter.x;
+      const dy = y - emitterCenter.y;
 
       const ang = Math.atan2(dy, dx) / DEG;
       const a = (ang + 360) % 360;
