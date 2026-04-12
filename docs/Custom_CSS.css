@@ -32,7 +32,7 @@
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content,
 #block-e7cbd3944b764174d32f .sqs-html-content,
-#block-6f87bac45d406f678dcd .sqs-html-content, {
+#block-6f87bac45d406f678dcd .sqs-html-content {
   padding-left: clamp(0.75rem, 3vw, 1.25rem) !important;
   padding-right: clamp(0.75rem, 3vw, 1.25rem) !important;
 }
@@ -46,7 +46,7 @@
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large,
 #block-e7cbd3944b764174d32f .sqs-html-content p.sqsrte-large,
-#block-6f87bac45d406f678dcd .sqs-html-content p.sqsrte-large, {
+#block-6f87bac45d406f678dcd .sqs-html-content p.sqsrte-large {
   margin-bottom: clamp(0.75rem, 2rem, 1rem) !important;
 }
 
