@@ -1,97 +1,180 @@
 <script>
-  
 (function () {
-  // tiny loader that appends to <head> (safer than body)
-  function loadScript(src){
-    return new Promise(function (resolve, reject) {
+  if (window.__mmLoaderInstalled) return;
+  window.__mmLoaderInstalled = true;
+
+  var inflightScriptLoads = new Map();
+  var completedScriptLoads = new Set();
+
+  function canonicalizeUrl(src) {
+    var absolute = new URL(src, document.baseURI).href;
+    return absolute.replace(/%20/gi, ' ').replace(/\+/g, ' ');
+  }
+
+  function findExistingScript(key) {
+    var scripts = document.querySelectorAll('script[src]');
+    for (var i = 0; i < scripts.length; i++) {
+      var existingSrc = scripts[i].getAttribute('src') || scripts[i].src;
+      if (canonicalizeUrl(existingSrc) === key) return scripts[i];
+    }
+    return null;
+  }
+
+  // deduping loader that appends to <head> (safer than body)
+  function loadScript(src) {
+    var absoluteSrc = new URL(src, document.baseURI).href;
+    var key = canonicalizeUrl(absoluteSrc);
+
+    if (completedScriptLoads.has(key)) {
+      return Promise.resolve(absoluteSrc);
+    }
+
+    if (inflightScriptLoads.has(key)) {
+      return inflightScriptLoads.get(key);
+    }
+
+    var existing = findExistingScript(key);
+    if (existing) {
+      var existingPromise = new Promise(function (resolve, reject) {
+        if (existing.dataset.mmLoaded === '1') {
+          completedScriptLoads.add(key);
+          resolve(absoluteSrc);
+          return;
+        }
+
+        function onLoad() {
+          existing.dataset.mmLoaded = '1';
+          completedScriptLoads.add(key);
+          inflightScriptLoads.delete(key);
+          existing.removeEventListener('load', onLoad);
+          existing.removeEventListener('error', onError);
+          resolve(absoluteSrc);
+        }
+
+        function onError() {
+          inflightScriptLoads.delete(key);
+          existing.removeEventListener('load', onLoad);
+          existing.removeEventListener('error', onError);
+          reject(new Error('Failed to load ' + absoluteSrc));
+        }
+
+        existing.addEventListener('load', onLoad, { once: true });
+        existing.addEventListener('error', onError, { once: true });
+      });
+
+      inflightScriptLoads.set(key, existingPromise);
+      return existingPromise;
+    }
+
+    var promise = new Promise(function (resolve, reject) {
       var s = document.createElement('script');
-      s.src = src;
+      s.src = absoluteSrc;
       s.async = true;
-      s.onload = function(){ resolve(src); };
-      s.onerror = function(e){ reject(new Error('Failed to load ' + src)); };
+      s.onload = function () {
+        s.dataset.mmLoaded = '1';
+        completedScriptLoads.add(key);
+        inflightScriptLoads.delete(key);
+        resolve(absoluteSrc);
+      };
+      s.onerror = function () {
+        inflightScriptLoads.delete(key);
+        reject(new Error('Failed to load ' + absoluteSrc));
+      };
       (document.head || document.documentElement).appendChild(s);
     });
+
+    inflightScriptLoads.set(key, promise);
+    return promise;
   }
 
   // Always load Borderlines (rails) after DOM is parsed — no selector gate
   var domReady = (document.readyState !== 'loading')
     ? Promise.resolve()
-    : new Promise(function(r){ document.addEventListener('DOMContentLoaded', r, {once:true}); });
+    : new Promise(function (r) { document.addEventListener('DOMContentLoaded', r, { once: true }); });
 
   domReady
-    .then(function(){ return loadScript('https://versaliart.github.io/Cargo%20JSS%20Borderlines.js'); })
-    .then(function(){
+    .then(function () { return loadScript('https://versaliart.github.io/Cargo%20JSS%20Borderlines.js'); })
+    .then(function () {
       console.log('[Loader] Borderlines loaded');
       // prove the file executed (v1.37+ exposes this)
       console.log(window.MOTIF_RAILS && window.MOTIF_RAILS.ping ? window.MOTIF_RAILS.ping() : '[motif] ping missing');
     })
-    .catch(function(err){ console.warn('[Loader] Borderlines failed', err); });
+    .catch(function (err) { console.warn('[Loader] Borderlines failed', err); });
 
-  function whenSelector(sel, cb){
+  function whenSelector(sel, cb) {
+    var fired = false;
+
+    function runOnce(el) {
+      if (fired) return;
+      fired = true;
+      cb(el);
+    }
+
     var el = document.querySelector(sel);
-    if (el) return cb(el);
+    if (el) return runOnce(el);
+
     var mo = new MutationObserver(function () {
       el = document.querySelector(sel);
-      if (el) { mo.disconnect(); cb(el); }
+      if (el) {
+        mo.disconnect();
+        runOnce(el);
+      }
     });
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  whenSelector("#starfield-enable", function () {
-    loadScript("https://versaliart.github.io/Cargo%20JSS%20Starfield.js")
-      .then(()=>console.log("[Loader] Starfield loaded"))
+  whenSelector('#starfield-enable', function () {
+    loadScript('https://versaliart.github.io/Cargo%20JSS%20Starfield.js')
+      .then(function () { return console.log('[Loader] Starfield loaded'); })
       .catch(console.warn);
   });
 
-  whenSelector(".tag-pills", function () {
-    loadScript("https://versaliart.github.io/Cargo%20JSS%20Tags.js")
-      .then(()=>console.log("[Loader] Tags loaded"))
+  whenSelector('.tag-pills', function () {
+    loadScript('https://versaliart.github.io/Cargo%20JSS%20Tags.js')
+      .then(function () { return console.log('[Loader] Tags loaded'); })
       .catch(console.warn);
   });
 
   whenSelector('.sqs-block.image-block a[href="#flip-top"]', function () {
-    loadScript("https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js")
-      .then(()=>console.log("[Loader] Topblock loaded"))
+    loadScript('https://versaliart.github.io/Cargo%20JSS%20Topblock%20flip.js')
+      .then(function () { return console.log('[Loader] Topblock loaded'); })
       .catch(console.warn);
   });
 
   whenSelector('header#header[data-test="header"]', function () {
-    loadScript("https://versaliart.github.io/Cargo%20JSS%20Header.js")
-      .then(()=>console.log("[Loader] Header loaded"))
+    loadScript('https://versaliart.github.io/Cargo%20JSS%20Header.js')
+      .then(function () { return console.log('[Loader] Header loaded'); })
       .catch(console.warn);
   });
 
-whenSelector('[data-snap-scroll]', function () {
-  loadScript('https://versaliart.github.io/JS%20Scroll.js')
-    .then(() => console.log('[Loader] SnapScroll loaded'))
-    .catch(err => console.warn('[Loader] SnapScroll failed', err)); 
-});
+  whenSelector('[data-snap-scroll]', function () {
+    loadScript('https://versaliart.github.io/JS%20Scroll.js')
+      .then(function () { return console.log('[Loader] SnapScroll loaded'); })
+      .catch(function (err) { return console.warn('[Loader] SnapScroll failed', err); });
+  });
 
-  whenSelector(".card-table", function () {
-    loadScript("https://versaliart.github.io/JS%20Cards.js")
-      .then(()=>console.log("[Loader] TarotStack loaded"))
+  whenSelector('.card-table', function () {
+    loadScript('https://versaliart.github.io/JS%20Cards.js')
+      .then(function () { return console.log('[Loader] TarotStack loaded'); })
       .catch(console.warn);
   });
 
-  whenSelector(".mm-marquee", function () {
-    loadScript("https://versaliart.github.io/JS%20Marquee.js")
-      .then(()=>console.log("[Loader] Marquee loaded"))
+  whenSelector('.mm-marquee', function () {
+    loadScript('https://versaliart.github.io/JS%20Marquee.js')
+      .then(function () { return console.log('[Loader] Marquee loaded'); })
       .catch(console.warn);
   });
 
-  whenSelector(".mm-hero-svg", function () {
-  loadScript("https://versaliart.github.io/JS_Eyes.js")
-    .then(()=>console.log("[Loader] EyeTracker loaded"))
-    .catch(err => console.warn("[Loader] EyeTracker failed", err));
-});
+  whenSelector('.mm-hero-svg', function () {
+    loadScript('https://versaliart.github.io/JS_Eyes.js')
+      .then(function () { return console.log('[Loader] EyeTracker loaded'); })
+      .catch(function (err) { return console.warn('[Loader] EyeTracker failed', err); });
+  });
 
-
-  // whenSelector(".mm-cardhover", function () {
-  //   loadScript("https://versaliart.github.io/JS%20Card%20Hover.js")
-  //     .then(()=>console.log("[Loader] Card Hover loaded"))
+  // whenSelector('.mm-cardhover', function () {
+  //   loadScript('https://versaliart.github.io/JS%20Card%20Hover.js')
+  //     .then(function () { return console.log('[Loader] Card Hover loaded'); })
   //     .catch(console.warn);
   // });
-
-
 })();
 </script>
