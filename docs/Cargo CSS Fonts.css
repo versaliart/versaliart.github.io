@@ -233,17 +233,17 @@ nav .subnav a{
 }
 
 /* ===============================
-   MOBILE-RESPONSIVE TWEAKS (optional)
+   RESPONSIVE TWEAKS (optional)
 ================================*/
 :root{
-  --h1: clamp(2.2rem, 1.6rem + 2.4vw, 3.75rem);
-  --h2: clamp(1.75rem, 1.35rem + 1.6vw, 2.75rem);
-  --h3: clamp(1.5rem, 1.2rem + 1.1vw, 2.25rem);
-  --h4: clamp(1.2rem, 1.05rem + 0.7vw, 1.6rem);
+  --h1: clamp(2.2rem, 1.9rem + 1.4vw, 3rem);
+  --h2: clamp(1.75rem, 1.5rem + 0.9vw, 2.25rem);
+  --h3: clamp(1.4rem, 1.25rem + 0.6vw, 2rem);
+  --h4: clamp(1.15rem, 1.08rem + 0.3vw, 1.5rem);
 
-  --p1: clamp(0.9rem, 0.88rem + 0.12vw, 1rem);
-  --p2: clamp(1.05rem, 0.98rem + 0.38vw, 1.22rem);
-  --p3: clamp(0.92rem, 0.9rem + 0.12vw, 1rem);
+  --p1: 1rem;
+  --p2: 1.25rem;
+  --p3: 1rem;
 }
 
 
