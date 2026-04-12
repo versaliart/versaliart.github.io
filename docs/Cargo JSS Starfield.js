@@ -147,8 +147,8 @@ function makeAngleGate(strength, halfWidthDeg){
     const ang = Math.atan2(py - cy, px - cx) / DEG;
     const a = (ang + 360) % 360;
 
-    // ONLY measure distance from top (90°)
-    const dTop = Math.min(Math.abs(a - 90), 360 - Math.abs(a - 90));
+    // TOP on screen is 270°, not 90°
+    const dTop = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
 
     const penalty = cosineWindow(dTop, w);
     const acceptProb = 1 - s * penalty;
@@ -246,83 +246,86 @@ function makeAngleGate(strength, halfWidthDeg){
       }
     }
 
-    function sampleSpawnPoint() {
-      for (let tries = 0; tries < 40; tries++) {
-        const evenT = Math.random();
-        const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
-        const t = (evenT + dt + basePhase + 1) % 1;
+function sampleSpawnPoint() {
+  for (let tries = 0; tries < 40; tries++) {
+    const evenT = Math.random();
+    const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
+    const t = (evenT + dt + basePhase + 1) % 1;
 
-        if (mode === 'svg') {
-          const d = t * pathTotalLength;
-          const p = path.getPointAtLength(d);
-          const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
+    if (mode === 'svg') {
+      const d = t * pathTotalLength;
+      const p = path.getPointAtLength(d);
+      const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
 
-          if (svgCenter && !angleGate(svgCenter.x, svgCenter.y, p.x, p.y)) continue;
+      let nx = -(p2.y - p.y);
+      let ny = (p2.x - p.x);
+      const nlen = Math.hypot(nx, ny) || 1;
+      nx /= nlen;
+      ny /= nlen;
 
-          let nx = -(p2.y - p.y);
-          let ny = (p2.x - p.x);
-          const nlen = Math.hypot(nx, ny) || 1;
-          nx /= nlen;
-          ny /= nlen;
+      const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
+      const jitter = sign * rand(jitterMinPx, jitterMaxPx);
 
-          const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-          const jitter = sign * rand(jitterMinPx, jitterMaxPx);
+      const client = svgToClient(svg, p.x + nx * jitter, p.y + ny * jitter);
+      if (!client) continue;
 
-          const client = svgToClient(svg, p.x + nx * jitter, p.y + ny * jitter);
-          if (!client) continue;
+      const pos = pointToSection(client, sectionRect);
 
-          const pos = pointToSection(client, sectionRect);
-          const dirX = pos.x - sectionCenter.x;
-          const dirY = pos.y - sectionCenter.y;
-          const dirLen = Math.hypot(dirX, dirY) || 1;
+      // Gate against SECTION center, not SVG center
+      if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
 
-          return {
-            x: pos.x,
-            y: pos.y,
-            vx: dirX / dirLen,
-            vy: dirY / dirLen
-          };
-        } else {
-          const hit = (target.fallback || 'ellipse') === 'rect'
-            ? sampleRectPerimeter(hostRect, t)
-            : sampleEllipsePerimeter(hostRect, t);
+      const dirX = pos.x - sectionCenter.x;
+      const dirY = pos.y - sectionCenter.y;
+      const dirLen = Math.hypot(dirX, dirY) || 1;
 
-          if (!angleGate(hit.cx, hit.cy, hit.x, hit.y)) continue;
+      return {
+        x: pos.x,
+        y: pos.y,
+        vx: dirX / dirLen,
+        vy: dirY / dirLen
+      };
+    } else {
+      const hit = (target.fallback || 'ellipse') === 'rect'
+        ? sampleRectPerimeter(hostRect, t)
+        : sampleEllipsePerimeter(hostRect, t);
 
-          let px, py;
-          if ((target.fallback || 'ellipse') === 'rect') {
-            const dx = hit.x - hit.cx;
-            const dy = hit.y - hit.cy;
-            const dl = Math.hypot(dx, dy) || 1;
-            const j = rand(jitterMinPx, jitterMaxPx);
-            px = hit.x + (dx / dl) * j;
-            py = hit.y + (dy / dl) * j;
-          } else {
-            const j = rand(jitterMinPx, jitterMaxPx);
-            px = hit.x + Math.cos(hit.theta) * j;
-            py = hit.y + Math.sin(hit.theta) * j;
-          }
-
-          const pos = {
-            x: px - sectionRect.left,
-            y: py - sectionRect.top
-          };
-
-          const dirX = pos.x - sectionCenter.x;
-          const dirY = pos.y - sectionCenter.y;
-          const dirLen = Math.hypot(dirX, dirY) || 1;
-
-          return {
-            x: pos.x,
-            y: pos.y,
-            vx: dirX / dirLen,
-            vy: dirY / dirLen
-          };
-        }
+      let px, py;
+      if ((target.fallback || 'ellipse') === 'rect') {
+        const dx = hit.x - hit.cx;
+        const dy = hit.y - hit.cy;
+        const dl = Math.hypot(dx, dy) || 1;
+        const j = rand(jitterMinPx, jitterMaxPx);
+        px = hit.x + (dx / dl) * j;
+        py = hit.y + (dy / dl) * j;
+      } else {
+        const j = rand(jitterMinPx, jitterMaxPx);
+        px = hit.x + Math.cos(hit.theta) * j;
+        py = hit.y + Math.sin(hit.theta) * j;
       }
 
-      return null;
+      const pos = {
+        x: px - sectionRect.left,
+        y: py - sectionRect.top
+      };
+
+      // Gate against SECTION center here too
+      if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
+
+      const dirX = pos.x - sectionCenter.x;
+      const dirY = pos.y - sectionCenter.y;
+      const dirLen = Math.hypot(dirX, dirY) || 1;
+
+      return {
+        x: pos.x,
+        y: pos.y,
+        vx: dirX / dirLen,
+        vy: dirY / dirLen
+      };
     }
+  }
+
+  return null;
+}
 
     return {
       host,
