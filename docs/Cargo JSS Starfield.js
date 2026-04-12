@@ -1,5 +1,8 @@
-// v4.0 — Section-flow starfield for exact target block
-// Injects overlay into nearest section so stars can travel across the whole section.
+// v4.1 — Section-flow starfield for exact target block
+// - Injects overlay into nearest section
+// - Hard top-only wedge exclusion
+// - Removes stars that drift into the forbidden top wedge
+// - JS-driven twinkle + edge fade
 
 (function () {
   const TARGETS = [
@@ -14,7 +17,6 @@
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const clamp01 = v => clamp(v, 0, 1);
   const rand = (a, b) => a + Math.random() * (b - a);
-  const now = () => performance.now();
   const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
 
   function onReady(fn) {
@@ -49,15 +51,6 @@
     const raw = style.getPropertyValue(name).trim();
     const n = parseFloat(raw);
     return Number.isFinite(n) ? n : fallback;
-  }
-
-  function getPxVar(style, name, fallbackPx) {
-    const raw = style.getPropertyValue(name).trim();
-    if (!raw) return fallbackPx;
-    const n = parseFloat(raw);
-    if (!Number.isFinite(n)) return fallbackPx;
-    if (raw.endsWith('rem')) return n * remPx();
-    return n;
   }
 
   function svgToClient(svg, x, y) {
@@ -129,33 +122,23 @@
     return (vx * nx + vy * ny) >= 0 ? 1 : -1;
   }
 
-  function angleDeg(cx, cy, px, py) {
-    const ang = Math.atan2(py - cy, px - cx) / DEG;
-    return (ang + 360) % 360;
+  function makeAngleGate(strength, halfWidthDeg) {
+    const s = clamp01(strength || 0);
+    const w = Math.max(0, halfWidthDeg || 0);
+
+    return function accept(cx, cy, px, py) {
+      if (s <= 0 || w <= 0) return true;
+
+      const ang = Math.atan2(py - cy, px - cx) / DEG;
+      const a = (ang + 360) % 360;
+
+      // screen-top is 270deg
+      const dTop = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
+
+      // hard exclusion inside the top wedge
+      return dTop >= w;
+    };
   }
-
-  function cosineWindow(distDeg, halfWidthDeg) {
-    if (distDeg >= halfWidthDeg) return 0;
-    return 0.5 * (1 + Math.cos(Math.PI * (distDeg / halfWidthDeg)));
-  }
-
-function makeAngleGate(strength, halfWidthDeg){
-  const s = clamp01(strength || 0);
-  const w = Math.max(0, halfWidthDeg || 0);
-
-  return function accept(cx, cy, px, py){
-    const ang = Math.atan2(py - cy, px - cx) / DEG;
-    const a = (ang + 360) % 360;
-
-    // TOP on screen is 270°, not 90°
-    const dTop = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
-
-    const penalty = cosineWindow(dTop, w);
-    const acceptProb = 1 - s * penalty;
-
-    return Math.random() < acceptProb;
-  };
-}
 
   function chooseSize(style) {
     const phi = getNumVar(style, '--phi', 1.618);
@@ -232,100 +215,85 @@ function makeAngleGate(strength, halfWidthDeg){
     };
 
     const pathTotalLength = mode === 'svg' ? path.getTotalLength() : 0;
-    let svgCenter = null;
 
-    if (mode === 'svg') {
-      if (typeof path.getBBox === 'function') {
-        const bb = path.getBBox();
-        svgCenter = { x: bb.x + bb.width / 2, y: bb.y + bb.height / 2 };
-      } else {
-        const vb = svg.viewBox && svg.viewBox.baseVal
-          ? svg.viewBox.baseVal
-          : { x: 0, y: 0, width: svg.clientWidth, height: svg.clientHeight };
-        svgCenter = { x: vb.x + vb.width / 2, y: vb.y + vb.height / 2 };
+    function sampleSpawnPoint() {
+      for (let tries = 0; tries < 40; tries++) {
+        const evenT = Math.random();
+        const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
+        const t = (evenT + dt + basePhase + 1) % 1;
+
+        if (mode === 'svg') {
+          const d = t * pathTotalLength;
+          const p = path.getPointAtLength(d);
+          const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
+
+          let nx = -(p2.y - p.y);
+          let ny = (p2.x - p.x);
+          const nlen = Math.hypot(nx, ny) || 1;
+          nx /= nlen;
+          ny /= nlen;
+
+          const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
+          const jitter = sign * rand(jitterMinPx, jitterMaxPx);
+
+          const client = svgToClient(svg, p.x + nx * jitter, p.y + ny * jitter);
+          if (!client) continue;
+
+          const pos = pointToSection(client, sectionRect);
+
+          if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
+
+          const dirX = pos.x - sectionCenter.x;
+          const dirY = pos.y - sectionCenter.y;
+          const dirLen = Math.hypot(dirX, dirY) || 1;
+
+          return {
+            x: pos.x,
+            y: pos.y,
+            vx: dirX / dirLen,
+            vy: dirY / dirLen
+          };
+        } else {
+          const hit = (target.fallback || 'ellipse') === 'rect'
+            ? sampleRectPerimeter(hostRect, t)
+            : sampleEllipsePerimeter(hostRect, t);
+
+          let px, py;
+          if ((target.fallback || 'ellipse') === 'rect') {
+            const dx = hit.x - hit.cx;
+            const dy = hit.y - hit.cy;
+            const dl = Math.hypot(dx, dy) || 1;
+            const j = rand(jitterMinPx, jitterMaxPx);
+            px = hit.x + (dx / dl) * j;
+            py = hit.y + (dy / dl) * j;
+          } else {
+            const j = rand(jitterMinPx, jitterMaxPx);
+            px = hit.x + Math.cos(hit.theta) * j;
+            py = hit.y + Math.sin(hit.theta) * j;
+          }
+
+          const pos = {
+            x: px - sectionRect.left,
+            y: py - sectionRect.top
+          };
+
+          if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
+
+          const dirX = pos.x - sectionCenter.x;
+          const dirY = pos.y - sectionCenter.y;
+          const dirLen = Math.hypot(dirX, dirY) || 1;
+
+          return {
+            x: pos.x,
+            y: pos.y,
+            vx: dirX / dirLen,
+            vy: dirY / dirLen
+          };
+        }
       }
+
+      return null;
     }
-
-function sampleSpawnPoint() {
-  for (let tries = 0; tries < 40; tries++) {
-    const evenT = Math.random();
-    const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
-    const t = (evenT + dt + basePhase + 1) % 1;
-
-    if (mode === 'svg') {
-      const d = t * pathTotalLength;
-      const p = path.getPointAtLength(d);
-      const p2 = path.getPointAtLength((d + 0.75) % pathTotalLength);
-
-      let nx = -(p2.y - p.y);
-      let ny = (p2.x - p.x);
-      const nlen = Math.hypot(nx, ny) || 1;
-      nx /= nlen;
-      ny /= nlen;
-
-      const sign = outwardSignSVG(path, svg, p.x, p.y, nx, ny);
-      const jitter = sign * rand(jitterMinPx, jitterMaxPx);
-
-      const client = svgToClient(svg, p.x + nx * jitter, p.y + ny * jitter);
-      if (!client) continue;
-
-      const pos = pointToSection(client, sectionRect);
-
-      // Gate against SECTION center, not SVG center
-      if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
-
-      const dirX = pos.x - sectionCenter.x;
-      const dirY = pos.y - sectionCenter.y;
-      const dirLen = Math.hypot(dirX, dirY) || 1;
-
-      return {
-        x: pos.x,
-        y: pos.y,
-        vx: dirX / dirLen,
-        vy: dirY / dirLen
-      };
-    } else {
-      const hit = (target.fallback || 'ellipse') === 'rect'
-        ? sampleRectPerimeter(hostRect, t)
-        : sampleEllipsePerimeter(hostRect, t);
-
-      let px, py;
-      if ((target.fallback || 'ellipse') === 'rect') {
-        const dx = hit.x - hit.cx;
-        const dy = hit.y - hit.cy;
-        const dl = Math.hypot(dx, dy) || 1;
-        const j = rand(jitterMinPx, jitterMaxPx);
-        px = hit.x + (dx / dl) * j;
-        py = hit.y + (dy / dl) * j;
-      } else {
-        const j = rand(jitterMinPx, jitterMaxPx);
-        px = hit.x + Math.cos(hit.theta) * j;
-        py = hit.y + Math.sin(hit.theta) * j;
-      }
-
-      const pos = {
-        x: px - sectionRect.left,
-        y: py - sectionRect.top
-      };
-
-      // Gate against SECTION center here too
-      if (!angleGate(sectionCenter.x, sectionCenter.y, pos.x, pos.y)) continue;
-
-      const dirX = pos.x - sectionCenter.x;
-      const dirY = pos.y - sectionCenter.y;
-      const dirLen = Math.hypot(dirX, dirY) || 1;
-
-      return {
-        x: pos.x,
-        y: pos.y,
-        vx: dirX / dirLen,
-        vy: dirY / dirLen
-      };
-    }
-  }
-
-  return null;
-}
 
     return {
       host,
@@ -367,24 +335,31 @@ function sampleSpawnPoint() {
       return Math.min(x, rect.width - x, y, rect.height - y);
     }
 
-    function outsideDistance(x, y, rect) {
-      const dx = x < 0 ? -x : (x > rect.width ? x - rect.width : 0);
-      const dy = y < 0 ? -y : (y > rect.height ? y - rect.height : 0);
-      return Math.hypot(dx, dy);
+    function totalFadeAlpha(x, y, rect, edgeFade) {
+      const insideMin = minDistToRectEdge(x, y, rect);
+
+      if (insideMin < 0) return 0;
+      if (insideMin >= edgeFade) return 1;
+
+      return clamp01(insideMin / edgeFade);
     }
 
-function totalFadeAlpha(x, y, rect, edgeFade) {
-  const insideMin = minDistToRectEdge(x, y, rect);
+    function inTopWedge(x, y) {
+      const s = getComputedStyle(body);
+      const strength = clamp01(getNumVar(s, '--avoid-vert-strength', 0));
+      const widthDeg = Math.max(0, getNumVar(s, '--avoid-vert-width-deg', 0));
 
-  // Outside the section: invisible
-  if (insideMin < 0) return 0;
+      if (strength <= 0 || widthDeg <= 0) return false;
 
-  // Deep enough inside: fully visible
-  if (insideMin >= edgeFade) return 1;
+      const dx = x - spawner.rect.width / 2;
+      const dy = y - spawner.rect.height / 2;
 
-  // Within fade band near the edge: fade down to 0 at the boundary
-  return clamp01(insideMin / edgeFade);
-}
+      const ang = Math.atan2(dy, dx) / DEG;
+      const a = (ang + 360) % 360;
+      const dTop = Math.min(Math.abs(a - 270), 360 - Math.abs(a - 270));
+
+      return dTop < widthDeg;
+    }
 
     function spawnOne(cfg) {
       if (stars.length >= cfg.maxLive) return;
@@ -423,19 +398,17 @@ function totalFadeAlpha(x, y, rect, edgeFade) {
       renderStar(star, cfg, performance.now());
     }
 
-function renderStar(star, cfg, ts) {
-  const fade = totalFadeAlpha(star.x, star.y, spawner.rect, cfg.edgeFade);
+    function renderStar(star, cfg, ts) {
+      const fade = totalFadeAlpha(star.x, star.y, spawner.rect, cfg.edgeFade);
+      const twinkle =
+        0.15 + 0.85 * (0.5 + 0.5 * Math.sin((ts / 1000) * ((Math.PI * 2) / star.twDur) + star.twPhase));
 
-  // 0.15 -> 1.0 style twinkle curve
-  const twinkle =
-    0.15 + 0.85 * (0.5 + 0.5 * Math.sin((ts / 1000) * ((Math.PI * 2) / star.twDur) + star.twPhase));
+      const a = star.baseOpacity * twinkle * fade;
 
-  const a = star.baseOpacity * twinkle * fade;
-
-  star.el.style.left = star.x.toFixed(2) + 'px';
-  star.el.style.top = star.y.toFixed(2) + 'px';
-  star.el.style.opacity = Math.max(0, a).toFixed(3);
-}
+      star.el.style.left = star.x.toFixed(2) + 'px';
+      star.el.style.top = star.y.toFixed(2) + 'px';
+      star.el.style.opacity = Math.max(0, a).toFixed(3);
+    }
 
     function killStar(i) {
       const star = stars[i];
@@ -464,7 +437,7 @@ function renderStar(star, cfg, ts) {
         s.y += s.vy * dt;
 
         const alpha = totalFadeAlpha(s.x, s.y, spawner.rect, cfg.edgeFade);
-        if (alpha <= 0) {
+        if (alpha <= 0 || inTopWedge(s.x, s.y)) {
           killStar(i);
           continue;
         }
@@ -502,7 +475,13 @@ function renderStar(star, cfg, ts) {
       while (stars.length) killStar(stars.length - 1);
     }
 
-    return { rebuild, start, stop, get section() { return spawner.section; }, get host() { return spawner.host; } };
+    return {
+      rebuild,
+      start,
+      stop,
+      get section() { return spawner.section; },
+      get host() { return spawner.host; }
+    };
   }
 
   const engines = new Map();

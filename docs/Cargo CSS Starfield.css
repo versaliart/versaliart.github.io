@@ -9,7 +9,7 @@
 /* ---- Global variables you can tune site-wide ---- */
 body.has-starfield{
   /* source distribution */
-  --star-count: 150;
+  --star-count: 120;
   --star-min-gap: 4px;
 
   /* outward offset from the sampled edge */
@@ -24,7 +24,7 @@ body.has-starfield{
   --twinkle-max: 2.0;
 
   /* opacity */
-  --opacity-min: 0.15;
+  --opacity-min: 0.35;
   --opacity-max: 1.0;
 
   /* size quantization */
