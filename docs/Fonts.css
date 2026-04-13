@@ -1015,5 +1015,5 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 
 .sqs-block-html .sqs-html-content > h1 + h2,
 .sqs-block-html .sqs-block-content > h1 + h2{
-  margin-top: 3.35rem !important;
+  margin-top: 0 !important;
 }
