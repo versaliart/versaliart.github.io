@@ -17,6 +17,7 @@
 
   const AMPLITUDE_PX = 8; // max upward movement
   const CYCLE_MS = 4600;  // full cycle: 0 -> up -> 0
+  const WRAPPER_CLASS = 'hovercard-float-wrap';
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -24,20 +25,65 @@
     .map((selector) => document.querySelector(selector))
     .filter(Boolean);
 
+  const sortByDomOrder = (elements) => [...elements].sort((a, b) => {
+    if (a === b) return 0;
+    const relation = a.compareDocumentPosition(b);
+    return relation & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+  });
+
+  const canWrapTogether = (elements) => {
+    if (elements.length < 2) return true;
+    const parent = elements[0].parentNode;
+    return elements.every((element) => element.parentNode === parent);
+  };
+
+  const ensureGroupWrapper = (elements) => {
+    if (elements.length === 0 || !canWrapTogether(elements)) return null;
+
+    const ordered = sortByDomOrder(elements);
+    const first = ordered[0];
+    const existingWrapper = first.parentElement?.classList?.contains(WRAPPER_CLASS)
+      ? first.parentElement
+      : null;
+
+    if (existingWrapper) {
+      existingWrapper.style.willChange = 'transform';
+      return existingWrapper;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = WRAPPER_CLASS;
+    wrapper.style.willChange = 'transform';
+
+    first.parentNode.insertBefore(wrapper, first);
+    ordered.forEach((element) => wrapper.appendChild(element));
+    return wrapper;
+  };
+
   const collectGroups = () => {
-    const group1 = getElements(CARD_1_SELECTORS);
-    const group2 = getElements(CARD_2_SELECTORS);
+    const groupConfigs = [
+      { selectors: CARD_1_SELECTORS, phaseShift: 0 },
+      { selectors: CARD_2_SELECTORS, phaseShift: Math.PI },
+    ];
 
-    const groups = [
-      { elements: group1, phaseShift: 0 },
-      { elements: group2, phaseShift: Math.PI },
-    ].filter((group) => group.elements.length > 0);
+    return groupConfigs.map(({ selectors, phaseShift }) => {
+      const elements = getElements(selectors);
+      if (elements.length === 0) return null;
 
-    [...group1, ...group2].forEach((element) => {
-      element.style.willChange = 'transform';
-    });
+      const wrapper = ensureGroupWrapper(elements);
+      const largeElements = getElements(selectors.slice(0, 2));
 
-    return groups;
+      if (!wrapper) {
+        elements.forEach((element) => { element.style.willChange = 'transform'; });
+      }
+
+      return {
+        elements,
+        largeElements,
+        wrapper,
+        phaseShift,
+      };
+    }).filter(Boolean);
   };
 
   const onReady = (fn) => {
@@ -54,18 +100,26 @@
     const tick = (now) => {
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
-      const offset = ((Math.sin(phase) + 1) / 2) * AMPLITUDE_PX;
-
       const scaleForOffset = (value) => {
         const progress = Math.max(0, Math.min(1, (-value) / AMPLITUDE_PX));
         return 1 + (progress * 0.05);
       };
 
-      groups.forEach(({ elements, phaseShift }) => {
+      groups.forEach(({ elements, largeElements, wrapper, phaseShift }) => {
         const groupOffset = -(((Math.sin(phase + phaseShift) + 1) / 2) * AMPLITUDE_PX);
         const y = groupOffset.toFixed(2);
         const scale = scaleForOffset(groupOffset).toFixed(4);
+
+        if (wrapper) {
+          wrapper.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
+          return;
+        }
+
+        const largeSet = new Set(largeElements);
         elements.forEach((element) => {
+          element.style.transform = `translate3d(0, ${y}px, 0)`;
+        });
+        largeSet.forEach((element) => {
           element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
         });
       });
