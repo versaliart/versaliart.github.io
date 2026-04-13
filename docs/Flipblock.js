@@ -1,7 +1,6 @@
-/* ===== Topblock Split-Flip (Doors) v2.70 — hover stable + delayed pass-through ===== */
+/* ===== Topblock Split-Flip (Doors) v2.80 — true pass-through with rect-based close ===== */
 (function(){
-  const OPEN_DURATION = 480;   /* match CSS --flip-open-duration */
-  const CLOSE_DELAY = 80;      /* small grace period to prevent jitter */
+  const OPEN_DURATION = 480; /* match CSS --flip-open-duration */
 
   function buildDoors(url){
     const doors = document.createElement('div');
@@ -103,28 +102,6 @@
 
   const closestFeBlock = el => el.closest('.fe-block') || null;
 
-  const mobileFlipBlocks = new Set();
-  let mobileCloseHandlerInstalled = false;
-
-  function ensureMobileCloseHandler(){
-    if (mobileCloseHandlerInstalled) return;
-    mobileCloseHandlerInstalled = true;
-
-    document.addEventListener('click', function(e){
-      const actionable = e.target.closest &&
-        e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
-
-      if (actionable) return;
-
-      mobileFlipBlocks.forEach(block => {
-        if (block.classList.contains('is-flipped')) {
-          block.classList.remove('is-flipped');
-          setPassThrough(block, false);
-        }
-      });
-    }, true);
-  }
-
   function setPassThrough(block, on){
     const outer = closestFeBlock(block);
     if (on) {
@@ -138,9 +115,35 @@
 
   function clearTimers(block){
     clearTimeout(block.__ptTimer);
-    clearTimeout(block.__closeTimer);
     block.__ptTimer = null;
-    block.__closeTimer = null;
+  }
+
+  function removePointerWatcher(block){
+    if (block.__pointerWatcher) {
+      document.removeEventListener('pointermove', block.__pointerWatcher, true);
+      block.__pointerWatcher = null;
+    }
+  }
+
+  function pointInRect(x, y, rect){
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+  }
+
+  function startPointerWatcher(block){
+    removePointerWatcher(block);
+
+    block.__pointerWatcher = function(e){
+      if (!block.__open) return;
+
+      const host = block.__hoverHost || block;
+      const rect = host.getBoundingClientRect();
+
+      if (!pointInRect(e.clientX, e.clientY, rect)) {
+        closeBlock(block);
+      }
+    };
+
+    document.addEventListener('pointermove', block.__pointerWatcher, true);
   }
 
   function openBlock(block){
@@ -152,25 +155,18 @@
     }
 
     block.__ptTimer = setTimeout(() => {
-      if (block.__open) setPassThrough(block, true);
+      if (!block.__open) return;
+      setPassThrough(block, true);
+      startPointerWatcher(block);
     }, OPEN_DURATION);
   }
 
   function closeBlock(block){
     clearTimers(block);
+    removePointerWatcher(block);
     block.__open = false;
     setPassThrough(block, false);
     block.classList.remove('is-open');
-  }
-
-  function scheduleClose(block){
-    clearTimeout(block.__closeTimer);
-    block.__closeTimer = setTimeout(() => {
-      const host = block.__hoverHost || block;
-      if (!host.matches(':hover')) {
-        closeBlock(block);
-      }
-    }, CLOSE_DELAY);
   }
 
   function initOne(block){
@@ -188,19 +184,12 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    /* Use the FE wrapper as the hover zone when possible */
     const hoverHost = closestFeBlock(block) || block;
     block.__hoverHost = hoverHost;
 
     hoverHost.addEventListener('mouseenter', () => openBlock(block));
-    hoverHost.addEventListener('mouseleave', () => scheduleClose(block));
 
-    /* If pointer re-enters before close fires, keep open */
-    hoverHost.addEventListener('mouseenter', () => {
-      clearTimeout(block.__closeTimer);
-    });
-
-    /* Mobile/touch fallback */
+    /* mobile/touch fallback remains harmless even if hidden on mobile */
     block.addEventListener('click', function(e){
       const coarse = matchMedia('(hover: none), (pointer: coarse)').matches;
       if (!coarse) return;
@@ -212,9 +201,6 @@
         setPassThrough(block, true);
       }
     }, true);
-
-    mobileFlipBlocks.add(block);
-    ensureMobileCloseHandler();
 
     const relayout = () => layout(block);
     relayout();
