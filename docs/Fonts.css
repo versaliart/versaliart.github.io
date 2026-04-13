@@ -879,13 +879,6 @@ button.sqs-button-element--secondary:active,
    Matches your known-working per-block pattern
    ===================================================== */
 
-/* Force all wrapper layers to accept 100% height */
-.video-block > .sqs-block-content,
-.video-block .intrinsic,
-.video-block .embed-block-wrapper,
-.video-block .sqs-native-video {
-  height: 100% !important;
-}
 
 /* Kill intrinsic aspect-ratio padding */
 .video-block .video-player {
@@ -895,7 +888,7 @@ button.sqs-button-element--secondary:active,
 /* Uploaded videos: crop to fill */
 .video-block video {
   width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
   object-fit: cover !important;
 }
 
