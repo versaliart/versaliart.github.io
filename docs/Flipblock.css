@@ -89,11 +89,6 @@
   transform: rotateY(180deg);
 }
 
-/* Text faces need clipping */
-.sqs-block.html-block.flip-top .face{
-  overflow: hidden;
-}
-
 /* Closed state */
 .sqs-block.flip-top .flip-door.left{
   transform: rotateY(0deg);
