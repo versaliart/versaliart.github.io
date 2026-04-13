@@ -1,4 +1,8 @@
 (function () {
+  function isFiniteNumber(value) {
+    return typeof value === "number" && Number.isFinite(value);
+  }
+
   // Grab the actual <svg> regardless of whether the class is on it or a wrapper
   var svg =
     document.querySelector("svg.mm-hero-svg") ||
@@ -41,6 +45,14 @@
     // Use symmetrical limits for this eye so motion feels even
     var maxX = Math.min(maxXNeg, maxXPos);
     var maxY = Math.min(maxYNeg, maxYPos);
+    if (!isFiniteNumber(maxX) || !isFiniteNumber(maxY)) {
+      console.warn("[Eyes] Invalid eye bounds for", pupilId, zoneId, maxX, maxY);
+      return null;
+    }
+
+    // Prevent negative ranges (e.g. if center is already outside the zone).
+    maxX = Math.max(0, maxX);
+    maxY = Math.max(0, maxY);
 
     // Wrap the pupil group in a new group so we can transform it cleanly
     var wrapper = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -105,8 +117,8 @@
       var scaleX = 1 - squishAmtX * edgeX; // squish horizontally at left/right
       var scaleY = 1 - squishAmtY * edgeY; // squish vertically at top/bottom
 
-      var tx = eye.currentX;
-      var ty = eye.currentY;
+      var tx = isFiniteNumber(eye.currentX) ? eye.currentX : 0;
+      var ty = isFiniteNumber(eye.currentY) ? eye.currentY : 0;
 
       // Scale around the eye's own center, then translate
       var transform =
@@ -134,15 +146,19 @@
 
   function onMove(e) {
     var rect = svg.getBoundingClientRect();
+    if (!rect || rect.width <= 0 || rect.height <= 0) return;
+
     var mx = e.clientX;
     var my = e.clientY;
+    if (!isFiniteNumber(mx) || !isFiniteNumber(my)) return;
 
     // Normalize mouse position relative to SVG center in [-1, 1]
     var cx = rect.left + rect.width  / 2;
     var cy = rect.top  + rect.height / 2;
 
-    var nx = (mx - cx) / (rect.width  / 2);
+    var nx = (mx - cx) / (rect.width / 2);
     var ny = (my - cy) / (rect.height / 2);
+    if (!isFiniteNumber(nx) || !isFiniteNumber(ny)) return;
 
     nx = Math.max(-1, Math.min(1, nx));
     ny = Math.max(-1, Math.min(1, ny));
