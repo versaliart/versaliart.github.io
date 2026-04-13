@@ -135,3 +135,7 @@
 .sqs-block.html-block.flip-top .flip-door.right .face-inner{
   transform: translateX(-50%);
 }
+
+.fe-block.pe-through{
+  pointer-events: none !important;
+}

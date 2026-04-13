@@ -57,13 +57,17 @@
     return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
   }
 
-  function setPassThrough(block, on){
-    if (on) {
-      block.classList.add('pe-through');
-    } else {
-      block.classList.remove('pe-through');
-    }
+function setPassThrough(block, on){
+  const fe = closestFeBlock(block);
+
+  if (on) {
+    block.classList.add('pe-through');
+    if (fe) fe.classList.add('pe-through');
+  } else {
+    block.classList.remove('pe-through');
+    if (fe) fe.classList.remove('pe-through');
   }
+}
 
   function clearTimers(block){
     clearTimeout(block.__ptTimer);
