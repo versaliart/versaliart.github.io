@@ -16,7 +16,7 @@
   ];
 
   const AMPLITUDE_PX = 8; // max upward movement
-  const CYCLE_MS = 3600;  // full cycle: 0 -> up -> 0
+  const CYCLE_MS = 4600;  // full cycle: 0 -> up -> 0
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
