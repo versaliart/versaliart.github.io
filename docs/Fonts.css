@@ -895,7 +895,7 @@ button.sqs-button-element--secondary:active,
 /* Uploaded videos: crop to fill */
 .video-block video {
   width: 100% !important;
-  height: 100% !important;
+  height: auto !important;
   object-fit: cover !important;
 }
 
