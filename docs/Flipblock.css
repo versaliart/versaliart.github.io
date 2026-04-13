@@ -1160,9 +1160,7 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
   margin-top: 0 !important;
 }
 
-.sqs-block.html-block.flip-top .face.front{
-  inset: 0 !important;
-}
+
 
 /* === Gradient background for specific text blocks === */
 #block-268c84cc2c21ba0a6914,
@@ -1180,7 +1178,7 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 #block-2c75c5cb9c33704cf1a1.flip-top .face.front {
   background: linear-gradient(
     180deg,
-    rgba(32, 19, 67, 0) 70%,
+    rgba(32, 19, 67, 0) 55%,
     rgba(32, 19, 67, 1) 100%
   );
 }
