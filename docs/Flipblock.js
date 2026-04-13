@@ -1,17 +1,25 @@
-/* ===== Topblock Split-Flip (Doors) v2.50 — FULL JS (retargeted) ===== */
+/* ===== Topblock Split-Flip (Doors) v2.60 — FULL JS (desktop hover fixed + blank backs) ===== */
 (function(){
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
     doors.dataset.image = url;
+
     const mk = side => {
       const d = document.createElement('div');
       d.className = 'flip-door ' + side;
-      const f = document.createElement('div'); f.className = 'face front';
-      const b = document.createElement('div'); b.className = 'face back';
-      d.appendChild(f); d.appendChild(b);
+
+      const f = document.createElement('div');
+      f.className = 'face front';
+
+      const b = document.createElement('div');
+      b.className = 'face back';
+
+      d.appendChild(f);
+      d.appendChild(b);
       return d;
     };
+
     doors.appendChild(mk('left'));
     doors.appendChild(mk('right'));
     return doors;
@@ -24,26 +32,33 @@
     if (!container || !imgEl || !doors) return;
 
     const rect = container.getBoundingClientRect();
-    const W = Math.max(1, rect.width), H = Math.max(1, rect.height);
+    const W = Math.max(1, rect.width);
+    const H = Math.max(1, rect.height);
 
     let iw = imgEl.naturalWidth || 1;
     let ih = imgEl.naturalHeight || 1;
+
     const dims = imgEl.getAttribute('data-image-dimensions');
     if (dims && dims.includes('x')) {
       const [dw, dh] = dims.split('x').map(parseFloat);
-      if (dw > 0 && dh > 0){ iw = dw; ih = dh; }
+      if (dw > 0 && dh > 0) {
+        iw = dw;
+        ih = dh;
+      }
     }
 
-    let fx = 0.5, fy = 0.5;
+    let fx = 0.5;
+    let fy = 0.5;
     const fp = imgEl.getAttribute('data-image-focal-point');
-    if (fp && fp.includes(',')){
+    if (fp && fp.includes(',')) {
       const [sx, sy] = fp.split(',').map(parseFloat);
       if (!Number.isNaN(sx)) fx = sx;
       if (!Number.isNaN(sy)) fy = sy;
     }
 
     const scale = Math.max(W / iw, H / ih);
-    const bgW = iw * scale, bgH = ih * scale;
+    const bgW = iw * scale;
+    const bgH = ih * scale;
     const posX = (W * fx) - (bgW * fx);
     const posY = (H * fy) - (bgH * fy);
 
@@ -52,6 +67,7 @@
     const bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
+    if (!url) return;
 
     const paint = (el, dx) => {
       if (!el) return;
@@ -69,12 +85,21 @@
     const rf = doors.querySelector('.flip-door.right .face.front');
     const rb = doors.querySelector('.flip-door.right .face.back');
 
-    paint(lf, 0); paint(lb, 0);
-    paint(rf, (W / 2) - seam); paint(rb, (W / 2) - seam);
+    /* Paint fronts only */
+    paint(lf, 0);
+    paint(rf, (W / 2) - seam);
+
+    /* Leave backs blank so the image truly opens away */
+    if (lb) {
+      lb.style.backgroundImage = 'none';
+      lb.style.backgroundColor = 'transparent';
+    }
+    if (rb) {
+      rb.style.backgroundImage = 'none';
+      rb.style.backgroundColor = 'transparent';
+    }
   }
 
-  const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
-  const isFine = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
   const closestFeBlock = el => el.closest('.fe-block') || null;
 
   const mobileFlipBlocks = new Set();
@@ -83,14 +108,15 @@
   function ensureMobileCloseHandler(){
     if (mobileCloseHandlerInstalled) return;
     mobileCloseHandlerInstalled = true;
+
     document.addEventListener('click', function(e){
-      if (!isCoarse()) return;
       const actionable = e.target.closest &&
         e.target.closest('a,button,[role="button"],[role="link"],input,textarea,select,summary');
+
       if (actionable) return;
 
       mobileFlipBlocks.forEach(block => {
-        if (block.classList.contains('is-flipped')){
+        if (block.classList.contains('is-flipped')) {
           block.classList.remove('is-flipped');
           setPassThrough(block, false);
         }
@@ -100,12 +126,12 @@
 
   function setPassThrough(block, on){
     const outer = closestFeBlock(block);
-    if (on){
+    if (on) {
       block.classList.add('pe-through');
-      outer && outer.classList.add('pe-through');
+      if (outer) outer.classList.add('pe-through');
     } else {
       block.classList.remove('pe-through');
-      outer && outer.classList.remove('pe-through');
+      if (outer) outer.classList.remove('pe-through');
     }
   }
 
@@ -114,46 +140,6 @@
     block.__open = true;
     block.classList.add('is-open');
     setPassThrough(block, true);
-
-    const updatePt = (e) => {
-      block.__lastPt = ('clientX' in e) ? { x: e.clientX, y: e.clientY }
-        : (e.changedTouches && e.changedTouches[0]) ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
-        : block.__lastPt || null;
-      if (!block.__lastPt) return;
-      const r = block.getBoundingClientRect();
-      const p = block.__lastPt;
-      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
-        closeBlock(block);
-      }
-    };
-
-    const onPointerMove = (e) => updatePt(e);
-    const onPointerOver = (e) => updatePt(e);
-    const onScroll = () => {
-      if (!block.__lastPt) return;
-      const r = block.getBoundingClientRect();
-      const p = block.__lastPt;
-      if (p.x < r.left || p.x > r.right || p.y < r.top || p.y > r.bottom){
-        closeBlock(block);
-      }
-    };
-    const onBlur = () => closeBlock(block);
-    const onVisibility = () => { if (document.visibilityState !== 'visible') closeBlock(block); };
-
-    document.addEventListener('pointermove', onPointerMove, true);
-    document.addEventListener('pointerover', onPointerOver, true);
-    window.addEventListener('scroll', onScroll, true);
-    window.addEventListener('blur', onBlur, true);
-    document.addEventListener('visibilitychange', onVisibility, true);
-
-    block.__cleanupOpen = () => {
-      document.removeEventListener('pointermove', onPointerMove, true);
-      document.removeEventListener('pointerover', onPointerOver, true);
-      window.removeEventListener('scroll', onScroll, true);
-      window.removeEventListener('blur', onBlur, true);
-      document.removeEventListener('visibilitychange', onVisibility, true);
-      block.__lastPt = null;
-    };
   }
 
   function closeBlock(block){
@@ -161,7 +147,6 @@
     block.__open = false;
     block.classList.remove('is-open');
     setPassThrough(block, false);
-    if (block.__cleanupOpen){ try { block.__cleanupOpen(); } catch(_) {} block.__cleanupOpen = null; }
   }
 
   function initOne(block){
@@ -179,12 +164,16 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-block.addEventListener('mouseenter', () => openBlock(block));
-block.addEventListener('mouseleave', () => closeBlock(block));
+    /* Desktop: always bind hover */
+    block.addEventListener('mouseenter', () => openBlock(block));
+    block.addEventListener('mouseleave', () => closeBlock(block));
 
+    /* Mobile/touch: tap to flip */
     block.addEventListener('click', function(e){
-      if (!isCoarse()) return;
-      if (!block.classList.contains('is-flipped')){
+      const coarse = matchMedia('(hover: none), (pointer: coarse)').matches;
+      if (!coarse) return;
+
+      if (!block.classList.contains('is-flipped')) {
         e.preventDefault();
         e.stopPropagation();
         block.classList.add('is-flipped');
@@ -202,21 +191,28 @@ block.addEventListener('mouseleave', () => closeBlock(block));
     ro.observe(container);
 
     const mo = new MutationObserver(relayout);
-    mo.observe(img, { attributes: true, attributeFilter: ['src', 'srcset'] });
+    mo.observe(img, {
+      attributes: true,
+      attributeFilter: ['src', 'srcset', 'style']
+    });
 
-    if (!img.complete) img.addEventListener('load', relayout, { once: true });
+    if (!img.complete) {
+      img.addEventListener('load', relayout, { once: true });
+    }
+
     window.addEventListener('resize', relayout);
 
-    if ('IntersectionObserver' in window){
+    if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
-          if (!entry.isIntersecting){
+          if (!entry.isIntersecting) {
             closeBlock(block);
             block.classList.remove('is-flipped');
             setPassThrough(block, false);
           }
         });
       }, { threshold: 0.05 });
+
       io.observe(block);
     }
   }
