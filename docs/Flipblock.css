@@ -26,7 +26,7 @@
 }
 
 /* Keep original text visible until actually opened */
-.sqs-block.html-block.flip-top.flip-text-ready .sqs-html-content{
+.sqs-block.html-block.flip-top.flip-text-ready > .sqs-block-content > .sqs-text-block-container > .sqs-html-content{
   opacity: 0 !important;
 }
 
