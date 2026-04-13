@@ -71,6 +71,7 @@
       if (elements.length === 0) return null;
 
       const wrapper = ensureGroupWrapper(elements);
+      const largeElements = getElements(selectors.slice(0, 2));
 
       if (!wrapper) {
         elements.forEach((element) => { element.style.willChange = 'transform'; });
@@ -78,6 +79,7 @@
 
       return {
         elements,
+        largeElements,
         wrapper,
         phaseShift,
       };
@@ -103,7 +105,7 @@
         return 1 + (progress * 0.05);
       };
 
-      groups.forEach(({ elements, wrapper, phaseShift }) => {
+      groups.forEach(({ elements, largeElements, wrapper, phaseShift }) => {
         const groupOffset = -(((Math.sin(phase + phaseShift) + 1) / 2) * AMPLITUDE_PX);
         const y = groupOffset.toFixed(2);
         const scale = scaleForOffset(groupOffset).toFixed(4);
@@ -113,7 +115,11 @@
           return;
         }
 
+        const largeSet = new Set(largeElements);
         elements.forEach((element) => {
+          element.style.transform = `translate3d(0, ${y}px, 0)`;
+        });
+        largeSet.forEach((element) => {
           element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
         });
       });
