@@ -27,11 +27,12 @@
 
 /* Keep original text visible until actually opened */
 .sqs-block.html-block.flip-top .sqs-html-content{
-  opacity: 1 !important;
+  opacity: 0 !important;
 }
 
-.sqs-block.html-block.flip-top.is-open .sqs-html-content{
-  opacity: 0 !important;
+.sqs-block.html-block.flip-top .face{
+  inset: 0 !important;
+  overflow: hidden;
 }
 
 /* Doors host */
