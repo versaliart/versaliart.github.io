@@ -17,7 +17,7 @@
     }
         ,{
       image: '#block-02885c92e089f6b77857', /* Rough Trade */
-      text:  '#block-c379877a90cef7206476
+      text:  '#block-c379877a90cef7206476'
     }
         ,{
       image: '#block-ec8fd1095d8bde19b913', /* Gilbert */
