@@ -358,12 +358,12 @@ nav .subnav a{
 }
 
 /* Trailing empty paragraph cleanup */
-.sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
-.sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){ display:none !important; }
+/* .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
+.sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){ display:none !important; } */
 
 /* Non-trailing spacer paragraph cleanup (including editor mode) */
-.sqs-block-html .sqs-html-content p:not(:last-child):has(> br:only-child){ display:none !important; }
-body.sqs-edit-mode .sqs-block-html .sqs-html-content p:has(> br:only-child){ display:none !important; }
+/* .sqs-block-html .sqs-html-content p:not(:last-child):has(> br:only-child){ display:none !important; }
+body.sqs-edit-mode .sqs-block-html .sqs-html-content p:has(> br:only-child){ display:none !important; } */
 
 body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
   display: none !important;
