@@ -1160,6 +1160,9 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
   margin-top: 0 !important;
 }
 
+.sqs-block.html-block.flip-top .face.front{
+  inset: 0 !important;
+}
 
 /* === Gradient background for specific text blocks === */
 #block-268c84cc2c21ba0a6914,
