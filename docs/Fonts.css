@@ -333,15 +333,15 @@ nav .subnav a{
 }
 
 /* Heading → Paragraph gap */
-.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
+.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6,*:has(> :is(h1,h2,h3,h4,h5,h6):first-child)) + :is(p,*:has(> p:first-child)),
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
   margin-top: var(--gap-hp) !important;
 }
 
 /* H2 → Anything gap */
-.sqs-block-html .sqs-html-content > h2 + *,
+.sqs-block-html .sqs-html-content > :is(h2,*:has(> h2:first-child)) + *,
 .sqs-block-html .sqs-block-content > h2 + *{
-  margin-top: 1rem !important;
+  margin-top: var(--gap-hp) !important;
 }
 
 /* Single-role P1 stacks */
