@@ -25,8 +25,12 @@
   opacity: 0 !important;
 }
 
-/* Hide original text source */
+/* Keep original text visible until actually opened */
 .sqs-block.html-block.flip-top .sqs-html-content{
+  opacity: 1 !important;
+}
+
+.sqs-block.html-block.flip-top.is-open .sqs-html-content{
   opacity: 0 !important;
 }
 
