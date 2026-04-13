@@ -74,3 +74,26 @@
 .fe-block.pe-through *{
   pointer-events: none !important;
 }
+
+/* Text-block source hidden once flip is initialized */
+.sqs-block.html-block.flip-top .sqs-html-content{
+  opacity: 0 !important;
+}
+
+/* Text door faces can hold cloned HTML */
+.sqs-block.html-block.flip-top .face{
+  overflow: hidden;
+}
+
+/* Inner cloned text layer */
+.sqs-block.html-block.flip-top .face-inner{
+  position: absolute;
+  inset: 0;
+  width: 200%;
+  height: 100%;
+}
+
+/* Right half shifts left to show the right side */
+.sqs-block.html-block.flip-top .flip-door.right .face-inner{
+  transform: translateX(-50%);
+}
