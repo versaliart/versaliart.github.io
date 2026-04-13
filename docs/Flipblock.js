@@ -180,6 +180,7 @@
     container.appendChild(doors);
 
 block.addEventListener('mouseenter', () => openBlock(block));
+block.addEventListener('mouseleave', () => closeBlock(block));
 
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
