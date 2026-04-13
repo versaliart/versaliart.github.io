@@ -423,12 +423,10 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
    FLUID ENGINE — TRUE VERTICAL CENTERING FOR TEXT BLOCKS
    Applies only when FE vertical-align is center or bottom
 ========================================================= */
-
 @supports selector(.fe-block:has(*)) {
 
-  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"])),
-
-  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"])) {
+  /* CENTER-aligned FE text blocks */
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"])) {
 
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] > .sqs-block-content {
@@ -441,20 +439,24 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
       display: flex;
       flex-direction: column;
       justify-content: center;
-
-      /* Smaller vertical padding for bg-fill centered blocks */
-      padding-top: var(--text-block-background-padding-block-centered);
-      padding-bottom: var(--text-block-background-padding-block-centered);
+      row-gap: 1rem;
     }
+  }
 
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content > *,
-    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content > * {
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
+  /* BOTTOM-aligned FE text blocks */
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"])) {
+
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] > .sqs-block-content {
+      height: 100%;
     }
 
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
       row-gap: 1rem;
     }
   }
