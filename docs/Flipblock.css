@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v2.50 — FULL CSS ===== */
+/* ===== Topblock Split-Flip (Doors) v3.10 — image + text ===== */
 
 :root{
   --flip-open-duration: 480ms;
@@ -11,78 +11,115 @@
   --edge-bleed: 1px;
 }
 
-/* Opt-in Topflip */
-.sqs-block.image-block.flip-top .fluid-image-container{
+/* Shared 3D host */
+.sqs-block.flip-top .fluid-image-container,
+.sqs-block.flip-top .sqs-block-content{
   perspective: var(--flip-perspective);
-  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   position: relative;
 }
 
-/* Hide the real <img>; doors repaint it */
-.sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{ opacity: 0 !important; }
+/* Hide original image source */
+.sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{
+  opacity: 0 !important;
+}
+
+/* Hide original text source */
+.sqs-block.html-block.flip-top .sqs-html-content{
+  opacity: 0 !important;
+}
 
 /* Doors host */
-.sqs-block.image-block.flip-top .flip-doors{
-  position: absolute; inset: 0;
-  border-radius: inherit; overflow: hidden;
-  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
+.sqs-block.flip-top .flip-doors{
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   pointer-events: none;
   contain: layout paint;
 }
 
 /* Doors */
-.sqs-block.image-block.flip-top .flip-door{
-  position: absolute; top: 0; bottom: 0;
+.sqs-block.flip-top .flip-door{
+  position: absolute;
+  top: 0;
+  bottom: 0;
   width: calc(50% + var(--flip-seam));
   will-change: transform;
-  transform-style: preserve-3d; -webkit-transform-style: preserve-3d;
-  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transition-property: transform;
   transition-duration: var(--flip-close-duration);
   transition-timing-function: var(--flip-close-ease);
 }
-.sqs-block.image-block.flip-top .flip-door.left  { left: 0;  transform-origin: center left; }
-.sqs-block.image-block.flip-top .flip-door.right { right: 0; transform-origin: center right; }
-.sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
 
-/* Faces (painted by JS) */
-.sqs-block.image-block.flip-top .face{
+.sqs-block.flip-top .flip-door.left{
+  left: 0;
+  transform-origin: center left;
+}
+
+.sqs-block.flip-top .flip-door.right{
+  right: 0;
+  transform-origin: center right;
+  transform: translateZ(0.1px) rotateY(0deg);
+}
+
+/* Faces */
+.sqs-block.flip-top .face{
   position: absolute;
   inset: calc(-1 * var(--edge-bleed));
-  background-repeat: no-repeat; background-color: transparent;
-  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  background-repeat: no-repeat;
+  background-color: transparent;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
   transform: translateZ(0);
 }
-.sqs-block.image-block.flip-top .back{ transform: rotateY(180deg); }
+
+.sqs-block.flip-top .back{
+  transform: rotateY(180deg);
+}
+
+/* Text faces need clipping */
+.sqs-block.html-block.flip-top .face{
+  overflow: hidden;
+}
 
 /* Closed state */
-.sqs-block.image-block.flip-top .flip-door.left  { transform: rotateY(0deg); }
-.sqs-block.image-block.flip-top .flip-door.right { transform: translateZ(0.1px) rotateY(0deg); }
+.sqs-block.flip-top .flip-door.left{
+  transform: rotateY(0deg);
+}
 
-/* OPEN (class-driven) */
-.sqs-block.image-block.flip-top.is-open .flip-door{
+.sqs-block.flip-top .flip-door.right{
+  transform: translateZ(0.1px) rotateY(0deg);
+}
+
+/* Open state */
+.sqs-block.flip-top.is-open .flip-door{
   transition-duration: var(--flip-open-duration);
   transition-timing-function: var(--flip-open-ease);
 }
-.sqs-block.image-block.flip-top.is-open .flip-door.left  { transform: rotateY(-180deg); }
-.sqs-block.image-block.flip-top.is-open .flip-door.right { transform: translateZ(0.1px) rotateY(180deg); }
 
-/* TRUE pass-through while open: Topflip + its fe-block wrapper */
-.sqs-block.image-block.flip-top.pe-through,
-.sqs-block.image-block.flip-top.pe-through *,
-.fe-block.pe-through,
-.fe-block.pe-through *{
+.sqs-block.flip-top.is-open .flip-door.left{
+  transform: rotateY(-180deg);
+}
+
+.sqs-block.flip-top.is-open .flip-door.right{
+  transform: translateZ(0.1px) rotateY(180deg);
+}
+
+/* Pass-through only on the flipping block itself and its injected overlay */
+.sqs-block.flip-top.pe-through,
+.sqs-block.flip-top.pe-through .fluid-image-container,
+.sqs-block.flip-top.pe-through .sqs-block-content,
+.sqs-block.flip-top.pe-through .flip-doors,
+.sqs-block.flip-top.pe-through .flip-door,
+.sqs-block.flip-top.pe-through .face{
   pointer-events: none !important;
-}
-
-/* Text-block source hidden once flip is initialized */
-.sqs-block.html-block.flip-top .sqs-html-content{
-  opacity: 0 !important;
-}
-
-/* Text door faces can hold cloned HTML */
-.sqs-block.html-block.flip-top .face{
-  overflow: hidden;
 }
 
 /* Inner cloned text layer */
@@ -91,9 +128,10 @@
   inset: 0;
   width: 200%;
   height: 100%;
+  pointer-events: none;
 }
 
-/* Right half shifts left to show the right side */
+/* Right text half shows the right side */
 .sqs-block.html-block.flip-top .flip-door.right .face-inner{
   transform: translateX(-50%);
 }
