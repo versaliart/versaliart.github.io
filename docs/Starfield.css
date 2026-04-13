@@ -20,7 +20,7 @@ body.has-starfield{
   --star-randomize: 0;
 
   /* twinkle timing */
-  --twinkle-min: 0.5;
+  --twinkle-min: 1.0;
   --twinkle-max: 2.0;
 
   /* opacity */
