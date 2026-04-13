@@ -4,15 +4,25 @@
 
   const FLIP_PAIRS = [
     {
-      image: '#block-yui_3_17_2_1_1756837579989_139784',
+      image: '#block-yui_3_17_2_1_1756837579989_139784', /* BH */
       text:  '#block-268c84cc2c21ba0a6914'
     }
-    /* Add more pairs here:
     ,{
-      image: '#block-image-2',
-      text:  '#block-text-2'
+      image: '#block-d59fbc8ac97ccae4d7cf',  /* Carlos */
+      text:  '#block-9946601a0f6219d1ad5c'
     }
-    */
+    ,{
+      image: '#block-ddcb38350b1a61378b66', /* WINGS */
+      text:  '#block-021baabdabf2b9437b6c'
+    }
+        ,{
+      image: '#block-02885c92e089f6b77857', /* Rough Trade */
+      text:  '#block-c379877a90cef7206476
+    }
+        ,{
+      image: '#block-ec8fd1095d8bde19b913', /* Gilbert */
+      text:  '#block-2c75c5cb9c33704cf1a1'
+    }
   ];
 
   function buildDoors(){
