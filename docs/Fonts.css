@@ -309,12 +309,6 @@ nav .subnav a{
 }
 
 /* 2) Gap between any two different styles */
-/* =========================================================
-   CONTROLLED TEXT SPACING (Editor-safe)
-   - Only applies spacing between real content elements
-   - Ignores empty <p><br></p> nodes from Squarespace editor
-========================================================= */
-
 /* Reset any previous universal sibling spacing */
 .sqs-block-html .sqs-block-content > * + *,
 .sqs-block-html .sqs-html-content > * + *{
@@ -337,7 +331,7 @@ nav .subnav a{
 .sqs-block-html .sqs-html-content > h4 + p,
 
 .sqs-block-html .sqs-html-content > p + p{
-  margin-top: 0.55rem !important;
+  margin-top: 1rem !important;
 }
 
 /* =========================================================
