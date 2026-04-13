@@ -139,3 +139,1061 @@
 .fe-block.pe-through{
   pointer-events: none !important;
 }
+
+/*----------------------------------------------------------------------*/
+/* FONT DECLARATIONS v1.5 */
+/*----------------------------------------------------------------------*/
+
+/* ------------------------------
+   CRIMSON PRO
+--------------------------------*/
+@font-face{
+  font-family: "Crimson Pro";
+  src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b4fe9ef762c1becddd2/1756441424539/CrimsonPro-VariableFont_wght.woff2") format("woff2");
+  font-weight: 200 900;   /* expose the range that file supports */
+  font-style: normal;
+  font-display: block;
+}
+
+
+/* ------------------------------
+   MAAX FAMILY
+--------------------------------*/
+/* Regular (400) */
+@font-face {
+  font-family: "Maax";
+  src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b50d4d51b3335e308a4/1756441424298/Maax.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Italic (400 italic) */
+@font-face {
+  font-family: "Maax";
+  src: url(https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b50125270571f593fcf/1756441424381/Maax-Italic.woff2) format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: block;
+}
+
+/* Medium (500) */
+@font-face {
+  font-family: "Maax";
+  src: url(https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12e5f5910144faa05f7ea/1756442207649/Maax-Medium.woff2) format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+/* Medium Italic (500 italic) */
+@font-face {
+  font-family: "Maax";
+  src: url(https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12e5dddc0cf4e186922be/1756442205332/Maax-Mediumitalic.woff2) format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: block;
+}
+
+/* Bold (700) */
+@font-face {
+  font-family: "Maax";
+  src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b5029b08279c2baefb7/1756441424343/Maax-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold Italic (700 italic) */
+@font-face {
+  font-family: "Maax";
+  src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12e63d4d51b3335e35ef0/1756442211833/Maax-BoldItalic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: block;
+}
+
+/* Black (900) */
+@font-face {
+  font-family: "Maax";
+  src: url("https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/68b12b50a4f4cc03f3cbdfec/1756441424299/Maax-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
+/* ===============================
+   TEXT BLOCKS WITH BACKGROUND COLOR
+   NOTE: keep this token-only section; the real applying rules live
+   later in "TEXT BLOCK SPACING" so they can override base text padding.
+================================*/
+
+/* ===============================
+   HEADINGS (content area)
+================================*/
+.sqs-block-content h1{ font-family:"Maax",sans-serif; font-weight:700; font-size:var(--h1); line-height:1.2 !important;
+  text-transform:none; }
+.sqs-block-content h2{ font-family:"Maax",sans-serif; font-weight:500; font-size:var(--h2); line-height:1.2;
+  color:#fff;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-feature-settings: "case" 1, "cpsp" 1; }
+.sqs-block-content h3{ font-family:"Maax",sans-serif; font-weight:400; font-size:var(--h3); line-height:1.3;
+  color:#fff;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+  font-feature-settings: "case" 1, "cpsp" 1;}
+.sqs-block-content h4{ font-family:"Maax",sans-serif; font-weight:400; font-size:var(--h4); line-height:1.35;
+  color:#fff;
+  text-transform:none;
+  letter-spacing: .02em;}
+
+/* Quote blocks use the H3 type style */
+.sqs-block-quote .sqs-block-content blockquote,
+.sqs-block-quote .sqs-block-content blockquote p{
+  font-family:"Maax",sans-serif;
+  font-weight:400;
+  font-size:var(--h4);
+  line-height:1.35;
+  color:#fff;
+  letter-spacing:.02em;
+  font-feature-settings: "case" 1, "cpsp" 1;
+}
+
+/* ===============================
+   PARAGRAPHS (content area)
+   P1 / P2 / P3
+================================*/
+/* Paragraph 1 */
+.sqs-block-content p.sqsrte-large{
+  font-family:"Maax",sans-serif;
+  font-weight:500;
+  font-size:var(--p1);
+  line-height:1.25;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  font-feature-settings:"case" 1, "cpsp" 1;
+}
+
+/* Paragraph 2 (default) */
+.sqs-block-content p,
+.sqs-block-content p.sqsrte-body{
+  font-family:"Crimson Pro",serif;
+  font-weight:300;
+  font-size:var(--p2);
+  line-height:1.55;
+  font-optical-sizing:auto;
+  font-synthesis-weight:none;
+}
+
+/* Paragraph 3 */
+.sqs-block-content p.sqsrte-small{
+  font-family:"Crimson Pro",serif;
+  font-weight:400;             /* Regular */
+  font-size:var(--p3);
+  line-height:1.75;
+}
+
+/* Lists inherit paragraph styles */
+.sqs-block-content li{
+  font-family:"Crimson Pro",serif;
+  font-weight:inherit;
+  font-size:inherit;
+  line-height:inherit;
+}
+
+/* ===============================
+   CAPTIONS (images, galleries)
+================================*/
+.sqs-block-image .image-caption p,
+.sqs-gallery-design-grid .image-slide .image-caption p,
+.sqs-gallery-design-carousel .image-caption p,
+figure figcaption, .caption, figcaption, small{
+  font-family:"Crimson Pro",serif;
+  font-weight:400;             /* Regular */
+  font-size:var(--p3);
+  line-height:1.4;
+}
+
+/* ===============================
+   NAVIGATION (header)
+================================*/
+.header-title, .header-title a, .site-title, .site-title a{
+  font-family:"Maax",sans-serif !important;
+  font-weight:700 !important;
+  font-size:var(--h3) !important;
+  line-height:1.4;
+  text-transform:none !important;
+  letter-spacing:0 !important;
+}
+
+.header-nav a, .header-nav-item a, nav a{
+  font-family:"Maax",sans-serif !important;
+  font-weight:500 !important;          /* Medium */
+  font-size:1rem !important;           /* similar to P2 */
+  line-height:1.4;
+  letter-spacing:.02em !important;
+  text-transform:uppercase;
+}
+
+.header-nav .folder .subnav a,
+.header-nav-folder .header-nav-item a,
+nav .subnav a{
+  font-family:"Maax",sans-serif !important;
+  font-weight:400 !important;          /* Regular */
+  font-size:.9375rem !important;
+  letter-spacing:.01em !important;
+  text-transform:none;
+}
+
+
+/* ===============================
+   FOOTER
+================================*/
+.footer, .Footer, footer{
+  font-family:"Crimson Pro",serif;
+  font-size:var(--p3);
+  line-height:1.6;
+  padding-bottom:clamp(0.5rem, 2vw, 1rem);
+}
+
+.footer h1, .footer h2, .footer h3, .footer h4,
+.Footer h1, .Footer h2, .Footer h3, .Footer h4{
+  font-family:"Maax",sans-serif;
+  font-weight:700;
+  font-size:1rem;                       /* Use nav/body scale */
+  letter-spacing:.02em;
+  text-transform:uppercase;
+}
+
+.footer nav a, .Footer nav a, .Footer a{
+  font-family:"Maax",sans-serif;
+  font-weight:400;
+  font-size:.9375rem;
+  letter-spacing:.01em;
+  text-transform:none;
+}
+
+/* ===============================
+   RESPONSIVE TWEAKS (optional)
+================================*/
+:root{
+  --h1: clamp(2.8rem, 1.9rem + 1.4vw, 3rem);
+  --h2: clamp(1.75rem, 1.5rem + 0.9vw, 2rem);
+  --h3: clamp(1.55rem, 1.25rem + 0.6vw, 1.85rem);
+  --h4: clamp(1.35rem, 1.15rem + 0.3vw, 1.5rem);
+
+  --p1: 1rem;
+  --p2: 1.25rem;
+  --p3: 1rem;
+}
+
+
+/* ===============================
+   TEXT BLOCK SPACING
+================================*/
+
+/* GLOBAL SPACING TOKENS */
+:root{
+  --tb-pad-y: 0.25rem;
+  --tb-pad-x: 0.25rem;
+
+  /* Text blocks with background color */
+  --text-block-background-padding-inline: 2rem;
+  --text-block-background-padding-block: 2rem;
+
+  /* Centered/bottom-aligned FE text blocks with bg fill:
+     slightly smaller vertical padding so centering stays optical */
+  --text-block-background-padding-block-centered: 1rem;
+
+  --gap-hp: 1rem;  /* gap between Header and Paragraph styles */
+}
+
+/* Mobile: reduce bg-fill padding so wrapped copy does not look top-heavy */
+@media (max-width: 767px){
+  :root{
+    --text-block-background-padding-inline: 1.25rem;
+    --text-block-background-padding-block: 1.25rem;
+    --text-block-background-padding-block-centered: 0.85rem;
+  }
+}
+
+/* Text blocks only
+   Baseline padding only: block-specific Squarespace padding can override this. */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
+  padding-top: var(--tb-pad-y);
+  padding-bottom: var(--tb-pad-y);
+  padding-inline: var(--tb-pad-x);
+}
+
+/* Fallback (Text blocks only) */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content{
+  padding-top: var(--tb-pad-y);
+  padding-bottom: var(--tb-pad-y);
+  padding-inline: var(--tb-pad-x);
+}
+
+/* Text blocks with a background color */
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:is(.sqs-background-enabled,[style*="background"]) .sqs-html-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content:is(.sqs-background-enabled,[style*="background"]) .sqs-html-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:is(.sqs-background-enabled,[style*="background"]):not(:has(.sqs-html-content)) .sqs-block-content,
+.sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content:is(.sqs-background-enabled,[style*="background"]):not(:has(.sqs-html-content)){
+  padding-top: var(--text-block-background-padding-block);
+  padding-bottom: var(--text-block-background-padding-block);
+  padding-inline: var(--text-block-background-padding-inline);
+}
+
+/* 1) Zero top/bottom margins on common children */
+.sqs-block-html .sqs-block-content > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure),
+.sqs-block-html .sqs-html-content   > :where(h1,h2,h3,h4,h5,h6,p,ul,ol,blockquote,figure){
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* 2) Gap between any two different styles */
+/* Reset any previous universal sibling spacing */
+.sqs-block-html .sqs-block-content > * + *,
+.sqs-block-html .sqs-html-content > * + *{
+  margin-top: 0 !important;
+}
+
+/* Apply spacing ONLY between meaningful elements */
+.sqs-block-html .sqs-html-content > h1 + h2,
+.sqs-block-html .sqs-block-content > h1 + h2,
+.sqs-block-html .sqs-html-content > h1 + h3,
+.sqs-block-html .sqs-block-content > h1 + h3,
+.sqs-block-html .sqs-html-content > h1 + h4,
+.sqs-block-html .sqs-block-content > h1 + h4,
+.sqs-block-html .sqs-html-content > h1 + p,
+.sqs-block-html .sqs-block-content > h1 + p,
+
+.sqs-block-html .sqs-html-content > h2 + h3,
+.sqs-block-html .sqs-block-content > h2 + h3,
+.sqs-block-html .sqs-html-content > h2 + h4,
+.sqs-block-html .sqs-block-content > h2 + h4,
+.sqs-block-html .sqs-html-content > h2 + p,
+.sqs-block-html .sqs-block-content > h2 + p,
+
+.sqs-block-html .sqs-html-content > h3 + h4,
+.sqs-block-html .sqs-block-content > h3 + h4,
+.sqs-block-html .sqs-html-content > h3 + p,
+.sqs-block-html .sqs-block-content > h3 + p,
+
+.sqs-block-html .sqs-html-content > h4 + p,
+.sqs-block-html .sqs-block-content > h4 + p,
+
+.sqs-block-html .sqs-html-content > p + p,
+.sqs-block-html .sqs-block-content > p + p{
+  margin-top: 0.55rem !important;
+}
+
+
+/* =========================================================
+   OPTIONAL: Light cleanup of true empty paragraphs
+   (SAFE: does not break editor rendering)
+========================================================= */
+
+/* Only hide completely empty trailing paragraphs on live site */
+body:not(.sqs-edit-mode)
+.sqs-block-html .sqs-html-content > p:last-child:empty{
+  display:none !important;
+}
+
+/* 3) Gap only after display paragraphs */
+.sqs-block-html .sqs-block-content > :is(p.sqsrte-large,p.sqsrte-medium) + *,
+.sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium) + *{
+  margin-top: 1rem !important;
+}
+
+/* 4) Remove accidental spacer paragraphs */
+body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
+  display:none !important;
+}
+
+/* Optional: no extra space at end of a Text block */
+.sqs-block-html .sqs-block-content > *:last-child,
+.sqs-block-html .sqs-html-content   > *:last-child{
+  margin-bottom: 0 !important;
+}
+
+/* Heading → Paragraph gap */
+.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
+.sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
+  margin-top: var(--gap-hp) !important;
+}
+
+/* H2 → real content only */
+/* .sqs-block-html .sqs-html-content > h2 + h3,
+.sqs-block-html .sqs-block-content > h2 + h3,
+.sqs-block-html .sqs-html-content > h2 + h4,
+.sqs-block-html .sqs-block-content > h2 + h4,
+.sqs-block-html .sqs-html-content > h2 + p:not(:has(> br:only-child)),
+.sqs-block-html .sqs-block-content > h2 + p:not(:has(> br:only-child)){
+  margin-top: 1.5rem !important;
+} */
+
+/* Single-role P1 stacks */
+.sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
+  display: grid;
+  row-gap: .55rem;
+  padding-top: var(--tb-pad-y);
+  padding-bottom: var(--tb-pad-y);
+  padding-inline: var(--tb-pad-x, .5rem);
+}
+
+.sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))) > *{
+  margin: 0 !important;
+}
+
+
+/* =========================================================
+   FE Text blocks — remove baseline vertical padding when centered/bottom
+========================================================= */
+
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) .sqs-block-content,
+.fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"]))
+  .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content{
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* =========================================================
+   FLUID ENGINE — TRUE VERTICAL CENTERING FOR TEXT BLOCKS
+   Applies only when FE vertical-align is center or bottom
+========================================================= */
+@supports selector(.fe-block:has(*)) {
+
+  /* CENTER-aligned FE text blocks */
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: center"],[style*="justify-content:center"])) {
+
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] > .sqs-block-content {
+      height: 100%;
+    }
+
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      row-gap: 0.35rem;
+    }
+  }
+
+  /* BOTTOM-aligned FE text blocks */
+  .fe-block:has(:is(.fe-block-content,.sqs-block-alignment-wrapper):is([style*="justify-content: flex-end"],[style*="justify-content:flex-end"])) {
+
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"],
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] > .sqs-block-content {
+      height: 100%;
+    }
+
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+    .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      row-gap: 0.35rem;
+    }
+  }
+}
+
+
+/* ===============================
+   GALLERY TWEAKS
+================================*/
+/* Squarespace Gallery — strips thumbnails: 8px radius */
+.gallery-strips .gallery-strips-item-wrapper,
+.gallery-strips .gallery-strips-item-wrapper > a {
+  border-radius: 8px !important;
+  overflow: hidden !important;
+  /* iOS/Safari overflow clipping fix */
+mask-image: radial-gradient(white, black);
+-webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+/* Make the image follow the radius too */
+.gallery-strips .gallery-strips-item-wrapper img {
+  border-radius: inherit !important;
+  display: block;
+}
+
+/* If any hover/cover layers exist, clip them as well */
+.gallery-strips .gallery-strips-item,
+.gallery-strips .gallery-strips-lightbox-link {
+  clip-path: inset(0 round 8px);
+}
+
+/* Squarespace Lightbox overlay color */
+.gallery-lightbox-background {
+  background-color: rgba(28, 24, 41, 0.85) !important;  /* change color + opacity here */
+  transition: background-color 0.3s ease;
+}
+
+button.gallery-lightbox-control-btn polyline
+{
+    stroke: white !important;
+}
+
+/* Lightbox close (X) button color */
+.gallery-lightbox-close-btn-icon svg path {
+  fill: white !important;
+}
+
+/* === Squarespace Lightbox Close Button Color Override === */
+button.gallery-lightbox-close-btn .gallery-lightbox-close-btn-icon svg path {
+  stroke: white !important;     /* sets line color of the X */
+  stroke-width: 2 !important;   /* optional: thickens the lines slightly */
+}
+
+/* Optional hover color */
+button.gallery-lightbox-close-btn:hover .gallery-lightbox-close-btn-icon svg path {
+  stroke: var(--your-accent-color, white) !important;
+}
+
+
+/* ===============================
+   BUTTONS
+================================*/
+
+/* Core button anchors (7.1) */
+a.sqs-button-element,
+a.sqs-button-element--primary,
+a.sqs-button-element--secondary,
+a.sqs-button-element--tertiary,
+.sqs-button-element,
+.sqs-editable-button a {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+  font-synthesis-weight: none; /* avoid faux bold */
+}
+
+/* The nested label span sometimes carries its own font */
+.sqs-button-element .sqs-button-label,
+.sqs-editable-button a .sqs-button-label {
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  font-size: inherit !important;
+  letter-spacing: inherit !important;
+  text-transform: inherit !important;
+}
+
+/* Secondary variant tweaks (matches your intent) */
+a.sqs-button-element--secondary,
+a.sqs-button-element--secondary .sqs-button-label {
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;
+}
+
+/* Commerce add-to-cart buttons (different markup) */
+.sqs-add-to-cart-button,
+.sqs-add-to-cart-button .sqs-button-label,
+button.sqs-add-to-cart-button {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .03em !important;
+}
+
+/* Header action buttons (Login, Subscribe, etc.) */
+.header-actions .btn,
+.header-actions .btn .btn-label {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .03em !important;
+}
+
+/* Gallery / lightbox CTA buttons, if present */
+.gallery-block .sqs-button-element,
+.gallery-block .sqs-button-element .sqs-button-label {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* ==========================================================================
+   Secondary Buttons — #9989EC border + text; white on hover
+   ========================================================================== */
+
+/* ===============================
+   SECONDARY BUTTON — UPDATED
+================================*/
+
+/* Base (neutral) — outline only */
+a.sqs-button-element--secondary,
+.sqs-button-element--secondary,
+button.sqs-button-element--secondary,
+.sqs-block-button .sqs-button-element--secondary {
+  color: #FBB03B !important;
+  border-color: #FBB03B !important;
+  background-color: transparent !important;
+}
+
+/* Inner label */
+.sqs-button-element--secondary .sqs-button-label {
+  color: #FBB03B !important;
+}
+
+/* Hover — filled */
+a.sqs-button-element--secondary:hover,
+button.sqs-button-element--secondary:hover,
+.sqs-button-element--secondary:hover {
+  color: #3C3361 !important;
+  border-color: #FBB03B !important;
+  background-color: #E5EA91 !important;
+}
+
+/* Hover label */
+.sqs-button-element--secondary:hover .sqs-button-label {
+  color: #3C3361 !important;
+}
+
+/* Active — same as hover */
+a.sqs-button-element--secondary:active,
+button.sqs-button-element--secondary:active,
+.sqs-button-element--secondary:active {
+  color: #3C3361 !important;
+  border-color: #FBB03B !important;
+  background-color: #E5EA91 !important;
+}
+
+
+/* =========================================================
+   FORMS TYPOGRAPHY OVERRIDES (Squarespace 7.1)
+   Match buttons/paragraph system: Maax for UI labels,
+   Crimson Pro for user-entered text.
+   v1.0 (2025-10-30)
+========================================================= */
+
+/* --- Titles, section headings, field labels, legends --- */
+.sqs-block-form .form-title,
+.sqs-block-form .form-subtitle,
+.sqs-block-form .field-list .title,
+.sqs-block-form .field-list label,
+.sqs-block-form legend,
+.form-wrapper .form-title,
+.form-wrapper .form-subtitle,
+.form-wrapper label,
+.form-wrapper legend,
+.newsletter-block .newsletter-form-header,
+.newsletter-block .newsletter-form-header .form-title,
+.newsletter-block .newsletter-form-header .form-subtitle {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;                 /* Medium */
+  line-height: 1.3 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+  font-size: var(--p3, 1rem) !important;       /* keep labels tidy */
+  font-synthesis-weight: none !important;
+}
+
+/* --- Text inputs, textareas, selects (user-entered text) --- */
+.sqs-block-form input[type="text"],
+.sqs-block-form input[type="email"],
+.sqs-block-form input[type="tel"],
+.sqs-block-form input[type="url"],
+.sqs-block-form input[type="number"],
+.sqs-block-form input[type="password"],
+.sqs-block-form input[type="search"],
+.sqs-block-form textarea,
+.sqs-block-form select,
+.form-wrapper input[type="text"],
+.form-wrapper input[type="email"],
+.form-wrapper input[type="tel"],
+.form-wrapper input[type="url"],
+.form-wrapper input[type="number"],
+.form-wrapper input[type="password"],
+.form-wrapper input[type="search"],
+.form-wrapper textarea,
+.form-wrapper select,
+.newsletter-block .newsletter-form input,
+.newsletter-block .newsletter-form select,
+.newsletter-block .newsletter-form textarea {
+  font-family: "Crimson Pro", serif !important;
+  font-weight: 400 !important;                 /* regular reading weight */
+  font-style: normal !important;
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.4 !important;
+  font-optical-sizing: auto !important;
+  font-synthesis-weight: none !important;      /* avoid faux bold in inputs */
+}
+
+/* --- Placeholder text (tone it down, keep same family) --- */
+.sqs-block-form ::placeholder,
+.form-wrapper ::placeholder,
+.newsletter-block .newsletter-form ::placeholder {
+  font-family: inherit !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  opacity: .6 !important;
+}
+
+/* --- Checkbox & radio option labels --- */
+.sqs-block-form .option,
+.sqs-block-form .option label,
+.form-wrapper .option,
+.form-wrapper .option label {
+  font-family: "Maax", sans-serif !important;  /* keep UI labels consistent */
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: none !important;             /* easier to read long options */
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.3 !important;
+}
+
+/* --- Helper/description text under fields + error/success messages --- */
+.sqs-block-form .description,
+.form-wrapper .description,
+.sqs-error-message,
+.form-field-error,
+.form-wrapper .form-submission-text,
+.sqs-block-form .form-submission-text {
+  font-family: "Crimson Pro", serif !important;
+  font-weight: 400 !important;
+  font-style: normal !important;
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.4 !important;
+}
+
+/* --- File upload pseudo-button’s visible label (where applicable) --- */
+.sqs-block-form .file-upload .file-upload-field + label,
+.form-wrapper .file-upload .file-upload-field + label {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+}
+
+/* --- Ensure the submit button follows your global button rules --- */
+/* (Your existing button block already covers these, but this keeps forms tidy) */
+.sqs-block-form .form-button-wrapper .sqs-button-element,
+.sqs-block-form .form-button-wrapper .sqs-button-element .sqs-button-label {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+  font-size: 1rem !important;
+}
+
+/* --- Newsletter “Name/Email” labels and disclaimers --- */
+.newsletter-block .newsletter-form-field-wrapper label,
+.newsletter-block .newsletter-form-footnote,
+.newsletter-block .newsletter-form-disclaimer {
+  font-family: "Maax", sans-serif !important;  /* labels */
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+  font-size: var(--p3, 1rem) !important;
+}
+.newsletter-block .newsletter-form-description,
+.newsletter-block .newsletter-block-success,
+.newsletter-block .newsletter-block-failure {
+  font-family: "Crimson Pro", serif !important; /* body text */
+  font-weight: 400 !important;
+  font-size: var(--p3, 1rem) !important;
+  line-height: 1.4 !important;
+}
+
+/* --- Edge cases: form titles embedded inside headings in content blocks --- */
+.sqs-block-content .form-wrapper .form-title,
+.sqs-block-content .form-wrapper .form-subtitle {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+}
+
+/* --- If your Footer is exempt from spacing, still apply fonts there --- */
+:is(footer, .Footer, .footer) .sqs-block-form,
+:is(footer, .Footer, .footer) .form-wrapper,
+:is(footer, .Footer, .footer) .newsletter-block {
+  font-family: inherit !important; /* keep global font rules active */
+}
+
+/* Form field labels like “First Name”, “Last Name” */
+.sqs-block-form label.caption,
+.sqs-block-form .caption-text {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 500 !important;
+  letter-spacing: .02em !important;
+  text-transform: uppercase !important;
+}
+
+/* Form submit button like “SEND” */
+.sqs-block-form button,
+.sqs-block-form input[type="submit"],
+.sqs-block-form .form-submit-button,
+.sqs-block-form .sqs-form-submit {
+  font-family: "Maax", sans-serif !important;
+  font-weight: 700 !important;
+  letter-spacing: .03em !important;
+  text-transform: uppercase !important;
+}
+
+/* ==========================================================
+   FORM ERROR MESSAGE STYLING — Global override
+   ========================================================== */
+
+.form-field-error,
+.sqs-error-message,
+.form-field-error-message,
+.form-field-error .form-error-message,
+.form-wrapper .form-error-message,
+.newsletter-block .newsletter-block-failure {
+  background-color: #2C7966 !important;   /* your new background color */
+  color: white !important;                /* ensure readable contrast */
+  padding: 0.75rem 1rem !important;       /* comfortable breathing room */
+  border-radius: 0.35rem !important;      /* optional polish */
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+/* Make the error icon white + vertically aligned */
+.form-field-error svg,
+.sqs-error-message svg,
+.newsletter-block .newsletter-block-failure svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.form-field-error svg path,
+.sqs-error-message svg path,
+.newsletter-block .newsletter-block-failure svg path {
+  fill: white !important;
+  stroke: white !important;
+}
+
+.mm-hero-wrapper {
+  width: 100%;
+  aspect-ratio: 1641 / 863;  /* or whatever new height you actually want */
+  overflow: hidden;
+}
+
+.mm-hero-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+
+/* Remove default padding/margins Squarespace adds to Code Blocks */
+.mm-hero-wrapper,
+.mm-hero-wrapper .sqs-block-content,
+.mm-hero-wrapper .sqs-block {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Force the SVG to sit flush with the wrapper with zero stray offsets */
+.mm-hero-wrapper svg {
+  display: block;
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 0; /* eliminates inline-block baseline gap */
+}
+
+/* Remove any internal spacing the Fluid Engine might add */
+.mm-hero-wrapper .sqs-block-content > :first-child {
+  margin-top: 0 !important;
+}
+.mm-hero-wrapper .sqs-block-content > :last-child {
+  margin-bottom: 0 !important;
+}
+
+
+/* =====================================================
+   VIDEO BLOCKS — LIVE SITE ONLY
+===================================================== */
+body:not(.sqs-edit-mode) .video-block > .sqs-block-content,
+body:not(.sqs-edit-mode) .video-block .intrinsic,
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video {
+  height: 100% !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .video-player {
+  padding: 0 !important;
+}
+
+body:not(.sqs-edit-mode) .video-block video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+body:not(.sqs-edit-mode) .video-block iframe {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper {
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+body:not(.sqs-edit-mode) .video-block video,
+body:not(.sqs-edit-mode) .video-block iframe {
+  border-radius: 0.5rem !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .intrinsic,
+body:not(.sqs-edit-mode) .video-block .video-player {
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .intrinsic {
+  padding-bottom: 0 !important;
+  height: 100% !important;
+}
+
+body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
+  min-height: 0 !important;
+}
+
+/* =====================================================
+   FLUID ENGINE — LET VIDEO BLOCK HEIGHT SHRINK
+   (removes intrinsic aspect-ratio/min-height locks)
+   ===================================================== */
+
+/* Kill FE's aspect-ratio lock + allow shrinking */
+.video-block .sqs-video-wrapper,
+.video-block .sqs-native-video,
+.video-block .embed-block-wrapper,
+.video-block .intrinsic,
+.video-block .video-player {
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+}
+
+/* Some templates apply ratio via padding-bottom on .intrinsic */
+.video-block .intrinsic {
+  padding-bottom: 0 !important;
+  height: 100% !important;
+}
+
+/* Make sure the block content can collapse */
+.video-block > .sqs-block-content {
+  min-height: 0 !important;
+}
+
+
+/* -----------------------------------------
+   SPECIFIC BLOCK FIXES
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1757554504439_2552,
+#block-3fd5474bac7cfdc5bd19 {
+  text-shadow: 3px 4px 3px
+  rgba(20,0,10,.6);
+}
+
+/* Page-level override: bigger intro line for this one block */
+#block-acd0f3e46c397008843b .sqs-html-content p {
+  font-size: 1.4rem !important;   /* tweak this value to taste */
+  line-height: 1.5 !important;    /* optional, but usually looks better */
+}
+
+/* Drop shadow for specific Fluid Engine blocks */
+/* Bottom-only shadow */
+#block-yui_3_17_2_1_1762293512044_1730,
+#block-057950c6d7e2d5e4fe2a {
+  position: relative;
+  border-radius: 1rem; /* match your block radius */
+  box-shadow: 0 1.25rem 0.5rem -0.35rem rgba(0, 10, 20, 0.65);
+  overflow: visible;
+}
+
+/* -----------------------------------------
+   1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091,
+#block-42c23df4af4040779faa,
+#block-7409c8f5f3a89fe9b7bb,
+#block-8b664be0eb6c69b8ee7c {
+  margin-top: 1.25rem !important;  /* extra space above */
+}
+
+/* inner padding must be applied to the .sqs-html-content wrapper */
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
+#block-42c23df4af4040779faa .sqs-html-content,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+/* -----------------------------------------
+   2) EXTRA SPACE BELOW Paragraph-1 (sqsrte-large)
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content p.sqsrte-large,
+#block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
+  margin-bottom: 1rem !important;
+}
+
+.sqs-block-html .sqs-html-content > h1 + h2,
+.sqs-block-html .sqs-block-content > h1 + h2{
+  margin-top: 0 !important;
+}
+
+
+/* === Gradient background for specific text blocks === */
+#block-268c84cc2c21ba0a6914,
+#block-9946601a0f6219d1ad5c,
+#block-021baabdabf2b9437b6c,
+#block-c379877a90cef7206476,
+#block-2c75c5cb9c33704cf1a1 {
+  background: transparent !important;
+}
+
+#block-268c84cc2c21ba0a6914.flip-top .face.front,
+#block-9946601a0f6219d1ad5c.flip-top .face.front,
+#block-021baabdabf2b9437b6c.flip-top .face.front,
+#block-c379877a90cef7206476.flip-top .face.front,
+#block-2c75c5cb9c33704cf1a1.flip-top .face.front {
+  background: linear-gradient(
+    180deg,
+    rgba(32, 19, 67, 0) 70%,
+    rgba(32, 19, 67, 1) 100%
+  );
+}
+
+#block-268c84cc2c21ba0a6914 h1,
+#block-9946601a0f6219d1ad5c h1,
+#block-021baabdabf2b9437b6c h1,
+#block-c379877a90cef7206476 h1,
+#block-2c75c5cb9c33704cf1a1 h1 {
+  font-size: calc(var(--h1) * 0.85);
+}
+
+#block-268c84cc2c21ba0a6914 h2,
+#block-9946601a0f6219d1ad5c h2,
+#block-021baabdabf2b9437b6c h2,
+#block-c379877a90cef7206476 h2,
+#block-2c75c5cb9c33704cf1a1 h2 {
+  font-size: calc(var(--h2) * 0.85);
+}
