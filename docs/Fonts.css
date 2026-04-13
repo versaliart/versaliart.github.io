@@ -875,40 +875,58 @@ button.sqs-button-element--secondary:active,
 
 
 /* =====================================================
-   VIDEO BLOCKS — FORCE FILL BOUNDING BOX (GLOBAL)
-   Matches your known-working per-block pattern
-   ===================================================== */
+   VIDEO BLOCKS — LIVE SITE ONLY
+===================================================== */
+body:not(.sqs-edit-mode) .video-block > .sqs-block-content,
+body:not(.sqs-edit-mode) .video-block .intrinsic,
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video {
+  height: 100% !important;
+}
 
-
-/* Kill intrinsic aspect-ratio padding */
-.video-block .video-player {
+body:not(.sqs-edit-mode) .video-block .video-player {
   padding: 0 !important;
 }
 
-/* Uploaded videos: crop to fill */
-.video-block video {
+body:not(.sqs-edit-mode) .video-block video {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover !important;
 }
 
-/* Embeds (YouTube/Vimeo): fill wrapper */
-.video-block iframe {
+body:not(.sqs-edit-mode) .video-block iframe {
   width: 100% !important;
   height: 100% !important;
 }
 
-.video-block .embed-block-wrapper,
-.video-block .sqs-native-video,
-.video-block .sqs-video-wrapper {
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper {
   border-radius: 0.5rem !important;
   overflow: hidden !important;
 }
 
-/* Ensure the media itself respects the rounding */
-.video-block video,
-.video-block iframe {
+body:not(.sqs-edit-mode) .video-block video,
+body:not(.sqs-edit-mode) .video-block iframe {
   border-radius: 0.5rem !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .intrinsic,
+body:not(.sqs-edit-mode) .video-block .video-player {
+  aspect-ratio: auto !important;
+  min-height: 0 !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .intrinsic {
+  padding-bottom: 0 !important;
+  height: 100% !important;
+}
+
+body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
+  min-height: 0 !important;
 }
 
 /* =====================================================
