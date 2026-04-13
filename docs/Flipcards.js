@@ -87,6 +87,24 @@ const ensureBackImage = (card) => {
   card.dataset.backApplied = '1';
 };
 
+const applyStackLayout = () => {
+  const drawCards = $$('.cdp-card', drawPile);
+  drawCards.forEach((card, i) => {
+    ensureBackImage(card);
+    const fromTop = drawCards.length - 1 - i;
+    card.style.setProperty('--stack-x', `${Math.min(fromTop * 0.45, 5)}px`);
+    card.style.setProperty('--stack-y', `${Math.min(fromTop * 0.55, 7)}px`);
+    card.style.zIndex = '';
+  });
+
+  const discardCards = $$('.cdp-card', discardPile);
+  discardCards.forEach((card, i) => {
+    ensureBackImage(card);
+    card.style.setProperty('--stack-x', `${Math.min(i * 0.35, 4)}px`);
+    card.style.setProperty('--stack-y', `${Math.min(i * 0.4, 6)}px`);
+  });
+};
+
 
 
 // read a CSS time (e.g., "0.5s" or "500ms") → ms number
@@ -186,7 +204,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
     requestAnimationFrame(() => {
       // Stop animating; reset to pile baseline
       card.style.transition = 'none';
-      card.style.transform  = 'translate(-50%, -50%)';
+      card.style.transform  = 'translate(calc(-50% + var(--stack-x, 0px)), calc(-50% + var(--stack-y, 0px)))';
       toPile.appendChild(card);
 
       // Ensure the final tilt is set and persisted (no transition)
@@ -207,6 +225,7 @@ const moveCard = (card, toPile, { delay = 0, tilt = null } = {}) => new Promise(
       // Cleanup
       card.style.transition = '';
       if (shuttle) shuttle.style.transition = '';
+      applyStackLayout();
       resolve();
     });
   };
@@ -309,6 +328,7 @@ for (let j = 0; j < n; j++) {
 
   await Promise.all(moves);
   refreshInteractivity();
+  applyStackLayout();
 };
 
 // Seed so the FIRST <article> in HTML becomes the TOP of the draw pile
@@ -322,6 +342,7 @@ for (let i = cards.length - 1; i >= 0; i--) {
   c.addEventListener('click', onCardClick);
 }
 refreshInteractivity();
+applyStackLayout();
 
 
     // Optional API
@@ -339,6 +360,7 @@ refreshInteractivity();
         drawPile.appendChild(card);
         card.addEventListener('click', onCardClick);
         refreshInteractivity();
+        applyStackLayout();
       }
     };
   }

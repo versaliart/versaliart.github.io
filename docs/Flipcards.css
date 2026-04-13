@@ -61,7 +61,10 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(
+    calc(-50% + var(--stack-x, 0px)),
+    calc(-50% + var(--stack-y, 0px))
+  );
   transform-origin: center;
   width: var(--card-w);
   height: var(--card-h);
