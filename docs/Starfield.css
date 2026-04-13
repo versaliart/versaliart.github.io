@@ -39,7 +39,7 @@ body.has-starfield{
 
   /* glow + art */
   --max-blur: 0.22rem;
-  --star-color: #9989EC;
+  --star-color: #5D4E98;
   --star-url: url("https://versaliart.github.io/MMsparkle.svg");
 
   --jitter-fallback-mult: 2;
