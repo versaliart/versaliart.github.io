@@ -310,8 +310,7 @@ nav .subnav a{
 
 /* 2) Gap between any two different styles */
 .sqs-block-html .sqs-block-content > * + *,
-.sqs-block-html .sqs-html-content > * + *,
-.sqs-block-html .sqs-html-content > * + * > :first-child{
+.sqs-block-html .sqs-html-content > * + *{
   margin-top: 0.55rem !important;
 }
 
@@ -334,19 +333,13 @@ nav .subnav a{
 }
 
 /* Heading → Paragraph gap */
-.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
-.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + :is(* > p:first-child),
-.sqs-block-html .sqs-html-content > :is(*:has(> :is(h1,h2,h3,h4,h5,h6):first-child)) + p,
-.sqs-block-html .sqs-html-content > :is(*:has(> :is(h1,h2,h3,h4,h5,h6):first-child)) + :is(* > p:first-child),
+.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6,*:has(> :is(h1,h2,h3,h4,h5,h6):first-child)) + :is(p,*:has(> p:first-child)),
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
   margin-top: var(--gap-hp) !important;
 }
 
 /* H2 → Anything gap */
-.sqs-block-html .sqs-html-content > h2 + *,
-.sqs-block-html .sqs-html-content > h2 + * > :first-child,
-.sqs-block-html .sqs-html-content > :is(*:has(> h2:first-child)) + *,
-.sqs-block-html .sqs-html-content > :is(*:has(> h2:first-child)) + * > :first-child,
+.sqs-block-html .sqs-html-content > :is(h2,*:has(> h2:first-child)) + *,
 .sqs-block-html .sqs-block-content > h2 + *{
   margin-top: var(--gap-hp) !important;
 }

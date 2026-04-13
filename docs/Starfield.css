@@ -40,7 +40,7 @@ body.has-starfield{
   /* glow + art */
   --max-blur: 0.22rem;
   --star-color: #9989EC;
-  --star-url: url("https://versaliart.github.io/MMsparkle.svg");
+  --star-url: url("https://www.mysticmunson.design/s/MMsparkle.svg");
 
   --jitter-fallback-mult: 2;
   --jitter-fallback-steps: 3;

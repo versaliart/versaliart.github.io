@@ -108,21 +108,12 @@
       var tx = eye.currentX;
       var ty = eye.currentY;
 
-      if (
-        !Number.isFinite(tx) ||
-        !Number.isFinite(ty) ||
-        !Number.isFinite(scaleX) ||
-        !Number.isFinite(scaleY)
-      ) {
-        return;
-      }
-
       // Scale around the eye's own center, then translate
       var transform =
-        "translate(" + tx + ", " + ty + ") " +
-        "translate(" + eye.cx + ", " + eye.cy + ") " +
-        "scale(" + scaleX + ", " + scaleY + ") " +
-        "translate(" + (-eye.cx) + ", " + (-eye.cy) + ")";
+        "translate(" + tx + " " + ty + ") " +
+        "translate(" + eye.cx + " " + eye.cy + ") " +
+        "scale(" + scaleX + " " + scaleY + ") " +
+        "translate(" + (-eye.cx) + " " + (-eye.cy) + ")";
 
       eye.node.setAttribute("transform", transform);
     });
@@ -143,10 +134,6 @@
 
   function onMove(e) {
     var rect = svg.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) {
-      return;
-    }
-
     var mx = e.clientX;
     var my = e.clientY;
 
@@ -156,10 +143,6 @@
 
     var nx = (mx - cx) / (rect.width  / 2);
     var ny = (my - cy) / (rect.height / 2);
-
-    if (!Number.isFinite(nx) || !Number.isFinite(ny)) {
-      return;
-    }
 
     nx = Math.max(-1, Math.min(1, nx));
     ny = Math.max(-1, Math.min(1, ny));
@@ -182,10 +165,6 @@
       // Constrain by center so the center never leaves the zone box
       targetX = Math.max(-eye.maxX, Math.min(eye.maxX, targetX));
       targetY = Math.max(-eye.maxY, Math.min(eye.maxY, targetY));
-
-      if (!Number.isFinite(targetX) || !Number.isFinite(targetY)) {
-        return;
-      }
 
       eye.targetX = targetX;
       eye.targetY = targetY;
