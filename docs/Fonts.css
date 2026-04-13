@@ -317,21 +317,32 @@ nav .subnav a{
 
 /* Apply spacing ONLY between meaningful elements */
 .sqs-block-html .sqs-html-content > h1 + h2,
+.sqs-block-html .sqs-block-content > h1 + h2,
 .sqs-block-html .sqs-html-content > h1 + h3,
+.sqs-block-html .sqs-block-content > h1 + h3,
 .sqs-block-html .sqs-html-content > h1 + h4,
+.sqs-block-html .sqs-block-content > h1 + h4,
 .sqs-block-html .sqs-html-content > h1 + p,
+.sqs-block-html .sqs-block-content > h1 + p,
 
 .sqs-block-html .sqs-html-content > h2 + h3,
+.sqs-block-html .sqs-block-content > h2 + h3,
 .sqs-block-html .sqs-html-content > h2 + h4,
+.sqs-block-html .sqs-block-content > h2 + h4,
 .sqs-block-html .sqs-html-content > h2 + p,
+.sqs-block-html .sqs-block-content > h2 + p,
 
 .sqs-block-html .sqs-html-content > h3 + h4,
+.sqs-block-html .sqs-block-content > h3 + h4,
 .sqs-block-html .sqs-html-content > h3 + p,
+.sqs-block-html .sqs-block-content > h3 + p,
 
 .sqs-block-html .sqs-html-content > h4 + p,
+.sqs-block-html .sqs-block-content > h4 + p,
 
-.sqs-block-html .sqs-html-content > p + p{
-  margin-top: 1rem !important;
+.sqs-block-html .sqs-html-content > p + p,
+.sqs-block-html .sqs-block-content > p + p{
+  margin-top: 0.55rem !important;
 }
 
 /* =========================================================
@@ -1001,4 +1012,23 @@ button.sqs-button-element--secondary:active,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
   margin-bottom: 1rem !important;
+}
+
+
+/* =========================================================
+   EDITOR-ONLY: collapse Squarespace spacer paragraphs
+   without removing real editable content
+========================================================= */
+body.sqs-edit-mode .sqs-block-html .sqs-html-content > p:has(> br:only-child){
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  min-height: 0 !important;
+  line-height: 0 !important;
+}
+
+/* If the editor inserts consecutive spacer paragraphs */
+body.sqs-edit-mode .sqs-block-html .sqs-html-content > p:has(> br:only-child) + p:has(> br:only-child){
+  margin-top: 0 !important;
 }
