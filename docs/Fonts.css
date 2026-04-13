@@ -1020,7 +1020,7 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 
 
 /* === Gradient background for specific text blocks === */
-##block-268c84cc2c21ba0a6914,
+#block-268c84cc2c21ba0a6914,
 #block-BBBBBBB,
 #block-CCCCCCC {
   background: rgba(32, 19, 67, 0);
