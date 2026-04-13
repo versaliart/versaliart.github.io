@@ -342,7 +342,7 @@ nav .subnav a{
 
 .sqs-block-html .sqs-html-content > p + p,
 .sqs-block-html .sqs-block-content > p + p{
-  margin-top: 1rem !important;
+  margin-top: 2rem !important;
 }
 
 /* =========================================================
@@ -386,7 +386,7 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
 .sqs-block-html .sqs-block-content > h2 + h4,
 .sqs-block-html .sqs-html-content > h2 + p:not(:has(> br:only-child)),
 .sqs-block-html .sqs-block-content > h2 + p:not(:has(> br:only-child)){
-  margin-top: 1rem !important;
+  margin-top: 1.5rem !important;
 }
 
 /* Single-role P1 stacks */
@@ -997,27 +997,4 @@ button.sqs-button-element--secondary:active,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
   margin-bottom: 1rem !important;
-}
-
-
-/* =========================================================
-   EDITOR-ONLY: collapse Squarespace spacer paragraphs
-   without removing real editable content
-========================================================= */
-/* Editor-only spacer paragraphs: keep in DOM, remove footprint */
-body.sqs-edit-mode .sqs-block-html .sqs-html-content > p:has(> br:only-child),
-body.sqs-edit-mode .sqs-block-html .sqs-block-content > p:has(> br:only-child){
-  height: 0 !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  line-height: 0 !important;
-  font-size: 0 !important;
-  border: 0 !important;
-  overflow: hidden !important;
-}
-
-body.sqs-edit-mode .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
-body.sqs-edit-mode .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content{
-  min-height: 0 !important;
 }
