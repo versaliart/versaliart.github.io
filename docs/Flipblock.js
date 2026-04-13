@@ -179,9 +179,7 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    if (isFine()){
-      block.addEventListener('mouseenter', () => openBlock(block));
-    }
+block.addEventListener('mouseenter', () => openBlock(block));
 
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
