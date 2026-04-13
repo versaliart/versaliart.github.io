@@ -440,7 +440,7 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
       display: flex;
       flex-direction: column;
       justify-content: center;
-      row-gap: 1rem;
+      row-gap: 0.35rem;
     }
   }
 
@@ -458,7 +458,7 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      row-gap: 1rem;
+      row-gap: 0.35rem;
     }
   }
 }
