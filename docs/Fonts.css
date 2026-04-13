@@ -1016,3 +1016,8 @@ body.sqs-edit-mode .sqs-block-html .sqs-block-content > p:has(> br:only-child){
   border: 0 !important;
   overflow: hidden !important;
 }
+
+body.sqs-edit-mode .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
+body.sqs-edit-mode .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-block-content{
+  min-height: 0 !important;
+}
