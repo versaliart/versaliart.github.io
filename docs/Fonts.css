@@ -380,14 +380,14 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
 }
 
 /* H2 → real content only */
-.sqs-block-html .sqs-html-content > h2 + h3,
+/* .sqs-block-html .sqs-html-content > h2 + h3,
 .sqs-block-html .sqs-block-content > h2 + h3,
 .sqs-block-html .sqs-html-content > h2 + h4,
 .sqs-block-html .sqs-block-content > h2 + h4,
 .sqs-block-html .sqs-html-content > h2 + p:not(:has(> br:only-child)),
 .sqs-block-html .sqs-block-content > h2 + p:not(:has(> br:only-child)){
   margin-top: 1.5rem !important;
-}
+} */
 
 /* Single-role P1 stacks */
 .sqs-block.html-block .sqs-html-content:has(> p.sqsrte-large):not(:has(> :where(h1,h2,h3,h4,h5,h6,ul,ol,blockquote,figure,p:not(.sqsrte-large)))){
