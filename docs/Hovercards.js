@@ -24,17 +24,46 @@
     .map((selector) => document.querySelector(selector))
     .filter(Boolean);
 
+  const wrapGroup = (elements, wrapperClassName) => {
+    if (elements.length < 2) return elements[0] || null;
+
+    const parent = elements[0].parentElement;
+    if (!parent || elements.some((element) => element.parentElement !== parent)) {
+      return null;
+    }
+
+    const orderedElements = [...elements].sort((a, b) => {
+      if (a === b) return 0;
+      return a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1;
+    });
+
+    const wrapper = document.createElement('div');
+    wrapper.className = wrapperClassName;
+    wrapper.style.position = 'relative';
+
+    parent.insertBefore(wrapper, orderedElements[0]);
+    orderedElements.forEach((element) => wrapper.appendChild(element));
+
+    return wrapper;
+  };
+
   const collectGroups = () => {
     const group1 = getElements(CARD_1_SELECTORS);
     const group2 = getElements(CARD_2_SELECTORS);
 
-    const groups = [
-      { elements: group1, phaseShift: 0 },
-      { elements: group2, phaseShift: Math.PI },
-    ].filter((group) => group.elements.length > 0);
+    const group1Wrapper = wrapGroup(group1, 'hovercard-group hovercard-group-1');
+    const group2Wrapper = wrapGroup(group2, 'hovercard-group hovercard-group-2');
 
-    [...group1, ...group2].forEach((element) => {
-      element.style.willChange = 'transform';
+    const groups = [
+      { target: group1Wrapper, fallbackElements: group1, phaseShift: 0 },
+      { target: group2Wrapper, fallbackElements: group2, phaseShift: Math.PI },
+    ].filter((group) => group.target || group.fallbackElements.length > 0);
+
+    groups.forEach(({ target, fallbackElements }) => {
+      const animatedElements = target ? [target] : fallbackElements;
+      animatedElements.forEach((element) => {
+        element.style.willChange = 'transform';
+      });
     });
 
     return groups;
@@ -61,11 +90,12 @@
         return 1 + (progress * 0.05);
       };
 
-      groups.forEach(({ elements, phaseShift }) => {
+      groups.forEach(({ target, fallbackElements, phaseShift }) => {
         const groupOffset = -(((Math.sin(phase + phaseShift) + 1) / 2) * AMPLITUDE_PX);
         const y = groupOffset.toFixed(2);
         const scale = scaleForOffset(groupOffset).toFixed(4);
-        elements.forEach((element) => {
+        const animatedElements = target ? [target] : fallbackElements;
+        animatedElements.forEach((element) => {
           element.style.transform = `translate3d(0, ${y}px, 0) scale(${scale})`;
         });
       });
