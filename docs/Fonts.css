@@ -1027,7 +1027,7 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 #block-2c75c5cb9c33704cf1a1 {
   background: rgba(32, 19, 67, 0);
   background: linear-gradient(
-    0deg,
+    180deg,
     rgba(32, 19, 67, 0) 70%,
     rgba(32, 19, 67, 1) 100%
   ) !important;
