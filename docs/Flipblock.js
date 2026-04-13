@@ -1,6 +1,5 @@
-/* ===== Topblock Split-Flip (Doors) v2.50 — FULL JS (bare) ===== */
+/* ===== Topblock Split-Flip (Doors) v2.50 — FULL JS (retargeted) ===== */
 (function(){
-  // Build doors
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
@@ -17,18 +16,17 @@
     doors.appendChild(mk('right'));
     return doors;
   }
- 
-  // Paint geometry with sub-pixel precision
+
   function layout(block){
     const container = block.querySelector('.fluid-image-container');
-    const imgEl     = block.querySelector('img[data-sqsp-image-block-image]');
-    const doors     = block.querySelector('.flip-doors');
+    const imgEl = block.querySelector('img[data-sqsp-image-block-image]');
+    const doors = block.querySelector('.flip-doors');
     if (!container || !imgEl || !doors) return;
 
     const rect = container.getBoundingClientRect();
     const W = Math.max(1, rect.width), H = Math.max(1, rect.height);
 
-    let iw = imgEl.naturalWidth  || 1;
+    let iw = imgEl.naturalWidth || 1;
     let ih = imgEl.naturalHeight || 1;
     const dims = imgEl.getAttribute('data-image-dimensions');
     if (dims && dims.includes('x')) {
@@ -49,36 +47,34 @@
     const posX = (W * fx) - (bgW * fx);
     const posY = (H * fy) - (bgH * fy);
 
-    const cs    = getComputedStyle(doors);
-    const seam  = parseFloat(cs.getPropertyValue('--flip-seam'))  || 0;
+    const cs = getComputedStyle(doors);
+    const seam = parseFloat(cs.getPropertyValue('--flip-seam')) || 0;
     const bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
 
     const paint = (el, dx) => {
       if (!el) return;
-      el.style.backgroundImage    = `url("${url}")`;
-      el.style.backgroundSize     = `${bgW}px ${bgH}px`;
+      el.style.backgroundImage = `url("${url}")`;
+      el.style.backgroundSize = `${bgW}px ${bgH}px`;
       el.style.backgroundPosition = `${(posX - dx + bleed)}px ${(posY + bleed)}px`;
-      el.style.backgroundRepeat   = 'no-repeat';
-      el.style.transform          = 'translateZ(0)';
+      el.style.backgroundRepeat = 'no-repeat';
+      el.style.transform = 'translateZ(0)';
       el.style.backfaceVisibility = 'hidden';
       el.style.webkitBackfaceVisibility = 'hidden';
     };
 
-    const lf = doors.querySelector('.flip-door.left  .face.front');
-    const lb = doors.querySelector('.flip-door.left  .face.back');
+    const lf = doors.querySelector('.flip-door.left .face.front');
+    const lb = doors.querySelector('.flip-door.left .face.back');
     const rf = doors.querySelector('.flip-door.right .face.front');
     const rb = doors.querySelector('.flip-door.right .face.back');
 
     paint(lf, 0); paint(lb, 0);
-    paint(rf, (W/2) - seam); paint(rb, (W/2) - seam);
+    paint(rf, (W / 2) - seam); paint(rb, (W / 2) - seam);
   }
 
-  // Utilities
   const isCoarse = () => matchMedia('(hover: none), (pointer: coarse)').matches;
-  const isFine   = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
-
+  const isFine = () => matchMedia('(hover: hover) and (pointer: fine)').matches;
   const closestFeBlock = el => el.closest('.fe-block') || null;
 
   const mobileFlipBlocks = new Set();
@@ -113,17 +109,15 @@
     }
   }
 
-  // Robust open/close with multiple fallbacks
   function openBlock(block){
     if (block.__open) return;
     block.__open = true;
     block.classList.add('is-open');
     setPassThrough(block, true);
 
-    // Track last pointer; close when pointer is outside rect
     const updatePt = (e) => {
-      block.__lastPt = ('clientX' in e) ? {x:e.clientX, y:e.clientY}
-        : (e.changedTouches && e.changedTouches[0]) ? {x:e.changedTouches[0].clientX, y:e.changedTouches[0].clientY}
+      block.__lastPt = ('clientX' in e) ? { x: e.clientX, y: e.clientY }
+        : (e.changedTouches && e.changedTouches[0]) ? { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY }
         : block.__lastPt || null;
       if (!block.__lastPt) return;
       const r = block.getBoundingClientRect();
@@ -133,9 +127,9 @@
       }
     };
 
-    const onPointerMove  = (e) => updatePt(e);
-    const onPointerOver  = (e) => updatePt(e); // covers fast transitions without move
-    const onScroll       = ()  => {
+    const onPointerMove = (e) => updatePt(e);
+    const onPointerOver = (e) => updatePt(e);
+    const onScroll = () => {
       if (!block.__lastPt) return;
       const r = block.getBoundingClientRect();
       const p = block.__lastPt;
@@ -143,8 +137,8 @@
         closeBlock(block);
       }
     };
-    const onBlur         = ()  => closeBlock(block);
-    const onVisibility   = ()  => { if (document.visibilityState !== 'visible') closeBlock(block); };
+    const onBlur = () => closeBlock(block);
+    const onVisibility = () => { if (document.visibilityState !== 'visible') closeBlock(block); };
 
     document.addEventListener('pointermove', onPointerMove, true);
     document.addEventListener('pointerover', onPointerOver, true);
@@ -167,12 +161,11 @@
     block.__open = false;
     block.classList.remove('is-open');
     setPassThrough(block, false);
-    if (block.__cleanupOpen){ try{ block.__cleanupOpen(); }catch(_){ } block.__cleanupOpen = null; }
+    if (block.__cleanupOpen){ try { block.__cleanupOpen(); } catch(_) {} block.__cleanupOpen = null; }
   }
 
-  // Initialize one
   function initOne(block){
-    if (block.classList.contains('flip-top')) return;
+    if (!block || block.classList.contains('flip-top')) return;
 
     const container = block.querySelector('.fluid-image-container');
     const img = block.querySelector('img[data-sqsp-image-block-image]');
@@ -186,36 +179,23 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    // Disable the marker link only while open/tapped-open (CSS also covers this)
-    const marker = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
-    if (marker){
-      marker.addEventListener('click', (e) => {
-        if (block.classList.contains('is-open') || block.classList.contains('is-flipped')) {
-          e.preventDefault(); e.stopPropagation();
-        }
-      }, true);
-    }
-
-    // Desktop: open with pass-through; close via robust document listeners
     if (isFine()){
       block.addEventListener('mouseenter', () => openBlock(block));
     }
 
-    // Mobile: tap to open persistent
     block.addEventListener('click', function(e){
       if (!isCoarse()) return;
       if (!block.classList.contains('is-flipped')){
-        e.preventDefault(); e.stopPropagation();
+        e.preventDefault();
+        e.stopPropagation();
         block.classList.add('is-flipped');
         setPassThrough(block, true);
       }
     }, true);
 
-    // Tap blank space to close on mobile (shared global listener)
     mobileFlipBlocks.add(block);
     ensureMobileCloseHandler();
 
-    // Layout + reactions
     const relayout = () => layout(block);
     relayout();
 
@@ -228,10 +208,9 @@
     if (!img.complete) img.addEventListener('load', relayout, { once: true });
     window.addEventListener('resize', relayout);
 
-    // Safety: close when off-screen
     if ('IntersectionObserver' in window){
-      const io = new IntersectionObserver((entries)=>{
-        entries.forEach((entry)=>{
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
           if (!entry.isIntersecting){
             closeBlock(block);
             block.classList.remove('is-flipped');
@@ -243,11 +222,18 @@
     }
   }
 
-  // Initialize all eligible blocks
+  const FLIP_BLOCK_SELECTORS = [
+    '#block-yui_3_17_2_1_1756837579989_139784',
+    '#block-d59fbc8ac97ccae4d7cf',
+    '#block-ddcb38350b1a61378b66',
+    '#block-02885c92e089f6b77857',
+    '#block-ec8fd1095d8bde19b913'
+  ];
+
   function initAll(){
-    document.querySelectorAll('.sqs-block.image-block').forEach(block => {
-      const link = block.querySelector('a.sqs-block-image-link[href="#flip-top"]');
-      if (link) initOne(block);
+    FLIP_BLOCK_SELECTORS.forEach(selector => {
+      const block = document.querySelector(selector);
+      if (block) initOne(block);
     });
   }
 
@@ -256,6 +242,7 @@
   } else {
     initAll();
   }
+
   const moAll = new MutationObserver(initAll);
   moAll.observe(document.documentElement, { childList: true, subtree: true });
 })();

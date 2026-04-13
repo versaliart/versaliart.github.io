@@ -74,10 +74,3 @@
 .fe-block.pe-through *{
   pointer-events: none !important;
 }
-
-/* Marker link: clickable when closed; disabled while open/tapped-open */
-.sqs-block.image-block.flip-top.is-open a.sqs-block-image-link[href="#flip-top"],
-.sqs-block.image-block.flip-top.is-flipped a.sqs-block-image-link[href="#flip-top"]{
-  pointer-events: none !important;
-  cursor: default !important;
-}
