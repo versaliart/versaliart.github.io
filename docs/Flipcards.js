@@ -90,6 +90,7 @@ const ensureBackImage = (card) => {
 const applyStackLayout = () => {
   const drawCards = $$('.cdp-card', drawPile);
   drawCards.forEach((card, i) => {
+    ensureBackImage(card);
     const fromTop = drawCards.length - 1 - i;
     card.style.setProperty('--stack-x', `${Math.min(fromTop * 0.45, 5)}px`);
     card.style.setProperty('--stack-y', `${Math.min(fromTop * 0.55, 7)}px`);
@@ -98,6 +99,7 @@ const applyStackLayout = () => {
 
   const discardCards = $$('.cdp-card', discardPile);
   discardCards.forEach((card, i) => {
+    ensureBackImage(card);
     card.style.setProperty('--stack-x', `${Math.min(i * 0.35, 4)}px`);
     card.style.setProperty('--stack-y', `${Math.min(i * 0.4, 6)}px`);
   });
