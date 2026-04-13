@@ -310,7 +310,8 @@ nav .subnav a{
 
 /* 2) Gap between any two different styles */
 .sqs-block-html .sqs-block-content > * + *,
-.sqs-block-html .sqs-html-content > * + *{
+.sqs-block-html .sqs-html-content > * + *,
+.sqs-block-html .sqs-html-content > * + * > :first-child{
   margin-top: 0.55rem !important;
 }
 
@@ -334,14 +335,20 @@ nav .subnav a{
 
 /* Heading → Paragraph gap */
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
+.sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + :is(* > p:first-child),
+.sqs-block-html .sqs-html-content > :is(*:has(> :is(h1,h2,h3,h4,h5,h6):first-child)) + p,
+.sqs-block-html .sqs-html-content > :is(*:has(> :is(h1,h2,h3,h4,h5,h6):first-child)) + :is(* > p:first-child),
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
   margin-top: var(--gap-hp) !important;
 }
 
 /* H2 → Anything gap */
 .sqs-block-html .sqs-html-content > h2 + *,
+.sqs-block-html .sqs-html-content > h2 + * > :first-child,
+.sqs-block-html .sqs-html-content > :is(*:has(> h2:first-child)) + *,
+.sqs-block-html .sqs-html-content > :is(*:has(> h2:first-child)) + * > :first-child,
 .sqs-block-html .sqs-block-content > h2 + *{
-  margin-top: 1rem !important;
+  margin-top: var(--gap-hp) !important;
 }
 
 /* Single-role P1 stacks */
@@ -360,6 +367,10 @@ nav .subnav a{
 /* Trailing empty paragraph cleanup */
 .sqs-block-html .sqs-html-content > p:last-child:empty{ display:none !important; }
 .sqs-block-html .sqs-html-content > p:last-child:has(> br:only-child){ display:none !important; }
+
+/* Non-trailing spacer paragraph cleanup (including editor mode) */
+.sqs-block-html .sqs-html-content p:not(:last-child):has(> br:only-child){ display:none !important; }
+body.sqs-edit-mode .sqs-block-html .sqs-html-content p:has(> br:only-child){ display:none !important; }
 
 body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
   display: none !important;
