@@ -314,16 +314,18 @@
       rf.innerHTML = '';
       rf.appendChild(makeInner('right'));
     }
-    if (lb) {
-      lb.innerHTML = '';
-      lb.style.background = 'transparent';
-    }
-    if (rb) {
-      rb.innerHTML = '';
-      rb.style.background = 'transparent';
-    }
+if (lb) {
+  lb.innerHTML = '';
+  lb.style.background = 'transparent';
+}
+if (rb) {
+  rb.innerHTML = '';
+  rb.style.background = 'transparent';
+}
 
-    block.__flipType = 'text';
+block.classList.add('flip-text-ready');
+
+block.__flipType = 'text';
     block.__flipHost = blockContent;
     block.__flipTextSource = content;
     block.__flipDoors = doors;
