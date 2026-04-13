@@ -263,11 +263,11 @@
       .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Tags.js'); });
   });
 
-whenSelector('#collection-68b0cf9bee4bdf7a0a0f8bfc', function () {
+if (document.body.classList.contains('collection-68b0cf9bee4bdf7a0a0f8bfc')) {
   loadScript('https://versaliart.github.io/Flipblock.js')
     .then(function () { console.log('[Loader] Topblock loaded'); })
     .catch(function (err) { handleLoadError(err, 'https://versaliart.github.io/Flipblock.js'); });
-});
+}
 
   whenSelector('header#header[data-test="header"]', function () {
     loadScript('https://versaliart.github.io/Header.js')

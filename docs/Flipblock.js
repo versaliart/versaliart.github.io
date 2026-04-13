@@ -1,5 +1,8 @@
-/* ===== Topblock Split-Flip (Doors) v2.60 — FULL JS (desktop hover fixed + blank backs) ===== */
+/* ===== Topblock Split-Flip (Doors) v2.70 — hover stable + delayed pass-through ===== */
 (function(){
+  const OPEN_DURATION = 480;   /* match CSS --flip-open-duration */
+  const CLOSE_DELAY = 80;      /* small grace period to prevent jitter */
+
   function buildDoors(url){
     const doors = document.createElement('div');
     doors.className = 'flip-doors';
@@ -85,11 +88,9 @@
     const rf = doors.querySelector('.flip-door.right .face.front');
     const rb = doors.querySelector('.flip-door.right .face.back');
 
-    /* Paint fronts only */
     paint(lf, 0);
     paint(rf, (W / 2) - seam);
 
-    /* Leave backs blank so the image truly opens away */
     if (lb) {
       lb.style.backgroundImage = 'none';
       lb.style.backgroundColor = 'transparent';
@@ -135,18 +136,41 @@
     }
   }
 
+  function clearTimers(block){
+    clearTimeout(block.__ptTimer);
+    clearTimeout(block.__closeTimer);
+    block.__ptTimer = null;
+    block.__closeTimer = null;
+  }
+
   function openBlock(block){
-    if (block.__open) return;
-    block.__open = true;
-    block.classList.add('is-open');
-    setPassThrough(block, true);
+    clearTimers(block);
+
+    if (!block.__open) {
+      block.__open = true;
+      block.classList.add('is-open');
+    }
+
+    block.__ptTimer = setTimeout(() => {
+      if (block.__open) setPassThrough(block, true);
+    }, OPEN_DURATION);
   }
 
   function closeBlock(block){
-    if (!block.__open) return;
+    clearTimers(block);
     block.__open = false;
-    block.classList.remove('is-open');
     setPassThrough(block, false);
+    block.classList.remove('is-open');
+  }
+
+  function scheduleClose(block){
+    clearTimeout(block.__closeTimer);
+    block.__closeTimer = setTimeout(() => {
+      const host = block.__hoverHost || block;
+      if (!host.matches(':hover')) {
+        closeBlock(block);
+      }
+    }, CLOSE_DELAY);
   }
 
   function initOne(block){
@@ -164,11 +188,19 @@
     const doors = buildDoors(url);
     container.appendChild(doors);
 
-    /* Desktop: always bind hover */
-    block.addEventListener('mouseenter', () => openBlock(block));
-    block.addEventListener('mouseleave', () => closeBlock(block));
+    /* Use the FE wrapper as the hover zone when possible */
+    const hoverHost = closestFeBlock(block) || block;
+    block.__hoverHost = hoverHost;
 
-    /* Mobile/touch: tap to flip */
+    hoverHost.addEventListener('mouseenter', () => openBlock(block));
+    hoverHost.addEventListener('mouseleave', () => scheduleClose(block));
+
+    /* If pointer re-enters before close fires, keep open */
+    hoverHost.addEventListener('mouseenter', () => {
+      clearTimeout(block.__closeTimer);
+    });
+
+    /* Mobile/touch fallback */
     block.addEventListener('click', function(e){
       const coarse = matchMedia('(hover: none), (pointer: coarse)').matches;
       if (!coarse) return;
