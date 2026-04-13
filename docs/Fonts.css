@@ -342,7 +342,7 @@ nav .subnav a{
 
 .sqs-block-html .sqs-html-content > p + p,
 .sqs-block-html .sqs-block-content > p + p{
-  margin-top: 2rem !important;
+  margin-top: 1rem !important;
 }
 
 /* =========================================================
