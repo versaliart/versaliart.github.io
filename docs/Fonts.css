@@ -1032,3 +1032,19 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
     rgba(32, 19, 67, 1) 100%
   ) !important;
 }
+
+#block-268c84cc2c21ba0a6914 h1,
+#block-9946601a0f6219d1ad5c h1,
+#block-021baabdabf2b9437b6c h1,
+#block-c379877a90cef7206476 h1,
+#block-2c75c5cb9c33704cf1a1 h1 {
+  font-size: calc(var(--h1) * 0.85);
+}
+
+#block-268c84cc2c21ba0a6914 h2,
+#block-9946601a0f6219d1ad5c h2,
+#block-021baabdabf2b9437b6c h2,
+#block-c379877a90cef7206476 h2,
+#block-2c75c5cb9c33704cf1a1 h2 {
+  font-size: calc(var(--h2) * 0.85);
+}
