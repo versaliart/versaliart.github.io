@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/* FONT DECLARATIONS v1.4 */
+/* FONT DECLARATIONS v1.5 */
 /*----------------------------------------------------------------------*/
 
 /* ------------------------------
@@ -264,7 +264,7 @@ nav .subnav a{
      slightly smaller vertical padding so centering stays optical */
   --text-block-background-padding-block-centered: 1rem;
 
-  --gap-hp: 0.75rem;  /* gap between Header and Paragraph styles */
+  --gap-hp: 1rem;  /* gap between Header and Paragraph styles */
 }
 
 /* Mobile: reduce bg-fill padding so wrapped copy does not look top-heavy */
@@ -356,10 +356,10 @@ body:not(.sqs-edit-mode)
   display:none !important;
 }
 
-/* 3) Tighter gap only after display paragraphs */
+/* 3) Gap only after display paragraphs */
 .sqs-block-html .sqs-block-content > :is(p.sqsrte-large,p.sqsrte-medium) + *,
 .sqs-block-html .sqs-html-content   > :is(p.sqsrte-large,p.sqsrte-medium) + *{
-  margin-top: 0.65rem !important;
+  margin-top: 1rem !important;
 }
 
 /* 4) Remove accidental spacer paragraphs */
@@ -455,7 +455,7 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
 
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"] .sqs-html-content,
     .sqs-block.html-block.sqs-block-html[data-sqsp-block="text"]:not(:has(.sqs-html-content)) > .sqs-block-content {
-      row-gap: 0.55rem;
+      row-gap: 1rem;
     }
   }
 }
