@@ -345,6 +345,7 @@ nav .subnav a{
   margin-top: 0.55rem !important;
 }
 
+
 /* =========================================================
    OPTIONAL: Light cleanup of true empty paragraphs
    (SAFE: does not break editor rendering)
@@ -999,4 +1000,9 @@ button.sqs-button-element--secondary:active,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
   margin-bottom: 1rem !important;
+}
+
+.sqs-block-html .sqs-html-content > h1 + h2,
+.sqs-block-html .sqs-block-content > h1 + h2{
+  margin-top: 0.35rem !important;
 }
