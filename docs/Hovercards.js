@@ -3,6 +3,8 @@
 (() => {
   const CARD_1_SELECTORS = [
     '#block-yui_3_17_2_1_1756837579989_9426', /* Card img */
+    '#block-yui_3_17_2_1_1776188012368_12782', /* Text */
+    '#block-yui_3_17_2_1_1776188012368_13820' /* Overlay */
   ];
 
   const CARD_2_SELECTORS = [
