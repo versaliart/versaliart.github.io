@@ -423,21 +423,7 @@ block.__flipType = 'text';
 
     const rect = host.getBoundingClientRect();
     const W = Math.max(1, rect.width);
-    let H = Math.max(1, rect.height);
-
-    const pairedImage = block.__flipPairedImageBlock;
-    if (pairedImage) {
-      const pairedHost = pairedImage.__flipHost
-        || pairedImage.querySelector('.sqs-block-content')
-        || pairedImage.querySelector('.fluid-image-container');
-
-      if (pairedHost) {
-        const pairedRect = pairedHost.getBoundingClientRect();
-        if (pairedRect && pairedRect.height > 0) {
-          H = Math.max(1, pairedRect.height);
-        }
-      }
-    }
+    const H = Math.max(1, rect.height);
 
     doors.style.width = W + 'px';
     doors.style.height = H + 'px';
@@ -476,25 +462,6 @@ block.__flipType = 'text';
     const imageReady = initBlock(imageBlock);
     const textReady = initBlock(textBlock);
     if (!imageReady || !textReady) return;
-
-    textBlock.__flipPairedImageBlock = imageBlock;
-    imageBlock.__flipPairedTextBlock = textBlock;
-
-    const pairedImageHost = imageBlock.__flipHost
-      || imageBlock.querySelector('.sqs-block-content')
-      || imageBlock.querySelector('.fluid-image-container');
-
-    if (pairedImageHost && textBlock.__relayout) {
-      if (textBlock.__flipPairedImageRO) {
-        textBlock.__flipPairedImageRO.disconnect();
-      }
-
-      const pairedRO = new ResizeObserver(function(){
-        textBlock.__relayout();
-      });
-      pairedRO.observe(pairedImageHost);
-      textBlock.__flipPairedImageRO = pairedRO;
-    }
 
     const pair = {
       blocks: [imageBlock, textBlock],
