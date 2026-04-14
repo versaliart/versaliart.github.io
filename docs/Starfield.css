@@ -24,8 +24,8 @@ body.has-starfield{
   --twinkle-max: 2.0;
 
   /* opacity */
-  --opacity-min: 0.35;
-  --opacity-max: 0.80;
+  --opacity-min: 0.55;
+  --opacity-max: 1.00;
 
   /* size quantization */
   --phi: 1.618;
