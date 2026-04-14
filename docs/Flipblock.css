@@ -132,6 +132,13 @@
   pointer-events: none;
 }
 
+.sqs-block.html-block.flip-top .face-gradient{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* Right text half shows the right side */
 .sqs-block.html-block.flip-top .flip-door.right .face-inner{
   transform: translateX(-50%);
@@ -1172,11 +1179,11 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
   background: transparent !important;
 }
 
-#block-268c84cc2c21ba0a6914.flip-top .flip-door .face.front,
-#block-9946601a0f6219d1ad5c.flip-top .flip-door .face.front,
-#block-021baabdabf2b9437b6c.flip-top .flip-door .face.front,
-#block-c379877a90cef7206476.flip-top .flip-door .face.front,
-#block-2c75c5cb9c33704cf1a1.flip-top .flip-door .face.front {
+#block-268c84cc2c21ba0a6914.flip-top .face-gradient,
+#block-9946601a0f6219d1ad5c.flip-top .face-gradient,
+#block-021baabdabf2b9437b6c.flip-top .face-gradient,
+#block-c379877a90cef7206476.flip-top .face-gradient,
+#block-2c75c5cb9c33704cf1a1.flip-top .face-gradient {
   background: linear-gradient(
     180deg,
     rgba(32, 19, 67, 1) 0%,

@@ -259,18 +259,10 @@ function setPassThrough(block, on){
 
     function paint(el, dx){
       if (!el) return;
-      const existingLayers = getComputedStyle(el).backgroundImage;
-      const hasOverlay = existingLayers && existingLayers !== 'none';
-      el.style.backgroundImage = hasOverlay
-        ? existingLayers + ', url("' + url + '")'
-        : 'url("' + url + '")';
-      el.style.backgroundSize = hasOverlay
-        ? 'cover, ' + bgW + 'px ' + bgH + 'px'
-        : bgW + 'px ' + bgH + 'px';
-      el.style.backgroundPosition = hasOverlay
-        ? 'center center, ' + (posX - dx + bleed) + 'px ' + (posY + bleed) + 'px'
-        : (posX - dx + bleed) + 'px ' + (posY + bleed) + 'px';
-      el.style.backgroundRepeat = hasOverlay ? 'no-repeat, no-repeat' : 'no-repeat';
+      el.style.backgroundImage = 'url("' + url + '")';
+      el.style.backgroundSize = bgW + 'px ' + bgH + 'px';
+      el.style.backgroundPosition = (posX - dx + bleed) + 'px ' + (posY + bleed) + 'px';
+      el.style.backgroundRepeat = 'no-repeat';
       el.style.transform = 'translateZ(0)';
       el.style.backfaceVisibility = 'hidden';
       el.style.webkitBackfaceVisibility = 'hidden';
@@ -315,6 +307,10 @@ function setPassThrough(block, on){
     function makeFaceLayer(side){
       const frag = document.createDocumentFragment();
 
+      const gradient = document.createElement('div');
+      gradient.className = 'face-gradient';
+      gradient.setAttribute('aria-hidden', 'true');
+
       const inner = document.createElement('div');
       inner.className = 'face-inner face-inner-' + side;
       inner.setAttribute('aria-hidden', 'true');
@@ -327,6 +323,7 @@ function setPassThrough(block, on){
       });
 
       inner.appendChild(clone);
+      frag.appendChild(gradient);
       frag.appendChild(inner);
       return frag;
     }
@@ -394,6 +391,10 @@ block.__flipType = 'text';
       if (!face) return;
       face.innerHTML = '';
 
+      const gradient = document.createElement('div');
+      gradient.className = 'face-gradient';
+      gradient.setAttribute('aria-hidden', 'true');
+
       const inner = document.createElement('div');
       inner.className = 'face-inner face-inner-' + side;
       inner.setAttribute('aria-hidden', 'true');
@@ -406,6 +407,7 @@ block.__flipType = 'text';
       });
 
       inner.appendChild(clone);
+      face.appendChild(gradient);
       face.appendChild(inner);
     }
 
