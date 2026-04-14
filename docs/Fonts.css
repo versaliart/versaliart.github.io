@@ -956,31 +956,6 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 }
 
 
-/* -----------------------------------------
-   SPECIFIC BLOCK FIXES
-   ----------------------------------------- */
-
-#block-yui_3_17_2_1_1757554504439_2552,
-#block-3fd5474bac7cfdc5bd19 {
-  text-shadow: 3px 4px 3px
-  rgba(20,0,10,.6);
-}
-
-/* Page-level override: bigger intro line for this one block */
-#block-acd0f3e46c397008843b .sqs-html-content p {
-  font-size: 1.4rem !important;   /* tweak this value to taste */
-  line-height: 1.5 !important;    /* optional, but usually looks better */
-}
-
-/* Drop shadow for specific Fluid Engine blocks */
-/* Bottom-only shadow */
-#block-yui_3_17_2_1_1762293512044_1730,
-#block-057950c6d7e2d5e4fe2a {
-  position: relative;
-  border-radius: 1rem; /* match your block radius */
-  box-shadow: 0 1.25rem 0.5rem -0.35rem rgba(0, 10, 20, 0.65);
-  overflow: visible;
-}
 
 /* -----------------------------------------
    1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
@@ -1016,4 +991,70 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 .sqs-block-html .sqs-html-content > h1 + h2,
 .sqs-block-html .sqs-block-content > h1 + h2{
   margin-top: 0 !important;
+}
+
+/* -----------------------------------------
+   SPECIFIC BLOCK FIXES
+   ----------------------------------------- */
+
+/* Text Shadow for Hero Cards */
+#block-yui_3_17_2_1_1776188012368_12782,
+#block-yui_3_17_2_1_1776188842920_49603 {
+  text-shadow: 3px 4px 3px
+  rgba(20,0,10,.6);
+}
+
+/* Page-level override: bigger intro line for this one block */
+/* #block-acd0f3e46c397008843b .sqs-html-content p {
+  font-size: 1.4rem !important; 
+  line-height: 1.5 !important;    
+} */
+
+/* Drop shadow for specific Fluid Engine blocks */
+/* Bottom-only shadow */
+#block-yui_3_17_2_1_1776188842920_50691,
+#block-yui_3_17_2_1_1776188012368_13820 {
+  position: relative;
+  border-radius: 1rem; /* match your block radius */
+  box-shadow: 0 1.25rem 0.5rem -0.35rem rgba(0, 10, 20, 0.65);
+  overflow: visible;
+}
+
+/* -----------------------------------------
+   1) FLUID TOP MARGIN + FLUID LEFT/RIGHT PADDING
+   (Scales down on mobile automatically)
+   ----------------------------------------- */
+
+/* Top margin (fluid) */
+#block-yui_3_17_2_1_1756418080301_6091,
+#block-42c23df4af4040779faa,
+#block-7409c8f5f3a89fe9b7bb,
+#block-8b664be0eb6c69b8ee7c,
+#block-e7cbd3944b764174d32f,
+#block-6f87bac45d406f678dcd {
+  margin-top: clamp(0.75rem, 2.5vw, 1.25rem) !important;
+}
+
+/* Inner padding applied to .sqs-html-content (fluid) */
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
+#block-42c23df4af4040779faa .sqs-html-content,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content,
+#block-e7cbd3944b764174d32f .sqs-html-content,
+#block-6f87bac45d406f678dcd .sqs-html-content {
+  padding-left: clamp(0.75rem, 3vw, 1.25rem) !important;
+  padding-right: clamp(0.75rem, 3vw, 1.25rem) !important;
+}
+
+/* -----------------------------------------
+   2) EXTRA SPACE BELOW Paragraph-1 (sqsrte-large)
+   ----------------------------------------- */
+
+#block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content p.sqsrte-large,
+#block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
+#block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
+#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large,
+#block-e7cbd3944b764174d32f .sqs-html-content p.sqsrte-large,
+#block-6f87bac45d406f678dcd .sqs-html-content p.sqsrte-large {
+  margin-bottom: clamp(0.75rem, 2rem, 1rem) !important;
 }

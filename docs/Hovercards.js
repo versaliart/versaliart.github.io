@@ -9,6 +9,8 @@
 
   const CARD_2_SELECTORS = [
     '#block-1e14a0c2b150cb046369', /* Card img */
+    '#block-yui_3_17_2_1_1776188842920_49603', /* Text */
+    '#block-yui_3_17_2_1_1776188842920_50691' /* Overlay */
   ];
 
   const AMPLITUDE_PX = 15; // max upward movement
