@@ -1,6 +1,7 @@
 /* ===== Topblock Split-Flip v3.10 — paired image + real text block support ===== */
 (function(){
   const OPEN_DURATION = 480; /* match CSS --flip-open-duration */
+  const DEFAULT_FLIP_GRADIENT = 'linear-gradient(180deg, rgba(32, 19, 67, 0) 70%, rgba(32, 19, 67, 1) 100%)';
 
   const FLIP_PAIRS = [
     {
@@ -253,16 +254,17 @@ function setPassThrough(block, on){
     const cs = getComputedStyle(doors);
     const seam = parseFloat(cs.getPropertyValue('--flip-seam')) || 0;
     const bleed = parseFloat(cs.getPropertyValue('--edge-bleed')) || 0;
+    const gradient = cs.getPropertyValue('--flip-gradient').trim() || DEFAULT_FLIP_GRADIENT;
 
     const url = doors.dataset.image || imgEl.currentSrc || imgEl.src;
     if (!url) return;
 
     function paint(el, dx){
       if (!el) return;
-      el.style.backgroundImage = 'url("' + url + '")';
-      el.style.backgroundSize = bgW + 'px ' + bgH + 'px';
-      el.style.backgroundPosition = (posX - dx + bleed) + 'px ' + (posY + bleed) + 'px';
-      el.style.backgroundRepeat = 'no-repeat';
+      el.style.backgroundImage = gradient + ', url("' + url + '")';
+      el.style.backgroundSize = '100% 100%, ' + bgW + 'px ' + bgH + 'px';
+      el.style.backgroundPosition = '0 0, ' + (posX - dx + bleed) + 'px ' + (posY + bleed) + 'px';
+      el.style.backgroundRepeat = 'no-repeat, no-repeat';
       el.style.transform = 'translateZ(0)';
       el.style.backfaceVisibility = 'hidden';
       el.style.webkitBackfaceVisibility = 'hidden';
@@ -414,6 +416,7 @@ block.__flipType = 'text';
 
     doors.style.width = W + 'px';
     doors.style.height = H + 'px';
+    const gradient = getComputedStyle(host).getPropertyValue('--flip-gradient').trim() || DEFAULT_FLIP_GRADIENT;
 
     const inners = doors.querySelectorAll('.face-inner');
     inners.forEach(function(inner){
@@ -422,6 +425,7 @@ block.__flipType = 'text';
       inner.style.left = '0';
       inner.style.width = W + 'px';
       inner.style.height = H + 'px';
+      inner.style.background = gradient;
       inner.style.pointerEvents = 'none';
       inner.style.transform = inner.classList.contains('face-inner-right')
         ? 'translateX(-50%)'
