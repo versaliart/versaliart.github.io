@@ -416,8 +416,6 @@ block.__flipType = 'text';
 
     doors.style.width = W + 'px';
     doors.style.height = H + 'px';
-    const gradient = getComputedStyle(host).getPropertyValue('--flip-gradient').trim() || DEFAULT_FLIP_GRADIENT;
-
     const inners = doors.querySelectorAll('.face-inner');
     inners.forEach(function(inner){
       inner.style.position = 'absolute';
@@ -425,7 +423,7 @@ block.__flipType = 'text';
       inner.style.left = '0';
       inner.style.width = W + 'px';
       inner.style.height = H + 'px';
-      inner.style.background = gradient;
+      inner.style.background = 'none';
       inner.style.pointerEvents = 'none';
       inner.style.transform = inner.classList.contains('face-inner-right')
         ? 'translateX(-50%)'
