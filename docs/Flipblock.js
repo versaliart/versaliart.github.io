@@ -304,13 +304,7 @@ function setPassThrough(block, on){
     const rf = doors.querySelector('.flip-door.right .face.front');
     const rb = doors.querySelector('.flip-door.right .face.back');
 
-    function makeFaceLayer(side){
-      const frag = document.createDocumentFragment();
-
-      const gradient = document.createElement('div');
-      gradient.className = 'face-gradient';
-      gradient.setAttribute('aria-hidden', 'true');
-
+    function makeInner(side){
       const inner = document.createElement('div');
       inner.className = 'face-inner face-inner-' + side;
       inner.setAttribute('aria-hidden', 'true');
@@ -323,18 +317,16 @@ function setPassThrough(block, on){
       });
 
       inner.appendChild(clone);
-      frag.appendChild(gradient);
-      frag.appendChild(inner);
-      return frag;
+      return inner;
     }
 
     if (lf) {
       lf.innerHTML = '';
-      lf.appendChild(makeFaceLayer('left'));
+      lf.appendChild(makeInner('left'));
     }
     if (rf) {
       rf.innerHTML = '';
-      rf.appendChild(makeFaceLayer('right'));
+      rf.appendChild(makeInner('right'));
     }
 if (lb) {
   lb.innerHTML = '';
@@ -391,10 +383,6 @@ block.__flipType = 'text';
       if (!face) return;
       face.innerHTML = '';
 
-      const gradient = document.createElement('div');
-      gradient.className = 'face-gradient';
-      gradient.setAttribute('aria-hidden', 'true');
-
       const inner = document.createElement('div');
       inner.className = 'face-inner face-inner-' + side;
       inner.setAttribute('aria-hidden', 'true');
@@ -407,7 +395,6 @@ block.__flipType = 'text';
       });
 
       inner.appendChild(clone);
-      face.appendChild(gradient);
       face.appendChild(inner);
     }
 
