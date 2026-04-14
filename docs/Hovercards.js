@@ -4,16 +4,16 @@
   const CARD_1_SELECTORS = [
     '#block-yui_3_17_2_1_1756837579989_9426', /* Card img */
     '#block-yui_3_17_2_1_1762293512044_1730', /* Invisible card link */
-    '#block-yui_3_17_2_1_1757554504439_2552', /* Text */
+    '#block-yui_3_17_2_1_1757554504439_2552' /* Text */
   ];
 
   const CARD_2_SELECTORS = [
     '#block-057950c6d7e2d5e4fe2a', /* Invisible card link */
     '#block-1e14a0c2b150cb046369', /* Card img */
-    '#block-3fd5474bac7cfdc5bd19', /* Text */
+    '#block-3fd5474bac7cfdc5bd19' /* Text */
   ];
 
-  const AMPLITUDE_PX = 8; // max upward movement
+  const AMPLITUDE_PX = 15; // max upward movement
   const CYCLE_MS = 4600;  // full cycle: 0 -> up -> 0
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
