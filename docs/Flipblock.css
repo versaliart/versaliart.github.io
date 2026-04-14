@@ -9,7 +9,7 @@
   --flip-perspective: 1000px;
   --flip-seam: 1px;
   --edge-bleed: 1px;
-  --flip-gradient: linear-gradient(180deg, rgba(32, 19, 67, 0) 70%, rgba(32, 19, 67, 1) 100%);
+  --flip-gradient: linear-gradient(180deg, rgba(32, 19, 67, 0) 70%, rgba(32, 19, 67, 1) 95%);
 }
 
 /* Shared 3D host */
