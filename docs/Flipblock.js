@@ -21,8 +21,8 @@
       text:  '#block-c379877a90cef7206476'
     },
         {
-      image: '#block-ec8fd1095d8bde19b913', /* Gilbert */
-      text:  '#block-2c75c5cb9c33704cf1a1'
+      image: '#block-6cae5cdc3440b816bef2', /* Gilbert */
+      text:  '#block-ffe6282ef2bed6954763'
     }
   ];
 
