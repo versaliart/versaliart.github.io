@@ -2,17 +2,15 @@
 
 (() => {
   const CARD_1_SELECTORS = [
-    '#block-yui_3_17_2_1_1756837579989_9426',
-    '#block-yui_3_17_2_1_1762293512044_1730',
-    '#block-0a2a57dba5d721018c4c',
-    '#block-yui_3_17_2_1_1757554504439_2552',
+    '#block-yui_3_17_2_1_1756837579989_9426', /* Card img */
+    '#block-yui_3_17_2_1_1762293512044_1730', /* Invisible card link */
+    '#block-yui_3_17_2_1_1757554504439_2552', /* Text */
   ];
 
   const CARD_2_SELECTORS = [
-    '#block-057950c6d7e2d5e4fe2a',
-    '#block-1e14a0c2b150cb046369',
-    '#block-3fd5474bac7cfdc5bd19',
-    '#block-yui_3_17_2_1_1772052368029_9026',
+    '#block-057950c6d7e2d5e4fe2a', /* Invisible card link */
+    '#block-1e14a0c2b150cb046369', /* Card img */
+    '#block-3fd5474bac7cfdc5bd19', /* Text */
   ];
 
   const AMPLITUDE_PX = 8; // max upward movement
