@@ -126,8 +126,16 @@
 .sqs-block.html-block.flip-top .face-inner{
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 200%;
   height: 100%;
+  pointer-events: none;
+}
+
+.sqs-block.html-block.flip-top .face-gradient{
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
 }
 
@@ -1171,15 +1179,15 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
   background: transparent !important;
 }
 
-#block-268c84cc2c21ba0a6914.flip-top .face.front,
-#block-9946601a0f6219d1ad5c.flip-top .face.front,
-#block-021baabdabf2b9437b6c.flip-top .face.front,
-#block-c379877a90cef7206476.flip-top .face.front,
-#block-2c75c5cb9c33704cf1a1.flip-top .face.front {
+#block-268c84cc2c21ba0a6914.flip-top .face-gradient,
+#block-9946601a0f6219d1ad5c.flip-top .face-gradient,
+#block-021baabdabf2b9437b6c.flip-top .face-gradient,
+#block-c379877a90cef7206476.flip-top .face-gradient,
+#block-2c75c5cb9c33704cf1a1.flip-top .face-gradient {
   background: linear-gradient(
     180deg,
-    rgba(32, 19, 67, 0) 0%,
-    rgba(32, 19, 67, 1) 65%
+    rgba(32, 19, 67, 0) 70%,
+    rgba(32, 19, 67, 1) 100%
   );
 }
 
