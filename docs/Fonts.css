@@ -964,7 +964,8 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 #block-yui_3_17_2_1_1756418080301_6091,
 #block-42c23df4af4040779faa,
 #block-7409c8f5f3a89fe9b7bb,
-#block-8b664be0eb6c69b8ee7c {
+#block-8b664be0eb6c69b8ee7c,
+#block-9b146ecfc8af8a46cd35 {
   margin-top: 1.25rem !important;  /* extra space above */
 }
 
@@ -972,7 +973,8 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 #block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content,
 #block-42c23df4af4040779faa .sqs-html-content,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content,
-#block-8b664be0eb6c69b8ee7c .sqs-html-content {
+#block-8b664be0eb6c69b8ee7c .sqs-html-content,
+#block-9b146ecfc8af8a46cd35 {
   padding-left: 1.25rem;
   padding-right: 1.25rem;
 }
@@ -984,7 +986,8 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 #block-yui_3_17_2_1_1756418080301_6091 .sqs-html-content p.sqsrte-large,
 #block-42c23df4af4040779faa .sqs-html-content p.sqsrte-large,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content p.sqsrte-large,
-#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large {
+#block-8b664be0eb6c69b8ee7c .sqs-html-content p.sqsrte-large,
+#block-9b146ecfc8af8a46cd35 .sqs-html-content p.sqsrte-large {
   margin-bottom: 1rem !important;
 }
 
