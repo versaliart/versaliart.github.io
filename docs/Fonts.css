@@ -81,12 +81,6 @@
 }
 
 /* ===============================
-   TEXT BLOCKS WITH BACKGROUND COLOR
-   NOTE: keep this token-only section; the real applying rules live
-   later in "TEXT BLOCK SPACING" so they can override base text padding.
-================================*/
-
-/* ===============================
    HEADINGS (content area)
 ================================*/
 .sqs-block-content h1{ font-family:"Maax",sans-serif; font-weight:700; font-size:var(--h1); line-height:1.2 !important;
