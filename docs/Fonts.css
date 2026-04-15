@@ -974,7 +974,7 @@ body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
 #block-42c23df4af4040779faa .sqs-html-content,
 #block-7409c8f5f3a89fe9b7bb .sqs-html-content,
 #block-8b664be0eb6c69b8ee7c .sqs-html-content,
-#block-9b146ecfc8af8a46cd35 {
+#block-9b146ecfc8af8a46cd35 .sqs-html-content {
   padding-left: 1.25rem;
   padding-right: 1.25rem;
 }
