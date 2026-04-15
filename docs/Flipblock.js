@@ -1,7 +1,7 @@
 /* ===== Topblock Split-Flip v3.10 — paired image + real text block support ===== */
 (function(){
   const OPEN_DURATION = 480; /* match CSS --flip-open-duration */
-  const DEFAULT_FLIP_GRADIENT = 'linear-gradient(180deg, rgba(32, 19, 67, 0) 70%, rgba(32, 19, 67, 1) 100%)';
+  const DEFAULT_FLIP_GRADIENT = 'linear-gradient(180deg, rgba(32, 19, 67, 0) 60%, rgba(32, 19, 67, 1) 100%)';
 
   const FLIP_PAIRS = [
     {
