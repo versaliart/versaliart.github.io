@@ -982,10 +982,16 @@ body:not(.sqs-edit-mode) .video-block iframe {
    PER-BLOCK SPACING OVERRIDE (TIGHTER)
 ========================================= */
 
-#block-ffe6282ef2bed6954763 .sqs-html-content > * + *,
-#block-ffe6282ef2bed6954763 .sqs-html-content > * + *,
-#block-268c84cc2c21ba0a6914 .sqs-html-content > * + *,
-#block-268c84cc2c21ba0a6914 .sqs-html-content > * + *
+#block-9946601a0f6219d1ad5c .sqs-html-content > * + *, /* Carlos */
+#block-9946601a0f6219d1ad5c .sqs-html-content > * + *, /* Carlos */
+#block-021baabdabf2b9437b6c .sqs-html-content > * + *, /* WINGS */
+#block-021baabdabf2b9437b6c .sqs-html-content > * + *, /* WINGS */
+#block-c379877a90cef7206476 .sqs-html-content > * + *, /* Rough Trade */
+#block-c379877a90cef7206476 .sqs-html-content > * + *, /* Rough Trade */
+#block-ffe6282ef2bed6954763 .sqs-html-content > * + *, /* Gilbert */
+#block-ffe6282ef2bed6954763 .sqs-html-content > * + *, /* Gilbert */
+#block-268c84cc2c21ba0a6914 .sqs-html-content > * + *, /* BH */
+#block-268c84cc2c21ba0a6914 .sqs-html-content > * + * /* BH */
 {
   margin-top: 0.3rem !important; /* adjust as needed */
   margin-bottom: 0.3rem !important; /* adjust as needed */
