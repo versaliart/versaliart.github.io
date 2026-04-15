@@ -362,11 +362,6 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
   display:none !important;
 }
 
-/* Optional: no extra space at end of a Text block */
-.sqs-block-html .sqs-block-content > *:last-child,
-.sqs-block-html .sqs-html-content   > *:last-child{
-  margin-bottom: 0 !important;
-}
 
 /* Heading → Paragraph gap */
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
@@ -397,6 +392,12 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
   margin: 0 !important;
 }
 
+/* Optional: no extra space at end of a Text block */
+.sqs-block-html .sqs-block-content > *:last-child,
+.sqs-block-html .sqs-html-content   > *:last-child{
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
 
 /* =========================================================
    FE Text blocks — remove baseline vertical padding when centered/bottom
