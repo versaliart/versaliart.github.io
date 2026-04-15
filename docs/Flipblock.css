@@ -1018,60 +1018,57 @@ button.sqs-button-element--secondary:active,
 
 
 /* =====================================================
-   VIDEO BLOCKS — LIVE SITE + EDITOR
-   Allow proportional resize when dragging video block handles
+   VIDEO BLOCKS — LIVE SITE ONLY
 ===================================================== */
-.video-block > .sqs-block-content,
-.video-block .intrinsic,
-.video-block .embed-block-wrapper,
-.video-block .sqs-native-video,
-.video-block .sqs-video-wrapper {
+body:not(.sqs-edit-mode) .video-block > .sqs-block-content,
+body:not(.sqs-edit-mode) .video-block .intrinsic,
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video {
   height: 100% !important;
 }
 
-.video-block .video-player {
+body:not(.sqs-edit-mode) .video-block .video-player {
   padding: 0 !important;
 }
 
-.video-block video {
+body:not(.sqs-edit-mode) .video-block video {
   width: 100% !important;
   height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center !important;
+  object-fit: cover !important;
 }
 
-.video-block iframe {
+body:not(.sqs-edit-mode) .video-block iframe {
   width: 100% !important;
   height: 100% !important;
 }
 
-.video-block .embed-block-wrapper,
-.video-block .sqs-native-video,
-.video-block .sqs-video-wrapper {
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper {
   border-radius: 0.5rem !important;
   overflow: hidden !important;
 }
 
-.video-block video,
-.video-block iframe {
+body:not(.sqs-edit-mode) .video-block video,
+body:not(.sqs-edit-mode) .video-block iframe {
   border-radius: 0.5rem !important;
 }
 
-.video-block .sqs-video-wrapper,
-.video-block .sqs-native-video,
-.video-block .embed-block-wrapper,
-.video-block .intrinsic,
-.video-block .video-player {
+body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper,
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
+body:not(.sqs-edit-mode) .video-block .intrinsic,
+body:not(.sqs-edit-mode) .video-block .video-player {
   aspect-ratio: auto !important;
   min-height: 0 !important;
 }
 
-.video-block .intrinsic {
+body:not(.sqs-edit-mode) .video-block .intrinsic {
   padding-bottom: 0 !important;
   height: 100% !important;
 }
 
-.video-block > .sqs-block-content {
+body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
   min-height: 0 !important;
 }
 
