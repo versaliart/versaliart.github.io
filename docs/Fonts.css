@@ -983,7 +983,10 @@ body:not(.sqs-edit-mode) .video-block iframe {
 ========================================= */
 
 #block-ffe6282ef2bed6954763 .sqs-html-content > * + *,
-#block-ffe6282ef2bed6954763 .sqs-html-content > * + *{
+#block-ffe6282ef2bed6954763 .sqs-html-content > * + *,
+#block-268c84cc2c21ba0a6914 .sqs-html-content > * + *,
+#block-268c84cc2c21ba0a6914 .sqs-html-content > * + *,
+{
   margin-top: 0.3rem !important; /* adjust as needed */
 }
 
