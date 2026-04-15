@@ -111,6 +111,7 @@
   letter-spacing:.02em;
   font-feature-settings: "case" 1, "cpsp" 1;
   padding-bottom: 0 !important;
+  margin-bottom: 0 !important;
 }
 /* Quote attributions use the H4 type style */
 .sqs-block-quote .sqs-block-content figcaption.source{
@@ -123,8 +124,9 @@
   letter-spacing:.03em;
   font-feature-settings:"case" 1, "cpsp" 1;
 
-  margin-top: 0.55rem; /* optional: controls gap from quote */
+  margin-top: 0.35rem; /* optional: controls gap from quote */
     padding-bottom: 0 !important;
+      margin-bottom: 0 !important;
 }
 
 /* ===============================
