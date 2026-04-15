@@ -339,6 +339,12 @@ nav .subnav a{
   margin-top: 0.55rem !important;
 }
 
+/* Site-wide: extra gap only when a P2 is immediately followed by another P2 (bullet-styled variant) */
+.sqs-block-html .sqs-html-content > p.sqsrte-medium + p.sqsrte-medium,
+.sqs-block-html .sqs-block-content > p.sqsrte-medium + p.sqsrte-medium{
+  margin-top: clamp(1rem, 2.6vw, 1.35rem) !important;
+}
+
 
 /* =========================================================
    OPTIONAL: Light cleanup of true empty paragraphs
