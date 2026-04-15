@@ -356,6 +356,12 @@ nav .subnav a{
   margin-top: 0.55rem !important;
 }
 
+.sqs-block-html .sqs-html-content > h1 + h2,
+.sqs-block-html .sqs-block-content > h1 + h2
+{
+  margin-top: 1rem !important;
+}
+
 
 /* =========================================================
    OPTIONAL: Light cleanup of true empty paragraphs
