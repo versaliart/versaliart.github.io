@@ -968,11 +968,6 @@ body:not(.sqs-edit-mode) .video-block iframe {
   margin-bottom: 1rem !important;
 }
 
-.sqs-block-html .sqs-html-content > h1 + h2,
-.sqs-block-html .sqs-block-content > h1 + h2{
-  margin-top: 0 !important;
-}
-
 /* -----------------------------------------
    SPECIFIC BLOCK FIXES
    ----------------------------------------- */
