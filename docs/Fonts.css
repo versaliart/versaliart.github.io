@@ -874,23 +874,28 @@ button.sqs-button-element--secondary:active,
 body:not(.sqs-edit-mode) .video-block > .sqs-block-content,
 body:not(.sqs-edit-mode) .video-block .intrinsic,
 body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
-body:not(.sqs-edit-mode) .video-block .sqs-native-video {
+body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+body:not(.sqs-edit-mode) .video-block .video-player,
+body:not(.sqs-edit-mode) .video-block .plyr,
+body:not(.sqs-edit-mode) .video-block .plyr__video-wrapper {
   height: 100% !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+}
+
+body:not(.sqs-edit-mode) .video-block .embed-block-wrapper {
+  padding-bottom: 0 !important;
 }
 
 body:not(.sqs-edit-mode) .video-block .video-player {
   padding: 0 !important;
 }
 
-body:not(.sqs-edit-mode) .video-block video {
-  width: 100% !important;
-  height: 100% !important;
-  object-fit: cover !important;
-}
-
+body:not(.sqs-edit-mode) .video-block video,
 body:not(.sqs-edit-mode) .video-block iframe {
   width: 100% !important;
   height: 100% !important;
+  object-fit: cover !important;
 }
 
 body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
@@ -903,50 +908,6 @@ body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper {
 body:not(.sqs-edit-mode) .video-block video,
 body:not(.sqs-edit-mode) .video-block iframe {
   border-radius: 0.5rem !important;
-}
-
-body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper,
-body:not(.sqs-edit-mode) .video-block .sqs-native-video,
-body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
-body:not(.sqs-edit-mode) .video-block .intrinsic,
-body:not(.sqs-edit-mode) .video-block .video-player {
-  aspect-ratio: auto !important;
-  min-height: 0 !important;
-}
-
-body:not(.sqs-edit-mode) .video-block .intrinsic {
-  padding-bottom: 0 !important;
-  height: 100% !important;
-}
-
-body:not(.sqs-edit-mode) .video-block > .sqs-block-content {
-  min-height: 0 !important;
-}
-
-/* =====================================================
-   FLUID ENGINE — LET VIDEO BLOCK HEIGHT SHRINK
-   (removes intrinsic aspect-ratio/min-height locks)
-   ===================================================== */
-
-/* Kill FE's aspect-ratio lock + allow shrinking */
-.video-block .sqs-video-wrapper,
-.video-block .sqs-native-video,
-.video-block .embed-block-wrapper,
-.video-block .intrinsic,
-.video-block .video-player {
-  aspect-ratio: auto !important;
-  min-height: 0 !important;
-}
-
-/* Some templates apply ratio via padding-bottom on .intrinsic */
-.video-block .intrinsic {
-  padding-bottom: 0 !important;
-  height: 100% !important;
-}
-
-/* Make sure the block content can collapse */
-.video-block > .sqs-block-content {
-  min-height: 0 !important;
 }
 
 
