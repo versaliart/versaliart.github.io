@@ -385,7 +385,6 @@ body:not(.sqs-edit-mode) .sqs-block-html .sqs-html-content p:empty{
   display:none !important;
 }
 
-
 /* Heading → Paragraph gap */
 .sqs-block-html .sqs-html-content > :is(h1,h2,h3,h4,h5,h6) + p,
 .sqs-block-html .sqs-block-content > :is(h1,h2,h3,h4,h5,h6) + p{
