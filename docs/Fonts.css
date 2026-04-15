@@ -898,8 +898,8 @@ body:not(.sqs-edit-mode) .video-block iframe {
   object-fit: cover !important;
 }
 
-body:not(.sqs-edit-mode) .video-block .embed-block-wrapper,
-body:not(.sqs-edit-mode) .video-block .sqs-native-video,
+.video-block .embed-block-wrapper,
+.video-block .sqs-native-video,
 body:not(.sqs-edit-mode) .video-block .sqs-video-wrapper {
   border-radius: 0.5rem !important;
   overflow: hidden !important;
@@ -910,32 +910,6 @@ body:not(.sqs-edit-mode) .video-block iframe {
   border-radius: 0.5rem !important;
 }
 
-/* =====================================================
-   FLUID ENGINE — LET VIDEO BLOCK HEIGHT SHRINK
-   (removes intrinsic aspect-ratio/min-height locks)
-   ===================================================== */
-
-/* Kill FE's aspect-ratio lock + allow shrinking */
-.video-block .sqs-video-wrapper,
-.video-block .sqs-native-video,
-.video-block .embed-block-wrapper,
-.video-block .intrinsic,
-.video-block .video-player,
-.video-block .iframe {
-  aspect-ratio: auto !important;
-  min-height: 0 !important;
-}
-
-/* Some templates apply ratio via padding-bottom on .intrinsic */
-.video-block .intrinsic {
-  padding-bottom: 0 !important;
-  height: 100% !important;
-}
-
-/* Make sure the block content can collapse */
-.video-block > .sqs-block-content {
-  min-height: 0 !important;
-}
 
 /* -----------------------------------------
    1) EXTRA TOP MARGIN + EXTRA LEFT/RIGHT PADDING
