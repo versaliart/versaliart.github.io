@@ -978,6 +978,15 @@ body:not(.sqs-edit-mode) .video-block iframe {
   overflow: visible;
 }
 
+/* =========================================
+   PER-BLOCK SPACING OVERRIDE (TIGHTER)
+========================================= */
+
+#block-ffe6282ef2bed6954763 .sqs-html-content > * + *,
+#block-ffe6282ef2bed6954763 .sqs-html-content > * + *{
+  margin-top: 0.3rem !important; /* adjust as needed */
+}
+
 /* -----------------------------------------
    1) FLUID TOP MARGIN + FLUID LEFT/RIGHT PADDING
    (Scales down on mobile automatically)
