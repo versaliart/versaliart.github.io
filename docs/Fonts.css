@@ -115,14 +115,15 @@
 /* Quote attributions use the H4 type style */
 .sqs-block-quote .sqs-block-content figcaption.source{
   font-family:"Maax",sans-serif;
-  font-weight:400;
-  font-size:var(--h4);
-  line-height:1.35;
+  font-weight:500;
+  font-size:var(--p1);
+  line-height:1.45;
 
-  text-transform:none;
-  letter-spacing:.02em;
+  text-transform:uppercase;
+  letter-spacing:.03em;
+  font-feature-settings:"case" 1, "cpsp" 1;
 
-  margin-top: 0.55rem; /* adjust spacing from quote if needed */
+  margin-top: 0.55rem; /* optional: controls gap from quote */
     padding-bottom: 0 !important;
 }
 
