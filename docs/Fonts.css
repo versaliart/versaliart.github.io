@@ -614,6 +614,7 @@ button.sqs-button-element--secondary,
   --btn-mask: 
     radial-gradient(circle var(--btn-concave-radius) at left 50%, transparent 99%, #000 100%) left/51% 100% no-repeat,
     radial-gradient(circle var(--btn-concave-radius) at right 50%, transparent 99%, #000 100%) right/51% 100% no-repeat,
+     linear-gradient(#000 0 0);
   -webkit-mask: var(--btn-mask);
   mask: var(--btn-mask);
 }
