@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/* FONT DECLARATIONS v1.5 */
+/* FONT DECLARATIONS v1.6 */
 /*----------------------------------------------------------------------*/
 
 /* ------------------------------
@@ -1059,6 +1059,15 @@ body:not(.sqs-edit-mode) .video-block iframe {
   border-radius: 1rem; /* match your block radius */
   box-shadow: 0 1.25rem 0.5rem -0.35rem rgba(0, 10, 20, 0.65);
   overflow: visible;
+}
+
+/* Mobile only: widen this specific text box by 20% and allow overflow */
+@media screen and (max-width: 767px) {
+  #block-yui_3_17_2_1_1776188842920_49603 {
+    width: 120% !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
 }
 
 /* =========================================
