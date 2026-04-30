@@ -44,7 +44,7 @@ header#header[data-test="header"]{
   z-index: 1200;
 
   height: var(--mm-header-h);
-  width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
+  width: min(96vw, clamp(34rem, 28rem + 20vw, 58rem));
   border-radius: var(--mm-radius);
   background: var(--mm-bg);
   -webkit-backdrop-filter: blur(var(--mm-blur));
@@ -52,7 +52,7 @@ header#header[data-test="header"]{
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: var(--mm-shadow);
   box-sizing: border-box;
-  overflow: visible;
+  overflow: hidden;
 
   /* fade+drop animation */
   opacity: 0;
@@ -97,53 +97,55 @@ header#header .header-nav-list{
   box-sizing: border-box !important;
 }
 
-/* Keep only FIRST and LAST nav items */
-header#header .header-nav-list > .header-nav-item:not(:first-child):not(:last-child){
-  display: none !important;
+/* Five-slot layout: Work | Sparkle | Contact | Sparkle | About */
+header#header .header-nav-list{
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch !important;
+  column-gap: clamp(.45rem, .3rem + .6vw, .95rem);
+  padding: 0 clamp(.45rem, .3rem + .6vw, .95rem) !important;
 }
 
-/* Center spacer for your decorative image / gap */
-header#header::before{
-  content:"";
+header#header[data-test="header"]::before,
+header#header[data-test="header"]::after{
+  content: '';
   position: absolute;
-  top: 0; bottom: 0;
-  left: 50%;
-  width: var(--mm-gap-fixed);
-  transform: translateX(-50%);
+  top: 50%;
+  width: clamp(1rem, .8rem + .8vw, 1.4rem);
+  height: clamp(1rem, .8rem + .8vw, 1.4rem);
+  transform: translate(-50%, -50%);
+  background: center / contain no-repeat url('https://versaliart.github.io/MMsparkle.svg');
+  opacity: .9;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.3));
   pointer-events: none;
+  z-index: 2;
 }
+header#header[data-test="header"]::before{ left: 33.333%; }
+header#header[data-test="header"]::after{ left: 66.666%; }
 
-/* === Place the two pills directly inside the bar edges =============== */
-/* Vertically center via top:0; bottom:0; margin-block:auto; */
-/* Left pill */
-header#header .header-nav-list > .header-nav-item:first-child > a{
-  position: absolute !important;
-  left: var(--mm-edge-pad) !important;
-  top: 0; bottom: 0;              /* vertical centering without translate */
-  margin-block: auto;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 2;
-}
-/* Right pill */
-header#header .header-nav-list > .header-nav-item:last-child > a{
-  position: absolute !important;
-  right: var(--mm-edge-pad) !important;
-  top: 0; bottom: 0;              /* vertical centering without translate */
-  margin-block: auto;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  z-index: 2;
+header#header .header-nav-list > .header-nav-item[data-mm-slot='1']{ grid-column: 1; }
+header#header .header-nav-list > .header-nav-item[data-mm-slot='2']{ grid-column: 3; }
+header#header .header-nav-list > .header-nav-item[data-mm-slot='3']{ grid-column: 5; }
+header#header .header-nav-list > .header-nav-item{
+  display: flex !important;
+  align-items: stretch !important;
+  align-self: stretch !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
 }
 
 /* Pill visuals (unchanged) */
 header#header .header-nav-list > .header-nav-item > a{
+  width: 100%;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  box-sizing: border-box;
   min-width: var(--mm-btn-min);
   padding-block: var(--mm-btn-pad-y);
   padding-inline: var(--mm-btn-pad-x);
-  border-radius: .5rem; 
+  border-radius: calc(var(--mm-radius) - 1px); 
   font-weight: 700;
   line-height: 1;
   text-decoration: none;
@@ -188,19 +190,6 @@ header#header .header-nav-list{
   perspective: none !important;
 }
 
-/* Absolutely anchor the two pills to the bar’s edges (vertical center sans translate) */
-header#header .header-nav-list > .header-nav-item:first-child > a{
-  position: absolute !important;
-  left: var(--mm-edge-pad) !important;
-  top: 0; bottom: 0; margin-block: auto;
-  z-index: 2;
-}
-header#header .header-nav-list > .header-nav-item:last-child > a{
-  position: absolute !important;
-  right: var(--mm-edge-pad) !important;
-  top: 0; bottom: 0; margin-block: auto;
-  z-index: 2;
-}
 /* Fix the positioning context: pills should anchor to the GLASS BAR, not this wrapper */
 header#header[data-test="header"] > .header-announcement-bar-wrapper{
   position: static !important;     /* was relative — steals absolute children */
@@ -228,48 +217,13 @@ header#header .header-nav-list > .header-nav-item > a{
   line-height: var(--mm-pill-line) !important; /* 1 → lets padding actually shrink height */
   padding-block: var(--mm-btn-pad-y) !important; /* 0px will now work */
   display: inline-flex !important;
-  align-items: center !important;
+  align-items: stretch !important;
   justify-content: center !important;
 }
 
 
 /* Remove the injected "Skip to Content" link inside the header */
 header#header .header-skip-link{ display:none !important; }
-
-/* === Centered logo for glass header ================================== */
-:root{
-  /* optional: tweak the logo size here */
-  --mm-logo-h: 2rem;
-}
-
-/* Place the injected image perfectly centered inside the glass bar */
-header#header[data-test="header"] .mm-logo-center{
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);   /* follows header drop/transform */
-  height: var(--mm-logo-h);
-  opacity: 0;                         /* hidden until header reveals */
-  pointer-events: none;               /* never block clicks on pills */
-  user-select: none;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
-  z-index: 1;                         /* under edge pills (which are z:2) */
-
-  /* match the header’s reveal timing */
-  transition: opacity var(--mm-dur) var(--mm-ease-out);
-}
-
-/* Fade in when header becomes visible */
-header#header[data-test="header"].mm-visible .mm-logo-center{
-  opacity: .95;
-}
-
-/* Respect reduced motion users */
-@media (prefers-reduced-motion: reduce){
-  header#header[data-test="header"] .mm-logo-center{
-    transition: opacity 1ms linear;
-  }
-}
 
 /* === Mobile fallback: keep custom glass nav, disable Squarespace hamburger === */
 @media screen and (max-width: 767px){
@@ -279,7 +233,6 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
     --mm-btn-min: clamp(4.8rem, 26vw, 6.4rem);
     --mm-btn-pad-x: clamp(.5rem, 2.8vw, .8rem);
     --mm-pill-font: clamp(.72rem, 2.8vw, .85rem);
-    --mm-logo-h: clamp(1.5rem, 7vw, 1.85rem);
     --mm-edge-pad: 0px;
   }
 
@@ -301,47 +254,6 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
   header#header .header-nav-item > a{
     text-transform: uppercase !important;
     letter-spacing: .04em;
-  }
-
-  /* Mobile fallback pills injected by JS (guaranteed visible buttons) */
-  header#header[data-test="header"] .mm-mobile-pill{
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    margin-block: auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: var(--mm-btn-min);
-    max-width: calc(50% - var(--mm-gap-fixed) / 2 - var(--mm-edge-pad) - .5rem);
-    padding-block: var(--mm-btn-pad-y);
-    padding-inline: var(--mm-btn-pad-x);
-    border-radius: .5rem;
-    font-family: "Maax", sans-serif !important;
-    font-size: var(--mm-pill-font);
-    font-weight: 500;
-    font-size: var(--mm-pill-font);
-    font-weight: 700;
-    line-height: 1;
-    text-decoration: none;
-    text-transform: uppercase;
-    letter-spacing: .04em;
-    color: #BBBABF;
-    background: rgba(255,255,255,.10);
-    border: 1px solid rgba(255,255,255,.35);
-    z-index: 3;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  header#header[data-test="header"] .mm-mobile-pill-left{ left: var(--mm-edge-pad); }
-  header#header[data-test="header"] .mm-mobile-pill-right{ right: var(--mm-edge-pad); }
-
-  header#header[data-test="header"] .mm-mobile-pill:hover,
-  header#header[data-test="header"] .mm-mobile-pill:focus-visible{
-    background: rgba(255,255,255,.18);
-    border-color: rgba(255,255,255,.5);
-    outline: none;
   }
 
   /* Hide Squarespace hamburger trigger + overlay only */
