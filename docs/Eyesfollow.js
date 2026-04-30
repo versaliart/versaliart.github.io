@@ -83,6 +83,11 @@
     return;
   }
 
+    // Reveal the eye layers only after the SVG and pupil setup are ready
+  requestAnimationFrame(function () {
+    document.body.classList.add("mm-hero-ready");
+  });
+
   // 🔧 Reduce travel a bit so pupils stay nicely visible near edges
   var travelScale = 0.55; // tweak 0.4–0.7
   leftEye.maxX  *= travelScale;
