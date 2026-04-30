@@ -602,8 +602,9 @@ button.sqs-button-element--primary,
 .sqs-button-element--primary,
 a.sqs-button-element--secondary,
 button.sqs-button-element--secondary,
-.sqs-button-element--secondary {
-  position: relative;
+.sqs-button-element--secondary,
+a.sqs-block-button-element {
+  border-radius: 0 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -671,6 +672,27 @@ button.sqs-button-element--secondary::before,
 .sqs-button-element--secondary::before {
   -webkit-mask: var(--btn-mask);
   mask: var(--btn-mask);
+}
+
+
+/* Ensure component-layer paint also inherits the bite silhouette */
+a.sqs-button-element--primary::before,
+a.sqs-button-element--primary::after,
+button.sqs-button-element--primary::before,
+button.sqs-button-element--primary::after,
+.sqs-button-element--primary::before,
+.sqs-button-element--primary::after,
+a.sqs-button-element--secondary::before,
+a.sqs-button-element--secondary::after,
+button.sqs-button-element--secondary::before,
+button.sqs-button-element--secondary::after,
+.sqs-button-element--secondary::before,
+.sqs-button-element--secondary::after,
+.sqs-block-button-container .sqs-block-button-element::before,
+.sqs-block-button-container .sqs-block-button-element::after {
+  -webkit-mask: var(--btn-mask) !important;
+  mask: var(--btn-mask) !important;
+  border-radius: 0 !important;
 }
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
