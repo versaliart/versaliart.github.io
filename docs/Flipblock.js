@@ -1,7 +1,7 @@
 /* ===== Topblock Split-Flip v3.10 — paired image + real text block support ===== */
 (function(){
   const OPEN_DURATION = 480; /* match CSS --flip-open-duration */
-  const DEFAULT_FLIP_GRADIENT = 'linear-gradient(180deg, rgba(32, 19, 67, 0) 60%, rgba(32, 19, 67, 1) 100%)';
+  const DEFAULT_FLIP_GRADIENT = 'linear-gradient(180deg, rgba(32, 19, 67, 0) 70%, rgba(32, 19, 67, 1) 100%)';
 
   const FLIP_PAIRS = [
     {
@@ -323,10 +323,12 @@ function setPassThrough(block, on){
     }
 
     if (lf) {
+      lf.classList.add('flip-text-face');
       lf.innerHTML = '';
       lf.appendChild(makeInner('left'));
     }
     if (rf) {
+      rf.classList.add('flip-text-face');
       rf.innerHTML = '';
       rf.appendChild(makeInner('right'));
     }
@@ -383,6 +385,7 @@ block.__flipType = 'text';
 
     function replaceInner(face, side){
       if (!face) return;
+      face.classList.add('flip-text-face');
       face.innerHTML = '';
 
       const inner = document.createElement('div');
