@@ -216,29 +216,33 @@
       }
 
 
-      function syncCustomNavPillWidth(){
-        const nav = hdr.querySelector('.mm-custom-nav');
-        if (!nav) return;
-        const pills = Array.from(nav.querySelectorAll('.mm-pill'));
-        if (!pills.length) return;
+function syncCustomNavPillWidth(){
+  const nav = hdr.querySelector('.mm-custom-nav');
+  if (!nav) return;
 
-        const prev = pillWidthCache;
-        if (prev <= 0){
-          nav.style.setProperty('--mm-pill-w', 'auto');
-          pills.forEach((pill) => { pill.style.removeProperty('inline-size'); });
-        }
-        let maxPillWidth = 0;
-        pills.forEach((pill) => {
-          const rect = pill.getBoundingClientRect();
-          const totalWidth = Math.max(0, rect.width);
-          maxPillWidth = Math.max(maxPillWidth, totalWidth);
-        });
-        const next = Math.ceil(maxPillWidth);
-        if (next > 0 && next !== prev){
-          nav.style.setProperty('--mm-pill-w', `${next}px`);
-          pillWidthCache = next;
-        }
-      }
+  const pills = Array.from(nav.querySelectorAll('.mm-pill'));
+  if (!pills.length) return;
+
+  // Always release the previous fixed width before measuring.
+  nav.style.setProperty('--mm-pill-w', 'auto');
+  pills.forEach((pill) => {
+    pill.style.removeProperty('inline-size');
+  });
+
+  let maxPillWidth = 0;
+
+  pills.forEach((pill) => {
+    const rect = pill.getBoundingClientRect();
+    maxPillWidth = Math.max(maxPillWidth, rect.width);
+  });
+
+  const next = Math.ceil(maxPillWidth);
+
+  if (next > 0){
+    nav.style.setProperty('--mm-pill-w', `${next}px`);
+    pillWidthCache = next;
+  }
+}
 
 
       function syncHeaderWidth(){
@@ -272,7 +276,7 @@
         const borderL = parseFloat(hs.borderLeftWidth) || 0;
         const borderR = parseFloat(hs.borderRightWidth) || 0;
 
-        const width = Math.ceil(contentWidth + borderL + borderR);
+        const width = Math.ceil(contentWidth);
         if (width > 0 && width !== headerWidthCache){
           hdr.style.width = width + 'px';
           document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
