@@ -125,43 +125,48 @@
         const lists = hdr.querySelectorAll('.header-nav-list');
         if (!lists.length) return;
 
-        const desired = [
-          { text: 'Work', href: 'https://www.mysticmunson.design/#projects' },
-          { text: 'Contact', href: 'https://www.mysticmunson.design/about#contact' },
-          { text: 'About', href: 'https://www.mysticmunson.design/about' }
-        ];
+        const desired = ['Work', 'Contact', 'About'];
 
         lists.forEach((list) => {
           const items = Array.from(list.querySelectorAll(':scope > .header-nav-item'));
           if (!items.length) return;
 
-          const ordered = desired.map((target, index) => {
-            let item = items.find((candidate) => {
-              const a = candidate.querySelector('a');
-              return a && (a.textContent || '').trim().toLowerCase() === target.text.toLowerCase();
-            });
+          const byLabel = new Map();
+          items.forEach((item) => {
+            const link = item.querySelector('a');
+            if (!link) return;
+            const label = (link.textContent || '').trim().toLowerCase();
+            if (!byLabel.has(label)) byLabel.set(label, item);
+          });
 
+          const ordered = desired.map((text, index) => {
+            let item = byLabel.get(text.toLowerCase());
             if (!item) {
               item = document.createElement('li');
               item.className = 'header-nav-item';
               const a = document.createElement('a');
-              a.href = target.href;
-              a.textContent = target.text;
+              a.href = '#';
+              a.textContent = text;
+              a.setAttribute('aria-label', text);
               item.appendChild(a);
             }
 
             const link = item.querySelector('a');
             if (link) {
-              link.href = target.href;
-              link.textContent = target.text;
-              link.setAttribute('aria-label', target.text);
+              link.textContent = text;
+              link.setAttribute('aria-label', text);
             }
             item.setAttribute('data-mm-slot', String(index + 1));
             return item;
           });
 
-          list.innerHTML = '';
-          ordered.forEach((item) => list.appendChild(item));
+          const shouldReorder = ordered.some((item, index) => list.children[index] !== item);
+          if (shouldReorder) {
+            ordered.forEach((item, index) => {
+              const current = list.children[index];
+              if (current !== item) list.insertBefore(item, current || null);
+            });
+          }
         });
       }
 
