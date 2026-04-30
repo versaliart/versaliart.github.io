@@ -28,14 +28,6 @@
 
   function setup(){
     onceHeader(function(hdr){
-      if (!hdr.querySelector('.mm-logo-center')) {
-        hdr.insertAdjacentHTML('afterbegin', `
-          <img class="mm-logo-center"
-               src="https://www.mysticmunson.design/s/MMlogoSHORTpng.png"
-               alt="Mystic Munson app icon">
-        `);
-      }
-
       const STICKY = pxVar('--mm-sticky-top', 12);
 
       function applyMobileFrame(){
@@ -120,63 +112,53 @@
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
-            ensureMobileButtons();
             applyMobileFrame();
           }
           update();
         });
       }
 
-      function ensureMobileButtons(){
-        if (window.matchMedia('(min-width: 768px)').matches) return;
-
-        const desktopLinks = hdr.querySelectorAll('.header-display-desktop .header-nav-item > a');
-        const anyLinks = hdr.querySelectorAll('.header-nav-item > a');
-        const source = desktopLinks.length ? desktopLinks : anyLinks;
-        if (!source.length) return;
-
-        const first = source[0];
-        const last = source[source.length - 1];
-
-        function upsert(btnClass, fromLink){
-          if (!fromLink) return;
-          let a = hdr.querySelector('.' + btnClass);
-          if (!a){
-            a = document.createElement('a');
-            a.className = 'mm-mobile-pill ' + btnClass;
-            a.setAttribute('data-mm-mobile-pill', '');
-            hdr.appendChild(a);
-          }
-          a.href = fromLink.getAttribute('href') || '#';
-          a.textContent = (fromLink.textContent || '').trim();
-          const label = fromLink.getAttribute('aria-label');
-          if (label) a.setAttribute('aria-label', label);
-        }
-
-        upsert('mm-mobile-pill-left', first);
-        upsert('mm-mobile-pill-right', last);
-      }
-
       function enforceNavOrder(){
         const lists = hdr.querySelectorAll('.header-nav-list');
         if (!lists.length) return;
+
+        const desired = [
+          { text: 'Work', href: 'https://www.mysticmunson.design/#projects' },
+          { text: 'Contact', href: 'https://www.mysticmunson.design/about#contact' },
+          { text: 'About', href: 'https://www.mysticmunson.design/about' }
+        ];
 
         lists.forEach((list) => {
           const items = Array.from(list.querySelectorAll(':scope > .header-nav-item'));
           if (!items.length) return;
 
-          const homeItem = items.find((item) => {
-            const a = item.querySelector('a');
-            return a && (a.textContent || '').trim().toLowerCase() === 'home';
+          const ordered = desired.map((target, index) => {
+            let item = items.find((candidate) => {
+              const a = candidate.querySelector('a');
+              return a && (a.textContent || '').trim().toLowerCase() === target.text.toLowerCase();
+            });
+
+            if (!item) {
+              item = document.createElement('li');
+              item.className = 'header-nav-item';
+              const a = document.createElement('a');
+              a.href = target.href;
+              a.textContent = target.text;
+              item.appendChild(a);
+            }
+
+            const link = item.querySelector('a');
+            if (link) {
+              link.href = target.href;
+              link.textContent = target.text;
+              link.setAttribute('aria-label', target.text);
+            }
+            item.setAttribute('data-mm-slot', String(index + 1));
+            return item;
           });
 
-          const aboutItem = items.find((item) => {
-            const a = item.querySelector('a');
-            return a && (a.textContent || '').trim().toLowerCase() === 'about';
-          });
-
-          if (homeItem) list.prepend(homeItem);
-          if (aboutItem) list.append(aboutItem);
+          list.innerHTML = '';
+          ordered.forEach((item) => list.appendChild(item));
         });
       }
 
@@ -200,7 +182,6 @@
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
-      ensureMobileButtons();
       applyMobileFrame();
       update();
 
