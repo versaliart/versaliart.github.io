@@ -45,7 +45,7 @@ header#header[data-test="header"]{
   z-index: 1200;
 
   height: var(--mm-header-h);
-  width: min(96vw, clamp(34rem, 28rem + 20vw, 58rem));
+  width: var(--mm-bar-w, min(96vw, clamp(34rem, 28rem + 20vw, 58rem)));
   border-radius: var(--mm-radius);
   background: var(--mm-bg);
   -webkit-backdrop-filter: blur(var(--mm-blur));
