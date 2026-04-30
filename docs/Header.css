@@ -305,6 +305,7 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
 
   /* Mobile fallback pills injected by JS (guaranteed visible buttons) */
   header#header[data-test="header"] .mm-mobile-pill{
+    --mm-pill-cutout-r: 9px;
     position: absolute;
     top: 0;
     bottom: 0;
@@ -316,7 +317,35 @@ header#header[data-test="header"].mm-visible .mm-logo-center{
     max-width: calc(50% - var(--mm-gap-fixed) / 2 - var(--mm-edge-pad) - .5rem);
     padding-block: var(--mm-btn-pad-y);
     padding-inline: var(--mm-btn-pad-x);
-    border-radius: .5rem;
+    border-radius: 0;
+    -webkit-mask:
+      radial-gradient(circle at 0 0,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) top left / 50% 50% no-repeat,
+      radial-gradient(circle at 100% 0,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) top right / 50% 50% no-repeat,
+      radial-gradient(circle at 0 100%,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) bottom left / 50% 50% no-repeat,
+      radial-gradient(circle at 100% 100%,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) bottom right / 50% 50% no-repeat,
+      linear-gradient(#000 0 0);
+    mask:
+      radial-gradient(circle at 0 0,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) top left / 50% 50% no-repeat,
+      radial-gradient(circle at 100% 0,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) top right / 50% 50% no-repeat,
+      radial-gradient(circle at 0 100%,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) bottom left / 50% 50% no-repeat,
+      radial-gradient(circle at 100% 100%,
+        transparent var(--mm-pill-cutout-r),
+        #000 calc(var(--mm-pill-cutout-r) + 1px)) bottom right / 50% 50% no-repeat,
+      linear-gradient(#000 0 0);
     font-family: "Maax", sans-serif !important;
     font-size: var(--mm-pill-font);
     font-weight: 500;
