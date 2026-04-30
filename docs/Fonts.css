@@ -764,6 +764,17 @@ button.sqs-button-element--secondary:active,
   font-synthesis-weight: none !important;
 }
 
+/* Text selection styling */
+::-moz-selection {
+  color: #1C1829;
+  background: #9989EC;
+}
+
+::selection {
+  color: #1C1829;
+  background: #9989EC;
+}
+
 /* --- Text inputs, textareas, selects (user-entered text) --- */
 .sqs-block-form input[type="text"],
 .sqs-block-form input[type="email"],
