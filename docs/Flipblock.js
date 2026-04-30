@@ -321,10 +321,12 @@ function setPassThrough(block, on){
     }
 
     if (lf) {
+      lf.classList.add('flip-text-face');
       lf.innerHTML = '';
       lf.appendChild(makeInner('left'));
     }
     if (rf) {
+      rf.classList.add('flip-text-face');
       rf.innerHTML = '';
       rf.appendChild(makeInner('right'));
     }
@@ -381,6 +383,7 @@ block.__flipType = 'text';
 
     function replaceInner(face, side){
       if (!face) return;
+      face.classList.add('flip-text-face');
       face.innerHTML = '';
 
       const inner = document.createElement('div');
