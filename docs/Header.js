@@ -109,6 +109,7 @@
           rafId = 0;
           if (full){
             enforceNavOrder();
+            ensureCustomNav();
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
@@ -162,6 +163,24 @@
         });
       }
 
+
+      function ensureCustomNav(){
+        let nav = hdr.querySelector('.mm-custom-nav');
+        if (!nav){
+          nav = document.createElement('nav');
+          nav.className = 'mm-custom-nav';
+          nav.setAttribute('aria-label', 'Primary');
+          nav.innerHTML = `
+            <a class="mm-pill" href="https://www.mysticmunson.design/#projects" aria-label="Work">Work</a>
+            <span class="mm-sparkle" aria-hidden="true"></span>
+            <a class="mm-pill" href="https://www.mysticmunson.design/about#contact" aria-label="Contact">Contact</a>
+            <span class="mm-sparkle" aria-hidden="true"></span>
+            <a class="mm-pill" href="https://www.mysticmunson.design/about" aria-label="About">About</a>
+          `;
+          hdr.appendChild(nav);
+        }
+      }
+
       function syncEdgePad(){
         if (window.matchMedia('(max-width: 767px)').matches){
           document.documentElement.style.setProperty('--mm-edge-pad', '0px');
@@ -179,6 +198,7 @@
       }
 
       enforceNavOrder();
+      ensureCustomNav();
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
