@@ -86,13 +86,9 @@ body.has-starfield{
   transform: translate(-50%, -50%);
   opacity: 0;
   color: var(--star-color);
-  background: currentColor;
-
-  -webkit-mask: var(--star-url) center / contain no-repeat;
-          mask: var(--star-url) center / contain no-repeat;
-
   pointer-events: none;
   z-index: 1;
+  isolation: isolate;
   will-change: transform, opacity;
   animation: none;
 }
@@ -110,7 +106,18 @@ body.has-starfield{
   );
   filter: blur(var(--blur, var(--star-glow-blur)));
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
+}
+
+.shape-edge-sparkles .star::after{
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--star-url) center / contain no-repeat;
+          mask: var(--star-url) center / contain no-repeat;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @media (prefers-reduced-motion: reduce){
