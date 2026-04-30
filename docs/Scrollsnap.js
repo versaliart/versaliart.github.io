@@ -116,7 +116,17 @@
       ctrl.guardUntil = performance.now() + ctrl.opts.guardMs;
 
       clearTimeout(ctrl.lockTimer);
-      ctrl.lockTimer = setTimeout(function(){ ctrl.lock = false; globalLock = false; }, ctrl.opts.duration);
+      ctrl.lockTimer = setTimeout(function(){
+        ctrl.lock = false;
+        globalLock = false;
+
+        // Force the next scroll attempt to re-evaluate from the actual landed position.
+        ctrl.lastViewBottomAbs = null;
+        ctrl.lastViewTopAbs = null;
+        ctrl.upTravel = 0;
+        ctrl.downTravel = 0;
+        ctrl.lastDir = 0;
+      }, ctrl.opts.duration);
     }
 
     function onScrollTick(){
