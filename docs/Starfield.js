@@ -230,16 +230,19 @@
     const jitterMinPx = getNumVar(bodyStyle, '--jitter-min', 0.10) * remPx();
     const jitterMaxPx = Math.max(jitterMinPx, getNumVar(bodyStyle, '--jitter-max', 2.00) * remPx());
     const randomize = clamp01(getNumVar(bodyStyle, '--star-randomize', 0));
+    const spawnSpreadMin = Math.max(0, getNumVar(bodyStyle, '--spawn-spread-min', 0) * remPx());
+    const spawnSpreadMax = Math.max(spawnSpreadMin, getNumVar(bodyStyle, '--spawn-spread-max', 0) * remPx());
     const seed = getNumVar(bodyStyle, '--star-seed', Math.random());
     const basePhase = seed - Math.floor(seed);
+    let spawnCursor = basePhase;
 
     const pathTotalLength = mode === 'svg' ? path.getTotalLength() : 0;
 
     function sampleSpawnPoint() {
       for (let tries = 0; tries < 120; tries++) {
-        const evenT = Math.random();
-        const dt = randomize > 0 ? (Math.random() - 0.5) * 0.08 : 0;
-        const t = (evenT + dt + basePhase + 1) % 1;
+        spawnCursor = (spawnCursor + 0.61803398875) % 1;
+        const randomJitter = (Math.random() - 0.5) * 0.35 * randomize;
+        const t = (spawnCursor + randomJitter + 1) % 1;
 
         const currentEmitterRect = getEmitterRect();
         const emitterCenter = getEmitterCenterInSection();
@@ -274,9 +277,12 @@
           const dirY = pos.y - emitterCenter.y;
           const dirLen = Math.hypot(dirX, dirY) || 1;
 
+          const spawnSpread = rand(spawnSpreadMin, spawnSpreadMax);
+          const spreadX = (dirX / dirLen) * spawnSpread;
+          const spreadY = (dirY / dirLen) * spawnSpread;
           return {
-            x: pos.x,
-            y: pos.y,
+            x: pos.x + spreadX,
+            y: pos.y + spreadY,
             vx: dirX / dirLen,
             vy: dirY / dirLen
           };
@@ -309,9 +315,12 @@
           const dirY = pos.y - emitterCenter.y;
           const dirLen = Math.hypot(dirX, dirY) || 1;
 
+          const spawnSpread = rand(spawnSpreadMin, spawnSpreadMax);
+          const spreadX = (dirX / dirLen) * spawnSpread;
+          const spreadY = (dirY / dirLen) * spawnSpread;
           return {
-            x: pos.x,
-            y: pos.y,
+            x: pos.x + spreadX,
+            y: pos.y + spreadY,
             vx: dirX / dirLen,
             vy: dirY / dirLen
           };
@@ -354,7 +363,8 @@
         opacityMax: clamp01(getNumVar(s, '--opacity-max', 1.0)),
         blurMax: Math.max(0, getNumVar(s, '--max-blur', 0.22) * remPx()),
         twinkleMin: Math.max(0.01, getNumVar(s, '--twinkle-min', 0.5)),
-        twinkleMax: Math.max(0.02, getNumVar(s, '--twinkle-max', 2.0))
+        twinkleMax: Math.max(0.02, getNumVar(s, '--twinkle-max', 2.0)),
+        fadeInMs: Math.max(0, getNumVar(s, '--spawn-fade-in-ms', 500))
       };
     }
 
@@ -419,7 +429,8 @@
         vy: spawn.vy * speed,
         baseOpacity,
         twDur,
-        twPhase
+        twPhase,
+        bornAt: performance.now()
       };
 
       stars.push(star);
@@ -432,10 +443,11 @@
         0.15 + 0.85 * (0.5 + 0.5 * Math.sin((ts / 1000) * ((Math.PI * 2) / star.twDur) + star.twPhase));
 
       const a = star.baseOpacity * twinkle * fade;
+      const fadeIn = cfg.fadeInMs > 0 ? clamp01((ts - star.bornAt) / cfg.fadeInMs) : 1;
 
       star.el.style.left = star.x.toFixed(2) + 'px';
       star.el.style.top = star.y.toFixed(2) + 'px';
-      star.el.style.opacity = Math.max(0, a).toFixed(3);
+      star.el.style.opacity = Math.max(0, a * fadeIn).toFixed(3);
     }
 
     function killStar(i) {

@@ -17,7 +17,10 @@ body.has-starfield{
   --jitter-max: 2.00rem;
 
   /* distribution balance: 0 = even, 1 = more random */
-  --star-randomize: 0;
+  --star-randomize: 0.15;
+  --spawn-spread-min: 0.10rem;
+  --spawn-spread-max: 1.50rem;
+  --spawn-fade-in-ms: 450;
 
   /* twinkle timing */
   --twinkle-min: 1.0;
@@ -40,6 +43,9 @@ body.has-starfield{
   /* glow + art */
   --max-blur: 0.5rem;
   --star-color: #5D4E98;
+  --star-glow-color: rgba(93,78,152,0.9);
+  --star-glow-blur: 20px;
+  --star-glow-spread: 4px;
   --star-url: url("https://versaliart.github.io/MMsparkle.svg");
 
   --jitter-fallback-mult: 2;
@@ -86,6 +92,9 @@ body.has-starfield{
           mask: var(--star-url) center / contain no-repeat;
 
   filter: drop-shadow(0 0 var(--blur, 0) currentColor);
+  -webkit-box-shadow: 0 0 var(--star-glow-blur) var(--star-glow-spread) var(--star-glow-color);
+     -moz-box-shadow: 0 0 var(--star-glow-blur) var(--star-glow-spread) var(--star-glow-color);
+          box-shadow: 0 0 var(--star-glow-blur) var(--star-glow-spread) var(--star-glow-color);
   will-change: transform, opacity;
   animation: none;
 }
