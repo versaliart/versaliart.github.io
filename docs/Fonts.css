@@ -80,6 +80,38 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: 'Eksell Display';
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdbb17cc7b89fee399/1777510909236/Eksell+Display+Large.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Eksell Display';
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Eksell Display';
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Eksell Display Stencil';
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ===============================
    HEADINGS (content area)
 ================================*/
@@ -576,11 +608,13 @@ button.sqs-button-element--secondary,
   border-radius: 0 !important;
   --btn-notch-size: 1.15em;
   -webkit-mask:
-    radial-gradient(circle var(--btn-notch-size) at left center, transparent 99%, #000 100%) left / 51% 100% no-repeat,
-    radial-gradient(circle var(--btn-notch-size) at right center, transparent 99%, #000 100%) right / 51% 100% no-repeat;
+    radial-gradient(circle var(--btn-notch-size) at left center, transparent 98%, #000 100%) left center / calc(var(--btn-notch-size) * 2) 100% no-repeat,
+    radial-gradient(circle var(--btn-notch-size) at right center, transparent 98%, #000 100%) right center / calc(var(--btn-notch-size) * 2) 100% no-repeat,
+    linear-gradient(#000 0 0);
   mask:
-    radial-gradient(circle var(--btn-notch-size) at left center, transparent 99%, #000 100%) left / 51% 100% no-repeat,
-    radial-gradient(circle var(--btn-notch-size) at right center, transparent 99%, #000 100%) right / 51% 100% no-repeat;
+    radial-gradient(circle var(--btn-notch-size) at left center, transparent 98%, #000 100%) left center / calc(var(--btn-notch-size) * 2) 100% no-repeat,
+    radial-gradient(circle var(--btn-notch-size) at right center, transparent 98%, #000 100%) right center / calc(var(--btn-notch-size) * 2) 100% no-repeat,
+    linear-gradient(#000 0 0);
 }
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
