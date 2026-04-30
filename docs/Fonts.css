@@ -1096,6 +1096,22 @@ body:not(.sqs-edit-mode) .video-block iframe {
   }
 }
 
+.mm-hero-svg,
+.mm-eye-layer,
+#PupilLeft,
+#PupilRight,
+#eye-background {
+  opacity: 0;
+}
+
+body.mm-hero-ready .mm-hero-svg,
+body.mm-hero-ready .mm-eye-layer,
+body.mm-hero-ready #PupilLeft,
+body.mm-hero-ready #PupilRight,
+body.mm-hero-ready #eye-background {
+  opacity: 1;
+}
+
 /* =========================================
    PER-BLOCK SPACING OVERRIDE (TIGHTER)
 ========================================= */
