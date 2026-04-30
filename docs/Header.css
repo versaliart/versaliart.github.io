@@ -278,6 +278,7 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill{
   display:flex;
   align-items:center;
   justify-content:center;
+  justify-self:center;
   min-width:0;
   margin:0;
   padding-inline: var(--mm-btn-pad-x);
