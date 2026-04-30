@@ -138,6 +138,16 @@
         });
       }
 
+      let thresholdRafId = 0;
+      function scheduleThresholdUpdate(){
+        if (thresholdRafId) return;
+        thresholdRafId = requestAnimationFrame(() => {
+          thresholdRafId = 0;
+          computeThreshold();
+          update();
+        });
+      }
+
       function enforceNavOrder(){
         const lists = hdr.querySelectorAll('.header-nav-list');
         if (!lists.length) return;
@@ -302,7 +312,7 @@
       }
 
       let t = null;
-      const scheduleFromMutation = () => {
+      const scheduleFullUpdateFromMutation = () => {
         clearTimeout(t);
         t = setTimeout(() => {
           scheduleUpdate(true);
@@ -317,7 +327,7 @@
           )
         );
         if (!relevant) return;
-        scheduleFromMutation();
+        scheduleFullUpdateFromMutation();
       });
       headerMO.observe(hdr, {childList:true, subtree:true});
       setTimeout(() => headerMO.disconnect(), 4000);
@@ -325,26 +335,24 @@
       if (page){
         const pageMO = new MutationObserver((mutations) => {
           const relevant = mutations.some((m) => {
+            if (m.type !== 'childList') return false;
             if (!(m.target instanceof Element)) return false;
             if (!page.contains(m.target)) return false;
 
-            if (m.type === 'childList'){
-              if (m.target.id === 'page') return true;
-              if (m.target.closest('section')) return true;
-              return Array.from(m.addedNodes).some((n) => n instanceof Element && (n.tagName === 'SECTION' || !!n.querySelector('section')));
-            }
+            const sectionNodeChanged = (node) => node instanceof Element &&
+              (node.tagName === 'SECTION' || !!node.querySelector('section'));
 
-            if (m.type === 'attributes'){
-              return m.target.tagName === 'SECTION' || !!m.target.closest('section');
-            }
-
-            return false;
+            return (
+              sectionNodeChanged(m.target) ||
+              Array.from(m.addedNodes).some(sectionNodeChanged) ||
+              Array.from(m.removedNodes).some(sectionNodeChanged)
+            );
           });
           if (!relevant) return;
-          scheduleFromMutation();
+          scheduleThresholdUpdate();
         });
 
-        pageMO.observe(page, {childList:true, subtree:true, attributes:true, attributeFilter:['class', 'style']});
+        pageMO.observe(page, {childList:true, subtree:true});
       }
     });
   }
