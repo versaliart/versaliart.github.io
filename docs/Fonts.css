@@ -600,6 +600,16 @@ a.sqs-button-element--tertiary,
   text-transform: inherit !important;
 }
 
+/* Primary + secondary shape: rounded rectangle (not full pill) */
+a.sqs-button-element--primary,
+button.sqs-button-element--primary,
+.sqs-button-element--primary,
+a.sqs-button-element--secondary,
+button.sqs-button-element--secondary,
+.sqs-button-element--secondary {
+  border-radius: 10px !important;
+}
+
 
 /* Ensure component-layer paint also inherits the bite silhouette */
 a.sqs-button-element--primary::before,
