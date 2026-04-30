@@ -105,7 +105,6 @@
           if (window.scrollY >= revealAt){
             if (!readyToShow){
               hideHeader();
-              scheduleUpdate(true);
               return;
             }
             showHeader();
@@ -114,7 +113,6 @@
         } else {
           if (!readyToShow){
             hideHeader();
-            scheduleUpdate(true);
             return;
           }
           showHeader();
