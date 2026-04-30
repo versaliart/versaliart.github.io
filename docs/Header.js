@@ -116,6 +116,7 @@
         rafId = requestAnimationFrame(() => {
           rafId = 0;
           if (full){
+            enforceNavOrder();
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
@@ -156,6 +157,29 @@
         upsert('mm-mobile-pill-right', last);
       }
 
+      function enforceNavOrder(){
+        const lists = hdr.querySelectorAll('.header-nav-list');
+        if (!lists.length) return;
+
+        lists.forEach((list) => {
+          const items = Array.from(list.querySelectorAll(':scope > .header-nav-item'));
+          if (!items.length) return;
+
+          const homeItem = items.find((item) => {
+            const a = item.querySelector('a');
+            return a && (a.textContent || '').trim().toLowerCase() === 'home';
+          });
+
+          const aboutItem = items.find((item) => {
+            const a = item.querySelector('a');
+            return a && (a.textContent || '').trim().toLowerCase() === 'about';
+          });
+
+          if (homeItem) list.prepend(homeItem);
+          if (aboutItem) list.append(aboutItem);
+        });
+      }
+
       function syncEdgePad(){
         if (window.matchMedia('(max-width: 767px)').matches){
           document.documentElement.style.setProperty('--mm-edge-pad', '0px');
@@ -172,6 +196,7 @@
         document.documentElement.style.setProperty('--mm-edge-pad', (vGap + fudge) + 'px');
       }
 
+      enforceNavOrder();
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
