@@ -238,6 +238,8 @@
         if (window.matchMedia('(max-width: 767px)').matches){
           hdr.style.removeProperty('width');
           document.documentElement.style.removeProperty('--mm-bar-w');
+          headerWidthCache = 0;
+          hasMeasuredWidth = false;
           return;
         }
 
@@ -300,7 +302,14 @@
       }
 
       let t = null;
-      const mo = new MutationObserver((mutations) => {
+      const scheduleFromMutation = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          scheduleUpdate(true);
+        }, 100);
+      };
+
+      const headerMO = new MutationObserver((mutations) => {
         const relevant = mutations.some((m) =>
           m.type === 'childList' && (
             m.target === hdr ||
@@ -308,13 +317,35 @@
           )
         );
         if (!relevant) return;
-        clearTimeout(t);
-        t = setTimeout(() => {
-          scheduleUpdate(true);
-        }, 100);
+        scheduleFromMutation();
       });
-      mo.observe(hdr, {childList:true, subtree:true});
-      setTimeout(() => mo.disconnect(), 4000);
+      headerMO.observe(hdr, {childList:true, subtree:true});
+      setTimeout(() => headerMO.disconnect(), 4000);
+
+      if (page){
+        const pageMO = new MutationObserver((mutations) => {
+          const relevant = mutations.some((m) => {
+            if (!(m.target instanceof Element)) return false;
+            if (!page.contains(m.target)) return false;
+
+            if (m.type === 'childList'){
+              if (m.target.id === 'page') return true;
+              if (m.target.closest('section')) return true;
+              return Array.from(m.addedNodes).some((n) => n instanceof Element && (n.tagName === 'SECTION' || !!n.querySelector('section')));
+            }
+
+            if (m.type === 'attributes'){
+              return m.target.tagName === 'SECTION' || !!m.target.closest('section');
+            }
+
+            return false;
+          });
+          if (!relevant) return;
+          scheduleFromMutation();
+        });
+
+        pageMO.observe(page, {childList:true, subtree:true, attributes:true, attributeFilter:['class', 'style']});
+      }
     });
   }
 
