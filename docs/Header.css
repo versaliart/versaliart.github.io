@@ -278,9 +278,11 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill{
   display:flex;
   align-items:center;
   justify-content:center;
+  justify-self:center;
   min-width:0;
   margin:0;
-  padding:0 clamp(.9rem,  .8rem + .6vw, 1.4rem);
+  padding-inline: var(--mm-btn-pad-x);
+  inline-size: var(--mm-pill-w, auto);
   border-radius: calc(var(--mm-radius) - 1px);
   font-weight:700;
   line-height:1;

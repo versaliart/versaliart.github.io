@@ -113,6 +113,7 @@
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
+            syncCustomNavPillWidth();
             applyMobileFrame();
           }
           update();
@@ -181,6 +182,26 @@
         }
       }
 
+
+      function syncCustomNavPillWidth(){
+        const nav = hdr.querySelector('.mm-custom-nav');
+        if (!nav) return;
+        const pills = Array.from(nav.querySelectorAll('.mm-pill'));
+        if (!pills.length) return;
+
+        nav.style.setProperty('--mm-pill-w', 'auto');
+        pills.forEach((pill) => { pill.style.removeProperty('inline-size'); });
+
+        let maxPillWidth = 0;
+        pills.forEach((pill) => {
+          const rect = pill.getBoundingClientRect();
+          const totalWidth = Math.max(0, rect.width);
+          maxPillWidth = Math.max(maxPillWidth, totalWidth);
+        });
+
+        nav.style.setProperty('--mm-pill-w', `${Math.ceil(maxPillWidth)}px`);
+      }
+
       function syncEdgePad(){
         if (window.matchMedia('(max-width: 767px)').matches){
           document.documentElement.style.setProperty('--mm-edge-pad', '0px');
@@ -202,20 +223,30 @@
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
+      syncCustomNavPillWidth();
       applyMobileFrame();
       update();
 
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
-      window.addEventListener('resize', () => scheduleUpdate(true), {passive:true});
+      window.addEventListener('resize', () => {
+        scheduleUpdate(true);
+        syncCustomNavPillWidth();
+      }, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => scheduleUpdate(true)).catch(()=>{});
+        document.fonts.ready.then(() => {
+          scheduleUpdate(true);
+          syncCustomNavPillWidth();
+        }).catch(()=>{});
       }
 
       let t = null;
       const mo = new MutationObserver(() => {
         clearTimeout(t);
-        t = setTimeout(() => scheduleUpdate(true), 100);
+        t = setTimeout(() => {
+          scheduleUpdate(true);
+          syncCustomNavPillWidth();
+        }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);
