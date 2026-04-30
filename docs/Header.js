@@ -75,6 +75,10 @@
       }
 
       let revealAt = 0;
+      let hasMeasuredWidth = false;
+      let fontsSettled = !document.fonts || !document.fonts.ready;
+      let pillWidthCache = 0;
+      let headerWidthCache = 0;
 
       function computeThreshold(){
         if (!isHome()){
@@ -94,10 +98,23 @@
       }
 
       function update(){
+        const needsStableDesktopWidth = !window.matchMedia('(max-width: 767px)').matches;
+        const readyToShow = !needsStableDesktopWidth || (hasMeasuredWidth && fontsSettled);
+
         if (isHome()){
-          if (window.scrollY >= revealAt) showHeader();
+          if (window.scrollY >= revealAt){
+            if (!readyToShow){
+              hideHeader();
+              return;
+            }
+            showHeader();
+          }
           else hideHeader();
         } else {
+          if (!readyToShow){
+            hideHeader();
+            return;
+          }
           showHeader();
         }
       }
@@ -195,17 +212,22 @@
         const pills = Array.from(nav.querySelectorAll('.mm-pill'));
         if (!pills.length) return;
 
-        nav.style.setProperty('--mm-pill-w', 'auto');
-        pills.forEach((pill) => { pill.style.removeProperty('inline-size'); });
-
+        const prev = pillWidthCache;
+        if (prev <= 0){
+          nav.style.setProperty('--mm-pill-w', 'auto');
+          pills.forEach((pill) => { pill.style.removeProperty('inline-size'); });
+        }
         let maxPillWidth = 0;
         pills.forEach((pill) => {
           const rect = pill.getBoundingClientRect();
           const totalWidth = Math.max(0, rect.width);
           maxPillWidth = Math.max(maxPillWidth, totalWidth);
         });
-
-        nav.style.setProperty('--mm-pill-w', `${Math.ceil(maxPillWidth)}px`);
+        const next = Math.ceil(maxPillWidth);
+        if (next > 0 && next !== prev){
+          nav.style.setProperty('--mm-pill-w', `${next}px`);
+          pillWidthCache = next;
+        }
       }
 
 
@@ -221,9 +243,13 @@
 
         const navRect = nav.getBoundingClientRect();
         const width = Math.ceil(navRect.width);
-        if (width > 0){
+        if (width > 0 && width !== headerWidthCache){
           hdr.style.width = width + 'px';
           document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
+          headerWidthCache = width;
+        }
+        if (width > 0){
+          hasMeasuredWidth = true;
         }
       }
 
@@ -256,28 +282,38 @@
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
       window.addEventListener('resize', () => {
         scheduleUpdate(true);
-        syncCustomNavPillWidth();
-        syncHeaderWidth();
       }, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => {
+        setTimeout(() => {
+          if (fontsSettled) return;
+          fontsSettled = true;
           scheduleUpdate(true);
-          syncCustomNavPillWidth();
-          syncHeaderWidth();
+        }, 1500);
+        document.fonts.ready.then(() => {
+          fontsSettled = true;
+          pillWidthCache = 0;
+          headerWidthCache = 0;
+          hasMeasuredWidth = false;
+          scheduleUpdate(true);
         }).catch(()=>{});
       }
 
       let t = null;
-      const mo = new MutationObserver(() => {
+      const mo = new MutationObserver((mutations) => {
+        const relevant = mutations.some((m) =>
+          m.type === 'childList' && (
+            m.target === hdr ||
+            (m.target instanceof Element && m.target.classList.contains('mm-custom-nav'))
+          )
+        );
+        if (!relevant) return;
         clearTimeout(t);
         t = setTimeout(() => {
           scheduleUpdate(true);
-          syncCustomNavPillWidth();
-          syncHeaderWidth();
         }, 100);
       });
-      mo.observe(document.body, {childList:true, subtree:true});
+      mo.observe(hdr, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);
     });
   }
