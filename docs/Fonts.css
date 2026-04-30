@@ -564,6 +564,24 @@ a.sqs-button-element--tertiary,
   text-transform: inherit !important;
 }
 
+
+
+/* Button styles #1 and #2: invert pill corner direction (concave side cut-ins) */
+a.sqs-button-element--primary,
+button.sqs-button-element--primary,
+.sqs-button-element--primary,
+a.sqs-button-element--secondary,
+button.sqs-button-element--secondary,
+.sqs-button-element--secondary {
+  border-radius: 0 !important;
+  --btn-notch-size: 1.15em;
+  -webkit-mask:
+    radial-gradient(circle var(--btn-notch-size) at left center, transparent 99%, #000 100%) left / 51% 100% no-repeat,
+    radial-gradient(circle var(--btn-notch-size) at right center, transparent 99%, #000 100%) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle var(--btn-notch-size) at left center, transparent 99%, #000 100%) left / 51% 100% no-repeat,
+    radial-gradient(circle var(--btn-notch-size) at right center, transparent 99%, #000 100%) right / 51% 100% no-repeat;
+}
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
 a.sqs-button-element--secondary .sqs-button-label {
