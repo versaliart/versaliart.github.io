@@ -618,7 +618,6 @@ button.sqs-button-element--secondary,
   -webkit-mask: var(--btn-mask);
   mask: var(--btn-mask);
 }
-
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
 a.sqs-button-element--secondary .sqs-button-label {
