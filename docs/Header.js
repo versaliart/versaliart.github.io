@@ -189,7 +189,8 @@
         const pills = Array.from(nav.querySelectorAll('.mm-pill'));
         if (!pills.length) return;
 
-        pills.forEach((pill) => { pill.style.inlineSize = 'auto'; });
+        nav.style.setProperty('--mm-pill-w', 'auto');
+        pills.forEach((pill) => { pill.style.removeProperty('inline-size'); });
 
         let maxPillWidth = 0;
         pills.forEach((pill) => {
