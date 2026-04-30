@@ -610,69 +610,14 @@ button.sqs-button-element--secondary,
   min-height: clamp(3.2rem, 5.2vw, 4rem) !important;
   padding: clamp(.7rem, 1.3vw, .95rem) clamp(2.2rem, 5vw, 3.5rem) !important;
   line-height: 1.1 !important;
-
-  /* Curved concave side profile (polygon approximation for broad support) */
-  --btn-inset-x: 12%;
-  --btn-curve-y1: 2%;
-  --btn-curve-y2: 10%;
-  --btn-curve-y3: 24%;
-  --btn-curve-y4: 40%;
-  --btn-mid-y: 50%;
-  --btn-curve-y5: 60%;
-  --btn-curve-y6: 76%;
-  --btn-curve-y7: 90%;
-  --btn-curve-y8: 98%;
-
-  -webkit-clip-path: polygon(
-    0 var(--btn-mid-y),
-    1% var(--btn-curve-y4),
-    3% var(--btn-curve-y3),
-    6% var(--btn-curve-y2),
-    9% var(--btn-curve-y1),
-    var(--btn-inset-x) 0,
-    calc(100% - var(--btn-inset-x)) 0,
-    91% var(--btn-curve-y1),
-    94% var(--btn-curve-y2),
-    97% var(--btn-curve-y3),
-    99% var(--btn-curve-y4),
-    100% var(--btn-mid-y),
-    99% var(--btn-curve-y5),
-    97% var(--btn-curve-y6),
-    94% var(--btn-curve-y7),
-    91% var(--btn-curve-y8),
-    calc(100% - var(--btn-inset-x)) 100%,
-    var(--btn-inset-x) 100%,
-    9% var(--btn-curve-y8),
-    6% var(--btn-curve-y7),
-    3% var(--btn-curve-y6),
-    1% var(--btn-curve-y5)
-  );
-  clip-path: polygon(
-    0 var(--btn-mid-y),
-    1% var(--btn-curve-y4),
-    3% var(--btn-curve-y3),
-    6% var(--btn-curve-y2),
-    9% var(--btn-curve-y1),
-    var(--btn-inset-x) 0,
-    calc(100% - var(--btn-inset-x)) 0,
-    91% var(--btn-curve-y1),
-    94% var(--btn-curve-y2),
-    97% var(--btn-curve-y3),
-    99% var(--btn-curve-y4),
-    100% var(--btn-mid-y),
-    99% var(--btn-curve-y5),
-    97% var(--btn-curve-y6),
-    94% var(--btn-curve-y7),
-    91% var(--btn-curve-y8),
-    calc(100% - var(--btn-inset-x)) 100%,
-    var(--btn-inset-x) 100%,
-    9% var(--btn-curve-y8),
-    6% var(--btn-curve-y7),
-    3% var(--btn-curve-y6),
-    1% var(--btn-curve-y5)
-  );
+  --btn-concave-radius: clamp(1.9rem, 4.4vw, 2.8rem);
+  --btn-mask: 
+    radial-gradient(circle var(--btn-concave-radius) at left 50%, transparent 99%, #000 100%) left/51% 100% no-repeat,
+    radial-gradient(circle var(--btn-concave-radius) at right 50%, transparent 99%, #000 100%) right/51% 100% no-repeat,
+    linear-gradient(#000 0 0);
+  -webkit-mask: var(--btn-mask);
+  mask: var(--btn-mask);
 }
-
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
 a.sqs-button-element--secondary .sqs-button-label {
