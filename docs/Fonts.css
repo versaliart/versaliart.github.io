@@ -564,6 +564,32 @@ a.sqs-button-element--tertiary,
   text-transform: inherit !important;
 }
 
+
+
+/* Button #1 and #2: concave scalloped sides (leave #3/tertiary unchanged) */
+a.sqs-button-element--primary,
+.sqs-button-element--primary,
+button.sqs-button-element--primary,
+a.sqs-button-element--secondary,
+.sqs-button-element--secondary,
+button.sqs-button-element--secondary {
+  --scallop-depth: 14px;
+  --scallop-radius: 50%;
+  border-radius: 0 !important;
+  -webkit-mask:
+    linear-gradient(#000 0 0) center/ calc(100% - (var(--scallop-depth) * 2)) 100% no-repeat,
+    radial-gradient(circle at left 25%,  transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) left center / 50% 100% no-repeat,
+    radial-gradient(circle at left 75%,  transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) left center / 50% 100% no-repeat,
+    radial-gradient(circle at right 25%, transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) right center / 50% 100% no-repeat,
+    radial-gradient(circle at right 75%, transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) right center / 50% 100% no-repeat;
+  mask:
+    linear-gradient(#000 0 0) center/ calc(100% - (var(--scallop-depth) * 2)) 100% no-repeat,
+    radial-gradient(circle at left 25%,  transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) left center / 50% 100% no-repeat,
+    radial-gradient(circle at left 75%,  transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) left center / 50% 100% no-repeat,
+    radial-gradient(circle at right 25%, transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) right center / 50% 100% no-repeat,
+    radial-gradient(circle at right 75%, transparent var(--scallop-depth), #000 calc(var(--scallop-depth) + 1px)) right center / 50% 100% no-repeat;
+}
+
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
 a.sqs-button-element--secondary .sqs-button-label {
