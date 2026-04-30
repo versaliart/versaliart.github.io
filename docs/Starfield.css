@@ -41,6 +41,7 @@ body.has-starfield{
   --avoid-vert-width-deg: 45;
 
   /* glow + art */
+  --min-blur: 0.18rem;
   --max-blur: 0.5rem;
   --star-color: #5D4E98;
   --star-glow-color: rgba(60,51,97,0.9);

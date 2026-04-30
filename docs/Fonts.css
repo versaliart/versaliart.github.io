@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------*/
-/* FONT DECLARATIONS v1.5 */
+/* FONT DECLARATIONS v1.6 */
 /*----------------------------------------------------------------------*/
 
 /* ------------------------------
@@ -596,14 +596,14 @@ a.sqs-button-element--tertiary,
   text-transform: inherit !important;
 }
 
-/* Button styles #1 and #2: ticket-like concave side profile */
+/* Button styles #1 and #2: ticket-like concave side profile (shape only) */
 a.sqs-button-element--primary,
 button.sqs-button-element--primary,
 .sqs-button-element--primary,
 a.sqs-button-element--secondary,
 button.sqs-button-element--secondary,
 .sqs-button-element--secondary {
-  border-radius: 0 !important;
+  position: relative;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -615,8 +615,36 @@ button.sqs-button-element--secondary,
     radial-gradient(circle var(--btn-side-bite) at left 50%, transparent 99%, #000 100%) left/51% 100% no-repeat,
     radial-gradient(circle var(--btn-side-bite) at right 50%, transparent 99%, #000 100%) right/51% 100% no-repeat,
     linear-gradient(#000 0 0);
-  -webkit-mask: var(--btn-mask);
-  mask: var(--btn-mask);
+
+  /* Primary implementation */
+  -webkit-mask: var(--btn-shape);
+  mask: var(--btn-shape);
+
+  /* Fallback path for browsers/layers where mask fails */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(50% - var(--btn-side-bite)),
+    calc(100% - var(--btn-side-bite)) 50%,
+    100% calc(50% + var(--btn-side-bite)),
+    100% 100%,
+    0 100%,
+    0 calc(50% + var(--btn-side-bite)),
+    var(--btn-side-bite) 50%,
+    0 calc(50% - var(--btn-side-bite))
+  );
+}
+
+/* Ensure pseudo paint layer follows same shape, still no colors */
+a.sqs-button-element--primary::before,
+button.sqs-button-element--primary::before,
+.sqs-button-element--primary::before,
+a.sqs-button-element--secondary::before,
+button.sqs-button-element--secondary::before,
+.sqs-button-element--secondary::before {
+  -webkit-mask: var(--btn-shape);
+  mask: var(--btn-shape);
+  clip-path: inherit;
 }
 
 
@@ -1059,6 +1087,15 @@ body:not(.sqs-edit-mode) .video-block iframe {
   border-radius: 1rem; /* match your block radius */
   box-shadow: 0 1.25rem 0.5rem -0.35rem rgba(0, 10, 20, 0.65);
   overflow: visible;
+}
+
+/* Mobile only: widen this specific text box by 20% and allow overflow */
+@media screen and (max-width: 767px) {
+  #block-yui_3_17_2_1_1776188842920_49603 {
+    width: 120% !important;
+    max-width: none !important;
+    overflow: visible !important;
+  }
 }
 
 /* =========================================
