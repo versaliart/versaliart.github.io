@@ -189,19 +189,16 @@
         const pills = Array.from(nav.querySelectorAll('.mm-pill'));
         if (!pills.length) return;
 
-        pills.forEach((pill) => { pill.style.minInlineSize = '0px'; });
+        pills.forEach((pill) => { pill.style.inlineSize = 'auto'; });
 
-        let maxContentWidth = 0;
+        let maxPillWidth = 0;
         pills.forEach((pill) => {
           const rect = pill.getBoundingClientRect();
-          const styles = getComputedStyle(pill);
-          const padLeft = parseFloat(styles.paddingLeft) || 0;
-          const padRight = parseFloat(styles.paddingRight) || 0;
-          const contentWidth = Math.max(0, rect.width - padLeft - padRight);
-          maxContentWidth = Math.max(maxContentWidth, contentWidth);
+          const totalWidth = Math.max(0, rect.width);
+          maxPillWidth = Math.max(maxPillWidth, totalWidth);
         });
 
-        nav.style.setProperty('--mm-pill-content-w', `${Math.ceil(maxContentWidth)}px`);
+        nav.style.setProperty('--mm-pill-w', `${Math.ceil(maxPillWidth)}px`);
       }
 
       function syncEdgePad(){
