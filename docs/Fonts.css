@@ -1076,7 +1076,9 @@ body:not(.sqs-edit-mode) .video-block iframe {
   #block-yui_3_17_2_1_1776188842920_49603 {
     width: 120% !important;
     max-width: none !important;
-    overflow: visible !important;
+
+    position: relative;
+    left: -10%; /* half of the extra 20% */
   }
 }
 
