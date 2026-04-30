@@ -277,14 +277,16 @@ function syncCustomNavPillWidth(){
         const borderR = parseFloat(hs.borderRightWidth) || 0;
 
         const width = Math.ceil(contentWidth);
-        if (width > 0 && width !== headerWidthCache){
-          hdr.style.width = width + 'px';
-          document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
-          headerWidthCache = width;
-        }
+          if (finalWidth > 0 && finalWidth !== headerWidthCache){
+            hdr.style.width = finalWidth + 'px';
+            document.documentElement.style.setProperty('--mm-bar-w', finalWidth + 'px');
+            headerWidthCache = finalWidth;
+          }
         if (width > 0){
           hasMeasuredWidth = true;
         }
+        const maxWidth = Math.floor(window.innerWidth);
+        const finalWidth = Math.min(width, maxWidth);
       }
 
       function syncEdgePad(){
@@ -314,9 +316,27 @@ function syncCustomNavPillWidth(){
       update();
 
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
+      let resizeSettleTimer = null;
+
       window.addEventListener('resize', () => {
+        pillWidthCache = 0;
+        headerWidthCache = 0;
+        hasMeasuredWidth = false;
+
         scheduleUpdate(true);
-      }, {passive:true});
+
+        clearTimeout(resizeSettleTimer);
+        resizeSettleTimer = setTimeout(() => {
+          pillWidthCache = 0;
+          headerWidthCache = 0;
+          hasMeasuredWidth = false;
+
+          syncCustomNavPillWidth();
+          syncHeaderWidth();
+          applyMobileFrame();
+          update();
+        }, 250);
+        }, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
         setTimeout(() => {
