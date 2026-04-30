@@ -361,6 +361,7 @@
         edgeFade: Math.max(1, getNumVar(s, '--edge-fade-width', 7) * remPx()),
         opacityMin: clamp01(getNumVar(s, '--opacity-min', 0.15)),
         opacityMax: clamp01(getNumVar(s, '--opacity-max', 1.0)),
+        blurMin: Math.max(0, getNumVar(s, '--min-blur', 0.10) * remPx()),
         blurMax: Math.max(0, getNumVar(s, '--max-blur', 0.22) * remPx()),
         twinkleMin: Math.max(0.01, getNumVar(s, '--twinkle-min', 0.5)),
         twinkleMax: Math.max(0.02, getNumVar(s, '--twinkle-max', 2.0)),
@@ -412,7 +413,8 @@
       const baseOpacity = rand(cfg.opacityMin, cfg.opacityMax);
       const twDur = rand(cfg.twinkleMin, cfg.twinkleMax);
       const twPhase = Math.random() * Math.PI * 2;
-      const blurPx = rand(0, cfg.blurMax);
+      const blurRangeMax = Math.max(cfg.blurMin, cfg.blurMax);
+      const blurPx = rand(cfg.blurMin, blurRangeMax);
       const speed = rand(cfg.driftMin, cfg.driftMax);
 
       el.style.color = cfg.starColor;
