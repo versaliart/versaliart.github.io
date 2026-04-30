@@ -113,6 +113,7 @@
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
+            syncCustomNavPillWidth();
             applyMobileFrame();
           }
           update();
@@ -181,6 +182,28 @@
         }
       }
 
+
+      function syncCustomNavPillWidth(){
+        const nav = hdr.querySelector('.mm-custom-nav');
+        if (!nav) return;
+        const pills = Array.from(nav.querySelectorAll('.mm-pill'));
+        if (!pills.length) return;
+
+        pills.forEach((pill) => { pill.style.minInlineSize = '0px'; });
+
+        let maxContentWidth = 0;
+        pills.forEach((pill) => {
+          const rect = pill.getBoundingClientRect();
+          const styles = getComputedStyle(pill);
+          const padLeft = parseFloat(styles.paddingLeft) || 0;
+          const padRight = parseFloat(styles.paddingRight) || 0;
+          const contentWidth = Math.max(0, rect.width - padLeft - padRight);
+          maxContentWidth = Math.max(maxContentWidth, contentWidth);
+        });
+
+        nav.style.setProperty('--mm-pill-content-w', `${Math.ceil(maxContentWidth)}px`);
+      }
+
       function syncEdgePad(){
         if (window.matchMedia('(max-width: 767px)').matches){
           document.documentElement.style.setProperty('--mm-edge-pad', '0px');
@@ -202,20 +225,30 @@
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
+      syncCustomNavPillWidth();
       applyMobileFrame();
       update();
 
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
-      window.addEventListener('resize', () => scheduleUpdate(true), {passive:true});
+      window.addEventListener('resize', () => {
+        scheduleUpdate(true);
+        syncCustomNavPillWidth();
+      }, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => scheduleUpdate(true)).catch(()=>{});
+        document.fonts.ready.then(() => {
+          scheduleUpdate(true);
+          syncCustomNavPillWidth();
+        }).catch(()=>{});
       }
 
       let t = null;
       const mo = new MutationObserver(() => {
         clearTimeout(t);
-        t = setTimeout(() => scheduleUpdate(true), 100);
+        t = setTimeout(() => {
+          scheduleUpdate(true);
+          syncCustomNavPillWidth();
+        }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);
