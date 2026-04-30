@@ -44,7 +44,7 @@ header#header[data-test="header"]{
   z-index: 1200;
 
   height: var(--mm-header-h);
-  width: min(92vw, clamp(26rem, 20rem + 12vw, 44rem));
+  width: min(96vw, clamp(34rem, 28rem + 20vw, 58rem));
   border-radius: var(--mm-radius);
   background: var(--mm-bg);
   -webkit-backdrop-filter: blur(var(--mm-blur));
@@ -52,7 +52,7 @@ header#header[data-test="header"]{
   border: 1px solid rgba(255,255,255,.18);
   box-shadow: var(--mm-shadow);
   box-sizing: border-box;
-  overflow: visible;
+  overflow: hidden;
 
   /* fade+drop animation */
   opacity: 0;
@@ -101,9 +101,9 @@ header#header .header-nav-list{
 header#header .header-nav-list{
   display: grid !important;
   grid-template-columns: minmax(var(--mm-btn-min), 1fr) auto minmax(var(--mm-btn-min), 1fr) auto minmax(var(--mm-btn-min), 1fr);
-  align-items: center !important;
+  align-items: stretch !important;
   column-gap: clamp(.45rem, .3rem + .6vw, .95rem);
-  padding-inline: clamp(.45rem, .3rem + .6vw, .95rem) !important;
+  padding: 0 clamp(.45rem, .3rem + .6vw, .95rem) !important;
 }
 header#header .header-nav-list::before,
 header#header .header-nav-list::after{
@@ -115,16 +115,23 @@ header#header .header-nav-list::after{
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.3));
   pointer-events: none;
 }
-header#header .header-nav-list::before{ grid-column: 2; }
-header#header .header-nav-list::after{ grid-column: 4; }
+header#header .header-nav-list::before{ grid-column: 2; place-self: center; }
+header#header .header-nav-list::after{ grid-column: 4; place-self: center; }
 
 header#header .header-nav-list > .header-nav-item[data-mm-slot='1']{ grid-column: 1; }
 header#header .header-nav-list > .header-nav-item[data-mm-slot='2']{ grid-column: 3; }
 header#header .header-nav-list > .header-nav-item[data-mm-slot='3']{ grid-column: 5; }
+header#header .header-nav-list > .header-nav-item{
+  display: flex !important;
+  align-items: stretch !important;
+  height: 100% !important;
+}
 
 /* Pill visuals (unchanged) */
 header#header .header-nav-list > .header-nav-item > a{
   width: 100%;
+  height: 100%;
+  box-sizing: border-box;
   min-width: var(--mm-btn-min);
   padding-block: var(--mm-btn-pad-y);
   padding-inline: var(--mm-btn-pad-x);
@@ -200,7 +207,7 @@ header#header .header-nav-list > .header-nav-item > a{
   line-height: var(--mm-pill-line) !important; /* 1 → lets padding actually shrink height */
   padding-block: var(--mm-btn-pad-y) !important; /* 0px will now work */
   display: inline-flex !important;
-  align-items: center !important;
+  align-items: stretch !important;
   justify-content: center !important;
 }
 
