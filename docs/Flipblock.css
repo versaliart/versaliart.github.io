@@ -136,7 +136,7 @@
   overflow: visible;
 }
 
-.sqs-block.html-block.flip-top .face.front.flip-text-face{
+.sqs-block.html-block.flip-top .face.front.flip-text-face .face-inner {
   text-shadow: 1px 8px 12px #000000;
 }
 
