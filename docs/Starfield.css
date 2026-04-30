@@ -45,7 +45,7 @@ body.has-starfield{
   --star-color: #5D4E98;
   --star-glow-color: rgba(93,78,152,0.9);
   --star-glow-blur: 20px;
-  --star-glow-spread: 4px;
+  --star-glow-spread: 14px;
   --star-url: url("https://versaliart.github.io/MMsparkle.svg");
 
   --jitter-fallback-mult: 2;
@@ -91,12 +91,26 @@ body.has-starfield{
   -webkit-mask: var(--star-url) center / contain no-repeat;
           mask: var(--star-url) center / contain no-repeat;
 
-  filter: drop-shadow(0 0 var(--blur, 0) currentColor);
-  -webkit-box-shadow: 0 0 var(--star-glow-blur) var(--star-glow-spread) var(--star-glow-color);
-     -moz-box-shadow: 0 0 var(--star-glow-blur) var(--star-glow-spread) var(--star-glow-color);
-          box-shadow: 0 0 var(--star-glow-blur) var(--star-glow-spread) var(--star-glow-color);
+  pointer-events: none;
+  z-index: 1;
   will-change: transform, opacity;
   animation: none;
+}
+
+.shape-edge-sparkles .star::before{
+  content: '';
+  position: absolute;
+  inset: calc(var(--star-glow-spread) * -1);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    var(--star-glow-color) 0%,
+    color-mix(in srgb, var(--star-glow-color) 70%, transparent) 45%,
+    transparent 100%
+  );
+  filter: blur(var(--blur, var(--star-glow-blur)));
+  pointer-events: none;
+  z-index: -1;
 }
 
 @media (prefers-reduced-motion: reduce){
