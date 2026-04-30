@@ -132,12 +132,8 @@
 }
 
 
-.sqs-block.html-block.flip-top .face{
-  overflow: visible;
-}
-
-.sqs-block.html-block.flip-top .face.front.flip-text-face{
-  filter: drop-shadow(1px 8px 6px #000000);
+.sqs-block.html-block.flip-top .face.front.flip-text-face .face-inner{
+  filter: drop-shadow(1px 8px 12px #000000);
 }
 
 /* Right text half shows the right side */
