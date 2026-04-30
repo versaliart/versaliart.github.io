@@ -138,6 +138,16 @@
         });
       }
 
+      let thresholdRafId = 0;
+      function scheduleThresholdUpdate(){
+        if (thresholdRafId) return;
+        thresholdRafId = requestAnimationFrame(() => {
+          thresholdRafId = 0;
+          computeThreshold();
+          update();
+        });
+      }
+
       function enforceNavOrder(){
         const lists = hdr.querySelectorAll('.header-nav-list');
         if (!lists.length) return;
@@ -238,6 +248,8 @@
         if (window.matchMedia('(max-width: 767px)').matches){
           hdr.style.removeProperty('width');
           document.documentElement.style.removeProperty('--mm-bar-w');
+          headerWidthCache = 0;
+          hasMeasuredWidth = false;
           return;
         }
 
@@ -300,7 +312,14 @@
       }
 
       let t = null;
-      const mo = new MutationObserver((mutations) => {
+      const scheduleFullUpdateFromMutation = () => {
+        clearTimeout(t);
+        t = setTimeout(() => {
+          scheduleUpdate(true);
+        }, 100);
+      };
+
+      const headerMO = new MutationObserver((mutations) => {
         const relevant = mutations.some((m) =>
           m.type === 'childList' && (
             m.target === hdr ||
@@ -308,13 +327,33 @@
           )
         );
         if (!relevant) return;
-        clearTimeout(t);
-        t = setTimeout(() => {
-          scheduleUpdate(true);
-        }, 100);
+        scheduleFullUpdateFromMutation();
       });
-      mo.observe(hdr, {childList:true, subtree:true});
-      setTimeout(() => mo.disconnect(), 4000);
+      headerMO.observe(hdr, {childList:true, subtree:true});
+      setTimeout(() => headerMO.disconnect(), 4000);
+
+      if (page){
+        const pageMO = new MutationObserver((mutations) => {
+          const relevant = mutations.some((m) => {
+            if (m.type !== 'childList') return false;
+            if (!(m.target instanceof Element)) return false;
+            if (!page.contains(m.target)) return false;
+
+            const sectionNodeChanged = (node) => node instanceof Element &&
+              (node.tagName === 'SECTION' || !!node.querySelector('section'));
+
+            return (
+              sectionNodeChanged(m.target) ||
+              Array.from(m.addedNodes).some(sectionNodeChanged) ||
+              Array.from(m.removedNodes).some(sectionNodeChanged)
+            );
+          });
+          if (!relevant) return;
+          scheduleThresholdUpdate();
+        });
+
+        pageMO.observe(page, {childList:true, subtree:true});
+      }
     });
   }
 
