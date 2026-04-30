@@ -272,7 +272,7 @@
         const borderL = parseFloat(hs.borderLeftWidth) || 0;
         const borderR = parseFloat(hs.borderRightWidth) || 0;
 
-        const width = Math.ceil(contentWidth);
+        const width = Math.ceil(contentWidth + borderL + borderR);
         if (width > 0 && width !== headerWidthCache){
           hdr.style.width = width + 'px';
           document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
