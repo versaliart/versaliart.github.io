@@ -314,9 +314,25 @@ function syncCustomNavPillWidth(){
       update();
 
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
-      window.addEventListener('resize', () => {
-        scheduleUpdate(true);
-      }, {passive:true});
+let resizeSettleTimer = null;
+
+window.addEventListener('resize', () => {
+  pillWidthCache = 0;
+  headerWidthCache = 0;
+
+  scheduleUpdate(true);
+
+  clearTimeout(resizeSettleTimer);
+  resizeSettleTimer = setTimeout(() => {
+    pillWidthCache = 0;
+    headerWidthCache = 0;
+
+    syncCustomNavPillWidth();
+    syncHeaderWidth();
+    applyMobileFrame();
+    update();
+  }, 250);
+}, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
         setTimeout(() => {
