@@ -75,6 +75,7 @@
       }
 
       let revealAt = 0;
+      let hasMeasuredWidth = false;
 
       function computeThreshold(){
         if (!isHome()){
@@ -95,9 +96,21 @@
 
       function update(){
         if (isHome()){
-          if (window.scrollY >= revealAt) showHeader();
+          if (window.scrollY >= revealAt){
+            if (!hasMeasuredWidth){
+              hideHeader();
+              scheduleUpdate(true);
+              return;
+            }
+            showHeader();
+          }
           else hideHeader();
         } else {
+          if (!hasMeasuredWidth){
+            hideHeader();
+            scheduleUpdate(true);
+            return;
+          }
           showHeader();
         }
       }
@@ -224,6 +237,7 @@
         if (width > 0){
           hdr.style.width = width + 'px';
           document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
+          hasMeasuredWidth = true;
         }
       }
 
@@ -256,15 +270,11 @@
       window.addEventListener('scroll', () => scheduleUpdate(false), {passive:true});
       window.addEventListener('resize', () => {
         scheduleUpdate(true);
-        syncCustomNavPillWidth();
-        syncHeaderWidth();
       }, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
         document.fonts.ready.then(() => {
           scheduleUpdate(true);
-          syncCustomNavPillWidth();
-          syncHeaderWidth();
         }).catch(()=>{});
       }
 
@@ -273,8 +283,6 @@
         clearTimeout(t);
         t = setTimeout(() => {
           scheduleUpdate(true);
-          syncCustomNavPillWidth();
-          syncHeaderWidth();
         }, 100);
       });
       mo.observe(document.body, {childList:true, subtree:true});
