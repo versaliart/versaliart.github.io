@@ -610,15 +610,32 @@ button.sqs-button-element--secondary,
   min-height: clamp(1.2rem, 3.2vw, 2rem) !important;
   padding: clamp(.7rem, 1.3vw, .95rem) clamp(2.2rem, 5vw, 3.5rem) !important;
   line-height: 1.1 !important;
+
+  /* Shape only (no color declarations) */
   --btn-side-bite: clamp(1.9rem, 4.4vw, 2.8rem);
-  --btn-mask:
+  --btn-shape:
     radial-gradient(circle var(--btn-side-bite) at left 50%, transparent 99%, #000 100%) left/51% 100% no-repeat,
     radial-gradient(circle var(--btn-side-bite) at right 50%, transparent 99%, #000 100%) right/51% 100% no-repeat,
     linear-gradient(#000 0 0);
-  -webkit-mask: var(--btn-mask);
-  mask: var(--btn-mask);
-}
 
+  /* Primary implementation */
+  -webkit-mask: var(--btn-shape);
+  mask: var(--btn-shape);
+
+  /* Fallback path for browsers/layers where mask fails */
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(50% - var(--btn-side-bite)),
+    calc(100% - var(--btn-side-bite)) 50%,
+    100% calc(50% + var(--btn-side-bite)),
+    100% 100%,
+    0 100%,
+    0 calc(50% + var(--btn-side-bite)),
+    var(--btn-side-bite) 50%,
+    0 calc(50% - var(--btn-side-bite))
+  );
+}
 
 /* Ensure component-layer paint also inherits the bite silhouette */
 a.sqs-button-element--primary::before,
@@ -627,8 +644,9 @@ button.sqs-button-element--primary::before,
 a.sqs-button-element--secondary::before,
 button.sqs-button-element--secondary::before,
 .sqs-button-element--secondary::before {
-  -webkit-mask: var(--btn-mask);
-  mask: var(--btn-mask);
+  -webkit-mask: var(--btn-shape);
+  mask: var(--btn-shape);
+  clip-path: inherit;
 }
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
