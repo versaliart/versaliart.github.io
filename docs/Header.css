@@ -100,7 +100,7 @@ header#header .header-nav-list{
 /* Five-slot layout: Work | Sparkle | Contact | Sparkle | About */
 header#header .header-nav-list{
   display: grid !important;
-  grid-template-columns: minmax(var(--mm-btn-min), 1fr) auto minmax(var(--mm-btn-min), 1fr) auto minmax(var(--mm-btn-min), 1fr);
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: stretch !important;
   column-gap: clamp(.45rem, .3rem + .6vw, .95rem);
   padding: 0 clamp(.45rem, .3rem + .6vw, .95rem) !important;
@@ -129,6 +129,8 @@ header#header .header-nav-list > .header-nav-item[data-mm-slot='3']{ grid-column
 header#header .header-nav-list > .header-nav-item{
   display: flex !important;
   align-items: stretch !important;
+  align-self: stretch !important;
+  width: 100% !important;
   height: 100% !important;
   min-height: 0 !important;
 }
@@ -136,13 +138,14 @@ header#header .header-nav-list > .header-nav-item{
 /* Pill visuals (unchanged) */
 header#header .header-nav-list > .header-nav-item > a{
   width: 100%;
-  height: calc(100% - 2px) !important;
-  margin-block: 1px !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
   box-sizing: border-box;
   min-width: var(--mm-btn-min);
   padding-block: var(--mm-btn-pad-y);
   padding-inline: var(--mm-btn-pad-x);
-  border-radius: .5rem; 
+  border-radius: calc(var(--mm-radius) - 1px); 
   font-weight: 700;
   line-height: 1;
   text-decoration: none;
