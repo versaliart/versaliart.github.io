@@ -249,12 +249,30 @@
           hdr.style.removeProperty('width');
           document.documentElement.style.removeProperty('--mm-bar-w');
           headerWidthCache = 0;
-          hasMeasuredWidth = false;
+          hasMeasuredWidth = true;
           return;
         }
 
-        const navRect = nav.getBoundingClientRect();
-        const width = Math.ceil(navRect.width);
+        const kids = Array.from(nav.children);
+        if (!kids.length) return;
+
+        const cs = getComputedStyle(nav);
+        const padL = parseFloat(cs.paddingLeft) || 0;
+        const padR = parseFloat(cs.paddingRight) || 0;
+        const gap = parseFloat(cs.columnGap) || 0;
+
+        let contentWidth = padL + padR;
+        kids.forEach((el) => {
+          const rect = el.getBoundingClientRect();
+          contentWidth += rect.width;
+        });
+        contentWidth += gap * Math.max(0, kids.length - 1);
+
+        const hs = getComputedStyle(hdr);
+        const borderL = parseFloat(hs.borderLeftWidth) || 0;
+        const borderR = parseFloat(hs.borderRightWidth) || 0;
+
+        const width = Math.ceil(contentWidth + borderL + borderR);
         if (width > 0 && width !== headerWidthCache){
           hdr.style.width = width + 'px';
           document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
