@@ -285,6 +285,11 @@
       }, {passive:true});
 
       if (document.fonts && document.fonts.ready) {
+        setTimeout(() => {
+          if (fontsSettled) return;
+          fontsSettled = true;
+          scheduleUpdate(true);
+        }, 1500);
         document.fonts.ready.then(() => {
           fontsSettled = true;
           pillWidthCache = 0;
@@ -296,18 +301,19 @@
 
       let t = null;
       const mo = new MutationObserver((mutations) => {
-        const relevant = mutations.some((m) => {
-          const n = m.target;
-          if (!(n instanceof Element)) return false;
-          return n === hdr || hdr.contains(n) || n.classList.contains('mm-custom-nav');
-        });
+        const relevant = mutations.some((m) =>
+          m.type === 'childList' && (
+            m.target === hdr ||
+            (m.target instanceof Element && m.target.classList.contains('mm-custom-nav'))
+          )
+        );
         if (!relevant) return;
         clearTimeout(t);
         t = setTimeout(() => {
           scheduleUpdate(true);
         }, 100);
       });
-      mo.observe(document.body, {childList:true, subtree:true});
+      mo.observe(hdr, {childList:true, subtree:true});
       setTimeout(() => mo.disconnect(), 4000);
     });
   }
