@@ -596,40 +596,48 @@ a.sqs-button-element--tertiary,
   text-transform: inherit !important;
 }
 
-/* Button styles #1 and #2: ticket-like concave side profile */
+/* Button styles #1 and #2: ticket-like concave side profile (shape only) */
 a.sqs-button-element--primary,
 button.sqs-button-element--primary,
 .sqs-button-element--primary,
 a.sqs-button-element--secondary,
 button.sqs-button-element--secondary,
 .sqs-button-element--secondary {
-  border-radius: 0 !important;
+  position: relative;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+
   min-height: clamp(1.2rem, 3.2vw, 2rem) !important;
   padding: clamp(.7rem, 1.3vw, .95rem) clamp(2.2rem, 5vw, 3.5rem) !important;
   line-height: 1.1 !important;
+
+  /* Shape variables only */
   --btn-side-bite: clamp(1.9rem, 4.4vw, 2.8rem);
-  --btn-mask:
+  --btn-shape:
     radial-gradient(circle var(--btn-side-bite) at left 50%, transparent 99%, #000 100%) left/51% 100% no-repeat,
     radial-gradient(circle var(--btn-side-bite) at right 50%, transparent 99%, #000 100%) right/51% 100% no-repeat,
     linear-gradient(#000 0 0);
-  -webkit-mask: var(--btn-mask);
-  mask: var(--btn-mask);
+
+  /* Keep corners square; silhouette creates the profile */
+  border-radius: 0 !important;
+
+  /* Apply shape only (no color declarations) */
+  -webkit-mask: var(--btn-shape);
+  mask: var(--btn-shape);
 }
 
-
-/* Ensure component-layer paint also inherits the bite silhouette */
+/* Ensure pseudo paint layer follows same shape, still no colors */
 a.sqs-button-element--primary::before,
 button.sqs-button-element--primary::before,
 .sqs-button-element--primary::before,
 a.sqs-button-element--secondary::before,
 button.sqs-button-element--secondary::before,
 .sqs-button-element--secondary::before {
-  -webkit-mask: var(--btn-mask);
-  mask: var(--btn-mask);
+  -webkit-mask: var(--btn-shape);
+  mask: var(--btn-shape);
 }
+
 /* Secondary variant tweaks (matches your intent) */
 a.sqs-button-element--secondary,
 a.sqs-button-element--secondary .sqs-button-label {
