@@ -11,6 +11,7 @@
   --mm-edge-pad:  0px; /*clamp(.125rem, .1rem + .3vw, .5rem);*/
   --mm-btn-pad-y: 0px; /*clamp(.225rem, .2rem + .1vw, .3rem); */
   --mm-btn-pad-x: clamp(.5rem,  .5rem + .6vw, 1rem);
+  --mm-sparkle-gap: clamp(.18rem, .14rem + .25vw, .4rem);
 
   --mm-radius: .75rem;
   --mm-bg: rgba(32,19,67,.52);
@@ -104,7 +105,7 @@ header#header .header-nav-list{
   align-items: stretch !important;
   align-content: stretch !important;
   grid-template-rows: minmax(0, 1fr);
-  column-gap: clamp(.45rem, .3rem + .6vw, .95rem);
+  column-gap: var(--mm-sparkle-gap);
   padding: 0 clamp(.45rem, .3rem + .6vw, .95rem) !important;
 }
 
@@ -269,7 +270,7 @@ header#header[data-test="header"] .mm-custom-nav{
   display:grid;
   grid-template-columns: 1fr auto 1fr auto 1fr;
   align-items:stretch;
-  column-gap: clamp(.45rem, .3rem + .6vw, .95rem);
+  column-gap: var(--mm-sparkle-gap);
   padding:0 clamp(.45rem, .3rem + .6vw, .95rem);
   z-index:3;
 }
@@ -278,9 +279,11 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill{
   display:flex;
   align-items:center;
   justify-content:center;
+  justify-self:center;
   min-width:0;
   margin:0;
-  padding:0 clamp(.9rem,  .8rem + .6vw, 1.4rem);
+  padding-inline: var(--mm-btn-pad-x);
+  inline-size: var(--mm-pill-w, auto);
   border-radius: calc(var(--mm-radius) - 1px);
   font-weight:700;
   line-height:1;
