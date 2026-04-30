@@ -91,19 +91,6 @@
     var lastY = window.scrollY || 0;
     var ticking = false;
     var globalLock = false;
-    var suppressSnapUntil = 0;
-
-    function suppressSnap(ms){
-      suppressSnapUntil = performance.now() + ms;
-    }
-
-    if (window.location.hash) {
-      suppressSnap(1400);
-    }
-
-    window.addEventListener("hashchange", function(){
-      suppressSnap(1400);
-    }, { passive: true });
 
     function log(ctrl){ if (ctrl && ctrl.opts.debug) console.log.apply(console, ["[snap-scroll]"].concat([].slice.call(arguments,1))); }
 
@@ -144,10 +131,7 @@
 
     function onScrollTick(){
       ticking = false;
-      if (performance.now() < suppressSnapUntil) {
-      lastY = window.scrollY || 0;
-      return;
-    }
+
       var y = window.scrollY || 0;
       var dir = y > lastY ? 1 : (y < lastY ? -1 : 0);
       var dy  = Math.abs(y - lastY);
