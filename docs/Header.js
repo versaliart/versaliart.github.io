@@ -257,34 +257,31 @@ function syncCustomNavPillWidth(){
           return;
         }
 
-        const kids = Array.from(nav.children);
-        if (!kids.length) return;
+const kids = Array.from(nav.children);
+if (!kids.length) return;
 
-        const cs = getComputedStyle(nav);
-        const padL = parseFloat(cs.paddingLeft) || 0;
-        const padR = parseFloat(cs.paddingRight) || 0;
-        const gap = parseFloat(cs.columnGap) || 0;
+let left = Infinity;
+let right = -Infinity;
 
-        let contentWidth = padL + padR;
-        kids.forEach((el) => {
-          const rect = el.getBoundingClientRect();
-          contentWidth += rect.width;
-        });
-        contentWidth += gap * Math.max(0, kids.length - 1);
+kids.forEach((el) => {
+  const rect = el.getBoundingClientRect();
+  left = Math.min(left, rect.left);
+  right = Math.max(right, rect.right);
+});
 
-        const hs = getComputedStyle(hdr);
-        const borderL = parseFloat(hs.borderLeftWidth) || 0;
-        const borderR = parseFloat(hs.borderRightWidth) || 0;
+const width = Math.ceil(right - left);
+const maxWidth = Math.max(0, window.innerWidth - 8);
+const finalWidth = Math.min(width, maxWidth);
 
-        const width = Math.ceil(contentWidth);
-        if (width > 0 && width !== headerWidthCache){
-          hdr.style.width = width + 'px';
-          document.documentElement.style.setProperty('--mm-bar-w', width + 'px');
-          headerWidthCache = width;
-        }
-        if (width > 0){
-          hasMeasuredWidth = true;
-        }
+if (finalWidth > 0 && finalWidth !== headerWidthCache){
+  hdr.style.width = finalWidth + 'px';
+  document.documentElement.style.setProperty('--mm-bar-w', finalWidth + 'px');
+  headerWidthCache = finalWidth;
+}
+
+if (finalWidth > 0){
+  hasMeasuredWidth = true;
+}
       }
 
       function syncEdgePad(){
