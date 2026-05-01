@@ -249,13 +249,6 @@ function syncCustomNavPillWidth(){
         const nav = hdr.querySelector('.mm-custom-nav');
         if (!nav) return;
 
-        if (window.matchMedia('(max-width: 767px)').matches){
-          hdr.style.removeProperty('width');
-          document.documentElement.style.removeProperty('--mm-bar-w');
-          headerWidthCache = 0;
-          hasMeasuredWidth = true;
-          return;
-        }
 
 const kids = Array.from(nav.children);
 if (!kids.length) return;
