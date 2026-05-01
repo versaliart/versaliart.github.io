@@ -76,6 +76,23 @@ header#header [data-test="header-dropshadow"]{ display:none !important; }
 header#header .header-actions,
 header#header .header-title{ display:none !important; }
 
+/* Always suppress Squarespace's default hamburger/menu UI.
+   The custom .mm-custom-nav replaces it at all widths. */
+header#header .header-burger,
+header#header .header-menu-toggle,
+header#header [data-test="header-menu-toggle"],
+header#header [data-test="header-menu"],
+header#header .header-menu,
+header#header .header-menu-overlay,
+.header-menu,
+.header-menu-overlay,
+[data-test="header-menu"]{
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* Neutralize wrappers so they don't create positioning contexts */
 header#header .header-inner,
 header#header .header-display-desktop,
@@ -236,18 +253,7 @@ header#header[data-test="header"]{
     text-transform: uppercase !important;
     letter-spacing: .04em;
   }
-
-  /* Hide Squarespace hamburger trigger + overlay only */
-  header#header .header-burger,
-  header#header .header-menu-toggle,
-  header#header [data-test="header-menu-toggle"],
-  .header-menu,
-  .header-menu-overlay,
-  [data-test="header-menu"]{
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-  }
+  
 }
 
 
