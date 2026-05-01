@@ -303,3 +303,72 @@ header#header[data-test="header"] .mm-custom-nav .mm-sparkle{
   background: center / contain no-repeat url('https://versaliart.github.io/MMsparkle.svg');
   filter: drop-shadow(0 1px 1px rgba(0,0,0,.3));
 }
+
+/* Animated glow border for custom header pills */
+header#header[data-test="header"] .mm-custom-nav .mm-pill{
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  --mm-glow-line-color: rgba(255, 255, 255, 0.95);
+  --mm-glow-blur-color: rgba(255, 255, 255, 0.75);
+  --mm-glow-line-thickness: 2px;
+  --mm-glow-blur-size: 8px;
+  --mm-glow-line-length: 18;
+  --mm-glow-speed: 1200ms;
+}
+
+header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-container{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  z-index: -1;
+}
+
+header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-line,
+header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-blur{
+  fill: transparent;
+  stroke-dasharray: var(--mm-glow-line-length) calc(100 - var(--mm-glow-line-length));
+  stroke-dashoffset: 0;
+}
+
+header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-line{
+  stroke: var(--mm-glow-line-color);
+  stroke-width: var(--mm-glow-line-thickness);
+}
+
+header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-blur{
+  stroke: var(--mm-glow-blur-color);
+  stroke-width: var(--mm-glow-blur-size);
+  filter: blur(var(--mm-glow-blur-size));
+}
+
+header#header[data-test="header"] .mm-custom-nav .mm-pill:hover .mm-glow-line,
+header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow-line,
+header#header[data-test="header"] .mm-custom-nav .mm-pill:hover .mm-glow-blur,
+header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow-blur{
+  stroke-dashoffset: -100;
+  transition:
+    stroke-dashoffset var(--mm-glow-speed) ease-in,
+    stroke-dasharray var(--mm-glow-speed) ease-in;
+}
+
+header#header[data-test="header"] .mm-custom-nav .mm-pill:hover .mm-glow-container,
+header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow-container{
+  animation: mm-glow-visibility var(--mm-glow-speed) ease-in;
+}
+
+@keyframes mm-glow-visibility{
+  0%,
+  100%{
+    opacity: 0;
+  }
+
+  25%,
+  75%{
+    opacity: 1;
+  }
+}

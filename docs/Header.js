@@ -42,6 +42,42 @@
       });
       applyMobileFrame();
 
+      function ensurePillGlow(){
+        const pills = Array.from(hdr.querySelectorAll('.mm-custom-nav .mm-pill'));
+        if (!pills.length) return;
+
+        pills.forEach((pill) => {
+          if (pill.querySelector('.mm-glow-container')) return;
+
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.classList.add('mm-glow-container');
+          svg.setAttribute('aria-hidden', 'true');
+          svg.setAttribute('focusable', 'false');
+          svg.setAttribute('viewBox', '0 0 100 100');
+          svg.setAttribute('preserveAspectRatio', 'none');
+
+          const blurRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          blurRect.classList.add('mm-glow-blur');
+
+          const lineRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          lineRect.classList.add('mm-glow-line');
+
+          [blurRect, lineRect].forEach((rect) => {
+            rect.setAttribute('x', '1');
+            rect.setAttribute('y', '1');
+            rect.setAttribute('width', '98');
+            rect.setAttribute('height', '98');
+            rect.setAttribute('pathLength', '100');
+            rect.setAttribute('rx', '12');
+            rect.setAttribute('ry', '12');
+        });
+
+    svg.appendChild(blurRect);
+    svg.appendChild(lineRect);
+    pill.prepend(svg);
+  });
+}
+
       function hideHeader(){
         hdr.classList.remove('mm-visible');
         hdr.setAttribute('aria-hidden','true');
@@ -127,6 +163,7 @@
           if (full){
             enforceNavOrder();
             ensureCustomNav();
+            ensurePillGlow();
             applyPagePadding();
             computeThreshold();
             syncEdgePad();
@@ -295,6 +332,7 @@ if (finalWidth > 0){
 
       enforceNavOrder();
       ensureCustomNav();
+      ensurePillGlow();
       applyPagePadding();
       computeThreshold();
       syncEdgePad();
