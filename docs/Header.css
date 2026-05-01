@@ -331,7 +331,11 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-container{
 header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-line,
 header#header[data-test="header"] .mm-custom-nav .mm-pill .mm-glow-blur{
   fill: transparent;
-  stroke-dasharray: var(--mm-glow-line-length) calc(100 - var(--mm-glow-line-length));
+
+  /* Two visible dashes per full rectangle path:
+     dash + gap = 50, repeated twice across pathLength="100". */
+  stroke-dasharray: var(--mm-glow-line-length) calc(50 - var(--mm-glow-line-length));
+
   stroke-dashoffset: 0;
 }
 
@@ -350,15 +354,15 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:hover .mm-glow-line,
 header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow-line,
 header#header[data-test="header"] .mm-custom-nav .mm-pill:hover .mm-glow-blur,
 header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow-blur{
-  stroke-dashoffset: -100;
+  stroke-dashoffset: -80;
   transition:
-    stroke-dashoffset var(--mm-glow-speed) ease-in,
-    stroke-dasharray var(--mm-glow-speed) ease-in;
+    stroke-dashoffset var(--mm-glow-speed) ease-in-out,
+    stroke-dasharray var(--mm-glow-speed) ease-in-out;
 }
 
 header#header[data-test="header"] .mm-custom-nav .mm-pill:hover .mm-glow-container,
 header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow-container{
-  animation: mm-glow-visibility var(--mm-glow-speed) ease-in;
+  animation: mm-glow-visibility var(--mm-glow-speed) ease-in-out;
 }
 
 @keyframes mm-glow-visibility{
