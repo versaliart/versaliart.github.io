@@ -426,3 +426,52 @@ window.addEventListener('resize', () => {
   if (document.readyState !== 'loading') setup();
   else document.addEventListener('DOMContentLoaded', setup, {once:true});
 })();
+
+/* Mystic Munson — Squarespace Button Glow */
+(function(){
+  function addGlowToButton(button){
+    if (!button || button.querySelector('.mm-glow-container')) return;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.classList.add('mm-glow-container');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.setAttribute('focusable', 'false');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    const blurRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    blurRect.classList.add('mm-glow-blur');
+
+    const lineRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    lineRect.classList.add('mm-glow-line');
+
+    [blurRect, lineRect].forEach((rect) => {
+      rect.setAttribute('x', '1');
+      rect.setAttribute('y', '1');
+      rect.setAttribute('width', '98');
+      rect.setAttribute('height', '98');
+      rect.setAttribute('pathLength', '100');
+
+      const radius = parseFloat(getComputedStyle(button).borderRadius) || 12;
+      rect.setAttribute('rx', String(radius));
+      rect.setAttribute('ry', String(radius));
+    });
+
+    svg.appendChild(blurRect);
+    svg.appendChild(lineRect);
+    button.prepend(svg);
+  }
+
+  function setupButtonGlow(){
+    document.querySelectorAll('.sqs-block-button-element').forEach(addGlowToButton);
+  }
+
+  if (document.readyState !== 'loading') setupButtonGlow();
+  else document.addEventListener('DOMContentLoaded', setupButtonGlow, {once:true});
+
+  const mo = new MutationObserver(setupButtonGlow);
+  mo.observe(document.documentElement, {
+    childList: true,
+    subtree: true
+  });
+})();
