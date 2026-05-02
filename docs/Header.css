@@ -463,7 +463,7 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   height: 100%;
   pointer-events: none;
   opacity: 1;
-  z-index: 0;
+  z-index: 20;
   background: transparent !important;
 }
 
@@ -475,10 +475,7 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   background: transparent !important;
 }
 
-.hovercard-group > *:not(.mm-glow-container){
-  position: relative;
-  z-index: 1;
-}
+
 
 /* Continuous motion */
 .hovercard-group .mm-glow-line,
@@ -495,8 +492,7 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
 /* Match header glow dash behavior */
 .hovercard-group .mm-glow-line,
 .hovercard-group .mm-glow-blur{
-  fill: transparent;
-
+  fill: none !important;
   stroke-dasharray: var(--mm-glow-line-length) calc(50 - var(--mm-glow-line-length));
   stroke-dashoffset: 0;
 }
