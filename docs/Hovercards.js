@@ -57,50 +57,12 @@
       { target: group2Wrapper, fallbackElements: group2, phaseShift: Math.PI },
     ].filter((group) => group.target || group.fallbackElements.length > 0);
 
-groups.forEach(({ target, fallbackElements }) => {
-  const animatedElements = target ? [target] : fallbackElements;
-
-  animatedElements.forEach((element) => {
-    element.style.willChange = 'transform';
-
-    // === Inject glow (only once) ===
-    if (!element.querySelector('.mm-glow-container')){
-      const glow = document.createElement('div');
-      glow.className = 'mm-glow-container';
-
-      glow.innerHTML = `
-        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
-          <rect
-            class="mm-glow-line"
-            x="1"
-            y="1"
-            width="98"
-            height="98"
-            pathLength="100"
-          />
-          <rect
-            class="mm-glow-blur"
-            x="1"
-            y="1"
-            width="98"
-            height="98"
-            pathLength="100"
-          />
-        </svg>
-      `;
-
-      element.appendChild(glow);
-      const rects = glow.querySelectorAll('rect');
-      const computed = getComputedStyle(element);
-      const radius = parseFloat(computed.borderTopLeftRadius) || 0;
-
-rects.forEach((r) => {
-  r.setAttribute('rx', radius);
-  r.setAttribute('ry', radius);
-});
-    }
-  });
-});
+    groups.forEach(({ target, fallbackElements }) => {
+      const animatedElements = target ? [target] : fallbackElements;
+      animatedElements.forEach((element) => {
+        element.style.willChange = 'transform';
+      });
+    });
 
     return groups;
   };
