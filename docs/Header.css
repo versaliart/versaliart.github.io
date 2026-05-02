@@ -451,9 +451,7 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   }
 }
 
-/* === Card glow lines (looping, not hover) === */
 /* === Card glow (same system as header, always looping) === */
-
 .hovercard-group{
   position: relative;
 }
@@ -475,6 +473,11 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   height: 100%;
   overflow: visible;
   background: transparent !important;
+}
+
+.hovercard-group > *:not(.mm-glow-container){
+  position: relative;
+  z-index: 1;
 }
 
 /* Continuous motion */
