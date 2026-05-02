@@ -466,8 +466,21 @@ window.addEventListener('resize', () => {
     button.prepend(svg);
   }
 
+  function removeGlowFromButton(button){
+    if (!button) return;
+    const glow = button.querySelector('.mm-glow-container');
+    if (glow) glow.remove();
+  }
+
+  function isPrimaryButton(button){
+    return !!(button && button.classList.contains('sqs-button-element--primary'));
+  }
+
   function setupButtonGlow(){
-    document.querySelectorAll('.sqs-block-button-element').forEach(addGlowToButton);
+    document.querySelectorAll('.sqs-block-button-element').forEach((button) => {
+      if (isPrimaryButton(button)) addGlowToButton(button);
+      else removeGlowFromButton(button);
+    });
   }
 
   if (document.readyState !== 'loading') setupButtonGlow();
