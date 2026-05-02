@@ -31,6 +31,24 @@
   --mm-dur:      420ms;
   --mm-ease-out: cubic-bezier(.2,.7,.2,1);
   --mm-drop:     22px;  /* how far the bar starts above the top before dropping */
+
+  /* Squarespace button glow tokens */
+  --mm-btn-glow-line-thickness: 2px;
+  --mm-btn-glow-blur-size: 8px;
+  --mm-btn-glow-line-length: 18;
+  --mm-btn-glow-speed: 1200ms;
+
+  --mm-btn-glow-primary-line-color: rgba(255, 255, 255, 0.95);
+  --mm-btn-glow-primary-blur-color: rgba(255, 255, 255, 0.75);
+  --mm-btn-glow-primary-radius: 12;
+
+  --mm-btn-glow-secondary-line-color: rgba(153, 137, 236, 0.95);
+  --mm-btn-glow-secondary-blur-color: rgba(153, 137, 236, 0.75);
+  --mm-btn-glow-secondary-radius: 12;
+
+  --mm-btn-glow-tertiary-line-color: rgba(231, 228, 214, 0.9);
+  --mm-btn-glow-tertiary-blur-color: rgba(231, 228, 214, 0.7);
+  --mm-btn-glow-tertiary-radius: 0;
 }
 
 /* Glass bar: fixed, parked offscreen slightly; visibility toggled by JS */
@@ -383,12 +401,30 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   isolation: isolate;
   overflow: hidden;
 
-  --mm-glow-line-color: rgba(255, 255, 255, 0.95);
-  --mm-glow-blur-color: rgba(255, 255, 255, 0.75);
-  --mm-glow-line-thickness: 2px;
-  --mm-glow-blur-size: 8px;
-  --mm-glow-line-length: 18;
-  --mm-glow-speed: 1200ms;
+  --mm-glow-line-color: var(--mm-btn-glow-primary-line-color);
+  --mm-glow-blur-color: var(--mm-btn-glow-primary-blur-color);
+  --mm-glow-line-thickness: var(--mm-btn-glow-line-thickness);
+  --mm-glow-blur-size: var(--mm-btn-glow-blur-size);
+  --mm-glow-line-length: var(--mm-btn-glow-line-length);
+  --mm-glow-speed: var(--mm-btn-glow-speed);
+  --mm-glow-radius: var(--mm-btn-glow-primary-radius);
+}
+
+.sqs-block-button-element.sqs-button-element--primary{
+  --mm-glow-line-color: var(--mm-btn-glow-primary-line-color);
+  --mm-glow-blur-color: var(--mm-btn-glow-primary-blur-color);
+}
+
+.sqs-block-button-element.sqs-button-element--secondary{
+  --mm-glow-line-color: var(--mm-btn-glow-secondary-line-color);
+  --mm-glow-blur-color: var(--mm-btn-glow-secondary-blur-color);
+  --mm-glow-radius: var(--mm-btn-glow-secondary-radius);
+}
+
+.sqs-block-button-element.sqs-button-element--tertiary{
+  --mm-glow-line-color: var(--mm-btn-glow-tertiary-line-color);
+  --mm-glow-blur-color: var(--mm-btn-glow-tertiary-blur-color);
+  --mm-glow-radius: var(--mm-btn-glow-tertiary-radius);
 }
 
 .sqs-block-button-element .mm-glow-container{
