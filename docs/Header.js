@@ -299,7 +299,7 @@ kids.forEach((el) => {
   right = Math.max(right, rect.right);
 });
 
-const width = Math.ceil(right - left) + 4;
+const width = Math.ceil(right - left) + 2;
 const maxWidth = Math.max(0, window.innerWidth - 2);
 const finalWidth = Math.min(width, maxWidth);
 
