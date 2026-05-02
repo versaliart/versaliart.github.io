@@ -452,7 +452,11 @@ window.addEventListener('resize', () => {
       rect.setAttribute('height', '98');
       rect.setAttribute('pathLength', '100');
 
-      const radius = parseFloat(getComputedStyle(button).borderRadius) || 12;
+      const style = getComputedStyle(button);
+      const glowRadius = parseFloat(style.getPropertyValue('--mm-glow-radius'));
+      const radius = Number.isFinite(glowRadius)
+        ? glowRadius
+        : (parseFloat(style.borderRadius) || 12);
       rect.setAttribute('rx', String(radius));
       rect.setAttribute('ry', String(radius));
     });
