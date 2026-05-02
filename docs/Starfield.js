@@ -365,7 +365,11 @@
         blurMax: Math.max(0, getNumVar(s, '--max-blur', 0.22) * remPx()),
         twinkleMin: Math.max(0.01, getNumVar(s, '--twinkle-min', 0.5)),
         twinkleMax: Math.max(0.02, getNumVar(s, '--twinkle-max', 2.0)),
-        fadeInMs: Math.max(0, getNumVar(s, '--spawn-fade-in-ms', 500))
+        fadeInMs: Math.max(0, getNumVar(s, '--spawn-fade-in-ms', 500)),
+        moveEaseMin: clamp01(getNumVar(s, '--move-ease-min', 0.35)),
+        moveEaseMax: clamp01(getNumVar(s, '--move-ease-max', 1.0)),
+        moveEaseCycleMin: Math.max(0.2, getNumVar(s, '--move-ease-cycle-min', 2.8)),
+        moveEaseCycleMax: Math.max(0.21, getNumVar(s, '--move-ease-cycle-max', 5.2))
       };
     }
 
@@ -416,6 +420,10 @@
       const blurRangeMax = Math.max(cfg.blurMin, cfg.blurMax);
       const blurPx = rand(cfg.blurMin, blurRangeMax);
       const speed = rand(cfg.driftMin, cfg.driftMax);
+      const moveEaseCycle = rand(
+        Math.min(cfg.moveEaseCycleMin, cfg.moveEaseCycleMax),
+        Math.max(cfg.moveEaseCycleMin, cfg.moveEaseCycleMax)
+      );
 
       el.style.color = cfg.starColor;
       el.style.setProperty('--size', sizeRem + 'rem');
@@ -432,7 +440,9 @@
         baseOpacity,
         twDur,
         twPhase,
-        bornAt: performance.now()
+        bornAt: performance.now(),
+        moveEaseCycle,
+        moveEasePhase: Math.random() * Math.PI * 2
       };
 
       stars.push(star);
@@ -475,8 +485,11 @@
 
       for (let i = stars.length - 1; i >= 0; i--) {
         const s = stars[i];
-        s.x += s.vx * dt;
-        s.y += s.vy * dt;
+        const easeWave = 0.5 + 0.5 * Math.sin((ts / 1000) * ((Math.PI * 2) / s.moveEaseCycle) + s.moveEasePhase);
+        const moveEase = cfg.moveEaseMin + (cfg.moveEaseMax - cfg.moveEaseMin) * easeWave;
+
+        s.x += s.vx * dt * moveEase;
+        s.y += s.vy * dt * moveEase;
 
         const alpha = totalFadeAlpha(s.x, s.y, spawner.rect, cfg.edgeFade);
         if (alpha <= 0 || inTopWedge(s.x, s.y)) {
