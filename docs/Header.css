@@ -437,8 +437,6 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   animation: mm-glow-visibility var(--mm-glow-speed) ease-in-out;
 }
 
-
-
 @keyframes mm-glow-visibility{
   0%,
   100%{
@@ -448,79 +446,5 @@ header#header[data-test="header"] .mm-custom-nav .mm-pill:focus-visible .mm-glow
   25%,
   75%{
     opacity: 1;
-  }
-}
-
-/* === Card glow (same system as header, always looping) === */
-.hovercard-group{
-  position: relative;
-}
-
-.hovercard-group .mm-glow-container{
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  opacity: 1;
-  z-index: 20;
-  background: transparent !important;
-}
-
-.hovercard-group .mm-glow-container svg{
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  background: transparent !important;
-}
-
-
-
-/* Continuous motion */
-.hovercard-group .mm-glow-line,
-.hovercard-group .mm-glow-blur{
-  animation: mm-card-glow-loop 4.6s linear infinite;
-}
-
-/* Offset second card (matches your float phase) */
-.hovercard-group-2 .mm-glow-line,
-.hovercard-group-2 .mm-glow-blur{
-  animation-delay: 2.3s;
-}
-
-/* Match header glow dash behavior */
-.hovercard-group .mm-glow-line,
-.hovercard-group .mm-glow-blur{
-  fill: none !important;
-  stroke-dasharray: var(--mm-glow-line-length) calc(50 - var(--mm-glow-line-length));
-  stroke-dashoffset: 0;
-}
-
-.hovercard-group{
-  --mm-glow-line-color: rgba(255, 255, 255, 0.95);
-  --mm-glow-blur-color: rgba(255, 255, 255, 0.75);
-  --mm-glow-line-thickness: 2px;
-  --mm-glow-blur-size: 8px;
-  --mm-glow-line-length: 18;
-}
-
-.hovercard-group .mm-glow-line{
-  stroke: var(--mm-glow-line-color);
-  stroke-width: var(--mm-glow-line-thickness);
-}
-
-.hovercard-group .mm-glow-blur{
-  stroke: var(--mm-glow-blur-color);
-  stroke-width: var(--mm-glow-blur-size);
-  filter: blur(var(--mm-glow-blur-size));
-}
-
-@keyframes mm-card-glow-loop{
-  0%{
-    stroke-dashoffset: 0;
-  }
-  100%{
-    stroke-dashoffset: -100;
   }
 }
