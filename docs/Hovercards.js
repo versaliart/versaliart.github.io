@@ -72,18 +72,18 @@ groups.forEach(({ target, fallbackElements }) => {
         <svg viewBox="0 0 100 100" preserveAspectRatio="none">
           <rect
             class="mm-glow-line"
-            x="0.5"
-            y="0.5"
-            width="99"
-            height="99"
+            x="1"
+            y="1"
+            width="98"
+            height="98"
             pathLength="100"
           />
           <rect
             class="mm-glow-blur"
-            x="0.5"
-            y="0.5"
-            width="99"
-            height="99"
+            x="1"
+            y="1"
+            width="98"
+            height="98"
             pathLength="100"
           />
         </svg>
