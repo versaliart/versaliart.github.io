@@ -81,10 +81,10 @@
           stroke-dasharray var(--mm-glow-speed) ease-in-out;
       }
 
-    .hovercard-group:hover .hovercard-visual-block .mm-glow-container,
-    .hovercard-group:focus-within .hovercard-visual-block .mm-glow-container {
-      animation: mm-glow-visibility var(--mm-glow-speed) ease-in-out;
-    }
+      .hovercard-visual-block:hover .mm-glow-container,
+      .hovercard-visual-block:focus-within .mm-glow-container {
+        animation: mm-glow-visibility var(--mm-glow-speed) ease-in-out;
+      }
 
       @keyframes mm-glow-visibility {
         0%,
