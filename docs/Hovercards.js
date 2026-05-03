@@ -71,10 +71,10 @@
         filter: blur(var(--mm-glow-blur-size));
       }
 
-      .hovercard-visual-block:hover .mm-glow-line,
-      .hovercard-visual-block:focus-within .mm-glow-line,
-      .hovercard-visual-block:hover .mm-glow-blur,
-      .hovercard-visual-block:focus-within .mm-glow-blur {
+      .hovercard-group:hover .hovercard-visual-block .mm-glow-line,
+      .hovercard-group:focus-within .hovercard-visual-block .mm-glow-line,
+      .hovercard-group:hover .hovercard-visual-block .mm-glow-blur,
+      .hovercard-group:focus-within .hovercard-visual-block .mm-glow-blur {
         stroke-dashoffset: -80;
         transition:
           stroke-dashoffset var(--mm-glow-speed) ease-in-out,
