@@ -65,6 +65,7 @@ body.has-starfield{
     --edge-fade-width: 2rem;
     --spawn-rate: 4;              /* particles per second */
     --star-max-live: 20;          /* live particles at once */
+    --size-large: 1rem;
   }
 }
 
