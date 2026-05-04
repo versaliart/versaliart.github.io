@@ -54,7 +54,7 @@ body.has-starfield{
 
   /* motion controls */
   --star-max-live: 60;          /* live particles at once */
-  --spawn-rate: 8;              /* particles per second */
+  --spawn-rate: 4;              /* particles per second */
   --drift-min: 2.5rem;           /* minimum outward drift speed per second */
   --drift-max: 3.5rem;           /* maximum outward drift speed per second */
   --edge-fade-width: 7rem;       /* how gradually they fade near/outside section edge */
@@ -63,7 +63,7 @@ body.has-starfield{
 @media screen and (max-width: 767px){
   body.has-starfield{
     --edge-fade-width: 2rem;
-    --spawn-rate: 4;              /* particles per second */
+    --spawn-rate: 3;              /* particles per second */
     --star-max-live: 20;          /* live particles at once */
     --size-large: 1rem;
   }
