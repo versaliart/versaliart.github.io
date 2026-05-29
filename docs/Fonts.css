@@ -85,41 +85,34 @@
 --------------------------------*/
 
 @font-face {
-  font-family: 'Eksell';
+  font-family: 'Eksell Large';
   src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdbb17cc7b89fee399/1777510909236/Eksell+Display+Large.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Eksell';
-  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Eksell';
-  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'Eksell Stencil';
-  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
-  font-weight: 400;
+  font-family: 'Eksell Medium';
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Medium.otf') format('opentype');
+  font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Eksell Small';
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
+  font-weight: 550;
+  font-style: normal;
+  font-display: swap;
+}
+
+
 /* ===============================
    HEADINGS (content area)
 ================================*/
-.sqs-block-content h1{ font-family:"Maax",sans-serif; font-weight:700; font-size:var(--h1); line-height:1.2;
+.sqs-block-content h1{ font-family:"Eksell Large",serif; font-weight:300; font-size:var(--h1); line-height:1.2;
   text-transform:none;   letter-spacing: .01em; color:#FBB03B; }
 .sqs-block-content h2{ font-family:"Maax",sans-serif; font-weight:500; font-size:var(--h2); line-height:1.2;
   color:#E7E4D6;
@@ -174,7 +167,7 @@
   font-family:"Maax",sans-serif;
   font-weight:500;
   font-size:var(--p1);
-  line-height:1.45;
+  line-height:1.35;
   text-transform:uppercase;
   letter-spacing:.03em;
   font-feature-settings:"case" 1, "cpsp" 1;
@@ -186,7 +179,7 @@
   font-family:"Crimson Pro",serif;
   font-weight:300;
   font-size:var(--p2);
-  line-height:1.55;
+  line-height:1.35;
   font-optical-sizing:auto;
   font-synthesis-weight:none;
 }
