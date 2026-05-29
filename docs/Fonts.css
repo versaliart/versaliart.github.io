@@ -127,7 +127,7 @@
 .sqs-block-content h4{ font-family:"Eksell Medium",serif; font-weight:500; font-size:var(--h4); line-height:1.35;
   color:#E7E4D6;
   text-transform:none;
-  letter-spacing: .02em;}
+  letter-spacing: .025em;}
 
 /* Quote blocks use the H3 type style */
 .sqs-block-quote .sqs-block-content blockquote,
