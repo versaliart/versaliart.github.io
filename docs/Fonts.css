@@ -119,19 +119,19 @@
 /* ===============================
    HEADINGS (content area)
 ================================*/
-.sqs-block-content h1{ font-family:"Eksell",serif; font-weight:400; font-size:var(--h1); line-height:1.2;
+.sqs-block-content h1{ font-family:"Maax",sans-serif; font-weight:700; font-size:var(--h1); line-height:1.2;
   text-transform:none;   letter-spacing: .01em; color:#FBB03B; }
-.sqs-block-content h2{ font-family:"Eksell",serif; font-weight:500; font-size:var(--h2); line-height:1.2;
+.sqs-block-content h2{ font-family:"Maax",sans-serif; font-weight:500; font-size:var(--h2); line-height:1.2;
   color:#E7E4D6;
   text-transform: uppercase;
   letter-spacing: .02em;
   font-feature-settings: "case" 1, "cpsp" 1; }
-.sqs-block-content h3{ font-family:"Eksell",serif; font-weight:300; font-size:var(--h3); line-height:1.3;
+.sqs-block-content h3{ font-family:"Maax",sans-serif; font-weight:400; font-size:var(--h3); line-height:1.3;
   color:#E7E4D6;
   text-transform: uppercase;
   letter-spacing: .02em;
   font-feature-settings: "case" 1, "cpsp" 1;}
-.sqs-block-content h4{ font-family:"Eksell",serif; font-weight:300; font-size:var(--h4); line-height:1.35;
+.sqs-block-content h4{ font-family:"Maax",sans-serif; font-weight:400; font-size:var(--h4); line-height:1.35;
   color:#fff;
   text-transform:none;
   letter-spacing: .02em;}
