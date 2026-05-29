@@ -184,7 +184,9 @@
 .sqs-html-content :where(ul, ol) li{
   margin-left: 0 !important;
   padding-left: 0 !important;
+  margin-bottom: 0.45em;
 }
+
 
 /* ===============================
    CAPTIONS (images, galleries)
