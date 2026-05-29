@@ -207,6 +207,20 @@
   line-height:inherit;
 }
 
+/* Remove Squarespace's extra indentation on bullet/numbered list styling */
+.sqs-block-content :where(ul, ol),
+.sqs-html-content :where(ul, ol){
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+  list-style-position: inside;
+}
+
+.sqs-block-content :where(ul, ol) li,
+.sqs-html-content :where(ul, ol) li{
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
 /* ===============================
    CAPTIONS (images, galleries)
 ================================*/
