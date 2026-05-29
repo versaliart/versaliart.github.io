@@ -87,14 +87,14 @@
 @font-face {
   font-family: 'Eksell';
   src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdbb17cc7b89fee399/1777510909236/Eksell+Display+Large.otf') format('opentype');
-  font-weight: 400;
+  font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: 'Eksell';
-  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
+  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Medium.otf') format('opentype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -103,18 +103,12 @@
 @font-face {
   font-family: 'Eksell';
   src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
-  font-weight: 300;
+  font-weight: 550;
   font-style: normal;
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Eksell Stencil';
-  src: url('https://static1.squarespace.com/static/68b0cf9aee4bdf7a0a0f8be4/t/69f2a9fdfa19eb79c9ec1c03/1777510909293/Eksell+Display+Small.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+
 
 /* ===============================
    HEADINGS (content area)
