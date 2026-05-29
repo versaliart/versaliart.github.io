@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip v3.10 — paired image + real text block support ===== */
+/* ===== Topblock Split-Flip v3.10 — paired image blocks ===== */
 (function(){
   const OPEN_DURATION = 480; /* match CSS --flip-open-duration */
   const DEFAULT_FLIP_GRADIENT = 'linear-gradient(180deg, rgba(32, 19, 67, 0) 70%, rgba(32, 19, 67, 1) 100%)';
@@ -83,7 +83,7 @@ function setPassThrough(block, on){
   }
 
   function getPairUnionRect(pair){
-    const rects = pair.blocks
+    const rects = (pair.watchBlocks || pair.blocks)
       .filter(Boolean)
       .map(function(el){ return el.getBoundingClientRect(); });
 
@@ -157,10 +157,6 @@ function setPassThrough(block, on){
 
   function isImageBlock(block){
     return !!block.querySelector('img[data-sqsp-image-block-image]');
-  }
-
-  function isTextBlock(block){
-    return !!block.querySelector('.sqs-html-content[data-sqsp-text-block-content], .sqs-html-content');
   }
 
   function buildImageDoors(block){
@@ -288,158 +284,11 @@ function setPassThrough(block, on){
     }
   }
 
-  function buildTextDoors(block){
-    if (block.__flipBuilt) return true;
-
-    const content = block.querySelector('.sqs-html-content[data-sqsp-text-block-content], .sqs-html-content');
-    const blockContent = block.querySelector('.sqs-block-content');
-    if (!content || !blockContent) return false;
-
-    block.classList.add('flip-top', 'flip-text');
-    blockContent.style.position = 'relative';
-
-    const doors = buildDoors();
-    blockContent.appendChild(doors);
-
-    const lf = doors.querySelector('.flip-door.left .face.front');
-    const lb = doors.querySelector('.flip-door.left .face.back');
-    const rf = doors.querySelector('.flip-door.right .face.front');
-    const rb = doors.querySelector('.flip-door.right .face.back');
-
-    function makeInner(side){
-      const inner = document.createElement('div');
-      inner.className = 'face-inner face-inner-' + side;
-      inner.setAttribute('aria-hidden', 'true');
-
-      const clone = content.cloneNode(true);
-      clone.removeAttribute('data-sqsp-text-block-content');
-
-      clone.querySelectorAll('style, script').forEach(function(node){
-        node.remove();
-      });
-
-      inner.appendChild(clone);
-      return inner;
-    }
-
-    if (lf) {
-      lf.classList.add('flip-text-face');
-      lf.innerHTML = '';
-      lf.appendChild(makeInner('left'));
-    }
-    if (rf) {
-      rf.classList.add('flip-text-face');
-      rf.innerHTML = '';
-      rf.appendChild(makeInner('right'));
-    }
-if (lb) {
-  lb.innerHTML = '';
-  lb.style.background = 'transparent';
-}
-if (rb) {
-  rb.innerHTML = '';
-  rb.style.background = 'transparent';
-}
-
-block.classList.add('flip-text-ready');
-
-block.__flipType = 'text';
-    block.__flipHost = blockContent;
-    block.__flipTextSource = content;
-    block.__flipDoors = doors;
-    block.__flipBuilt = true;
-
-    const relayout = function(){ layoutTextBlock(block); };
-    block.__relayout = relayout;
-
-    relayout();
-
-    const ro = new ResizeObserver(relayout);
-    ro.observe(blockContent);
-    ro.observe(content);
-    block.__flipRO = ro;
-
-    const mo = new MutationObserver(function(){
-      rebuildTextDoors(block);
-      layoutTextBlock(block);
-    });
-    mo.observe(content, {
-      childList: true,
-      subtree: true,
-      characterData: true,
-      attributes: true
-    });
-    block.__flipMO = mo;
-
-    window.addEventListener('resize', relayout);
-    return true;
-  }
-
-  function rebuildTextDoors(block){
-    const doors = block.__flipDoors;
-    const content = block.__flipTextSource || block.querySelector('.sqs-html-content[data-sqsp-text-block-content], .sqs-html-content');
-    if (!doors || !content) return;
-
-    const lf = doors.querySelector('.flip-door.left .face.front');
-    const rf = doors.querySelector('.flip-door.right .face.front');
-
-    function replaceInner(face, side){
-      if (!face) return;
-      face.classList.add('flip-text-face');
-      face.innerHTML = '';
-
-      const inner = document.createElement('div');
-      inner.className = 'face-inner face-inner-' + side;
-      inner.setAttribute('aria-hidden', 'true');
-
-      const clone = content.cloneNode(true);
-      clone.removeAttribute('data-sqsp-text-block-content');
-
-      clone.querySelectorAll('style, script').forEach(function(node){
-        node.remove();
-      });
-
-      inner.appendChild(clone);
-      face.appendChild(inner);
-    }
-
-    replaceInner(lf, 'left');
-    replaceInner(rf, 'right');
-  }
-
-  function layoutTextBlock(block){
-    const host = block.__flipHost || block.querySelector('.sqs-block-content');
-    const source = block.__flipTextSource || block.querySelector('.sqs-html-content[data-sqsp-text-block-content], .sqs-html-content');
-    const doors = block.__flipDoors || block.querySelector('.flip-doors');
-    if (!host || !source || !doors) return;
-
-    const rect = host.getBoundingClientRect();
-    const W = Math.max(1, rect.width);
-    const H = Math.max(1, rect.height);
-
-    doors.style.width = W + 'px';
-    doors.style.height = H + 'px';
-    const inners = doors.querySelectorAll('.face-inner');
-    inners.forEach(function(inner){
-      inner.style.position = 'absolute';
-      inner.style.top = '0';
-      inner.style.left = '0';
-      inner.style.width = W + 'px';
-      inner.style.height = H + 'px';
-      inner.style.background = 'none';
-      inner.style.pointerEvents = 'none';
-      inner.style.transform = inner.classList.contains('face-inner-right')
-        ? 'translateX(-50%)'
-        : 'translateX(0)';
-    });
-  }
-
   function initBlock(block){
     if (!block) return false;
     if (block.__flipBuilt) return true;
 
     if (isImageBlock(block)) return buildImageDoors(block);
-    if (isTextBlock(block)) return buildTextDoors(block);
 
     return false;
   }
@@ -448,15 +297,15 @@ block.__flipType = 'text';
     const imageBlock = document.querySelector(pairConfig.image);
     const textBlock = document.querySelector(pairConfig.text);
 
-    if (!imageBlock || !textBlock) return;
-    if (imageBlock.__pairBound || textBlock.__pairBound) return;
+    if (!imageBlock) return;
+    if (imageBlock.__pairBound || (textBlock && textBlock.__pairBound)) return;
 
     const imageReady = initBlock(imageBlock);
-    const textReady = initBlock(textBlock);
-    if (!imageReady || !textReady) return;
+    if (!imageReady) return;
 
     const pair = {
-      blocks: [imageBlock, textBlock],
+      blocks: [imageBlock],
+      watchBlocks: [imageBlock, textBlock].filter(Boolean),
       open: false,
       pointerWatcher: null
     };
@@ -469,12 +318,14 @@ block.__flipType = 'text';
     }
 
     bindOpen(imageBlock);
-    bindOpen(textBlock);
+    if (textBlock) bindOpen(textBlock);
 
     imageBlock.__pairBound = true;
-    textBlock.__pairBound = true;
     imageBlock.__pairRef = pair;
-    textBlock.__pairRef = pair;
+    if (textBlock) {
+      textBlock.__pairBound = true;
+      textBlock.__pairRef = pair;
+    }
 
     if ('IntersectionObserver' in window) {
       const io = new IntersectionObserver(function(entries){
@@ -484,7 +335,7 @@ block.__flipType = 'text';
       }, { threshold: 0.05 });
 
       io.observe(imageBlock);
-      io.observe(textBlock);
+      if (textBlock) io.observe(textBlock);
     }
   }
 

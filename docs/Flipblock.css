@@ -1,4 +1,4 @@
-/* ===== Topblock Split-Flip (Doors) v3.10 — image + text ===== */
+/* ===== Topblock Split-Flip (Doors) v3.10 — images only ===== */
 
 :root{
   --flip-open-duration: 480ms;
@@ -24,16 +24,6 @@
 /* Hide original image source */
 .sqs-block.image-block.flip-top img[data-sqsp-image-block-image]{
   opacity: 0 !important;
-}
-
-/* Keep original text visible until actually opened */
-.sqs-block.html-block.flip-top.flip-text-ready > .sqs-block-content > .sqs-text-block-container > .sqs-html-content{
-  opacity: 0 !important;
-}
-
-.sqs-block.html-block.flip-top .face{
-  inset: 0 !important;
-  overflow: hidden;
 }
 
 /* Doors host */
@@ -121,24 +111,6 @@
 .sqs-block.flip-top.pe-through .flip-door,
 .sqs-block.flip-top.pe-through .face{
   pointer-events: none !important;
-}
-
-/* Inner cloned text layer */
-.sqs-block.html-block.flip-top .face-inner{
-  position: absolute;
-  inset: 0;
-  width: 200%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.sqs-block.html-block.flip-top .face.front.flip-text-face .face-inner {
-  text-shadow: 2px 2px 2px #000000;
-}
-
-/* Right text half shows the right side */
-.sqs-block.html-block.flip-top .flip-door.right .face-inner{
-  transform: translateX(-50%);
 }
 
 .fe-block.pe-through{
