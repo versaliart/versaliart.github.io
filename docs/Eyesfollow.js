@@ -149,36 +149,6 @@
     }
   }
 
-  function getSvgPoint(clientX, clientY) {
-    var ctm = svg.getScreenCTM && svg.getScreenCTM();
-    if (!ctm) return null;
-
-    var point = svg.createSVGPoint();
-    point.x = clientX;
-    point.y = clientY;
-
-    return point.matrixTransform(ctm.inverse());
-  }
-
-  function getViewSize() {
-    if (svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width > 0 && svg.viewBox.baseVal.height > 0) {
-      return {
-        width: svg.viewBox.baseVal.width,
-        height: svg.viewBox.baseVal.height
-      };
-    }
-
-    var box = svg.getBBox && svg.getBBox();
-    if (box && box.width > 0 && box.height > 0) {
-      return {
-        width: box.width,
-        height: box.height
-      };
-    }
-
-    return null;
-  }
-
   function onMove(e) {
     var rect = svg.getBoundingClientRect();
     if (!rect || rect.width <= 0 || rect.height <= 0) return;
@@ -187,9 +157,16 @@
     var my = e.clientY;
     if (!isFiniteNumber(mx) || !isFiniteNumber(my)) return;
 
-    var cursor = getSvgPoint(mx, my);
-    var viewSize = getViewSize();
-    if (!cursor || !viewSize) return;
+    // Normalize mouse position relative to SVG center in [-1, 1]
+    var cx = rect.left + rect.width  / 2;
+    var cy = rect.top  + rect.height / 2;
+
+    var nx = (mx - cx) / (rect.width / 2);
+    var ny = (my - cy) / (rect.height / 2);
+    if (!isFiniteNumber(nx) || !isFiniteNumber(ny)) return;
+
+    nx = Math.max(-1, Math.min(1, nx));
+    ny = Math.max(-1, Math.min(1, ny));
 
     // Non-linear response: gentle near center, dramatic far away
     function curve(v) {
@@ -198,23 +175,13 @@
       return s * Math.pow(mag, nonLinearPower);
     }
 
-    var eyeGap = Math.abs(rightEye.cx - leftEye.cx);
-    var focusRadiusX = Math.max(1, eyeGap / 2);
-    var focusRadiusY = Math.max(1, viewSize.height / 2);
+    var fx = curve(nx);
+    var fy = curve(ny);
 
     [leftEye, rightEye].forEach(function (eye) {
-      // Normalize against each eye's own center, so a cursor between the eyes
-      // makes the pupils turn inward instead of moving in parallel.
-      var nx = (cursor.x - eye.cx) / focusRadiusX;
-      var ny = (cursor.y - eye.cy) / focusRadiusY;
-      if (!isFiniteNumber(nx) || !isFiniteNumber(ny)) return;
-
-      nx = Math.max(-1, Math.min(1, nx));
-      ny = Math.max(-1, Math.min(1, ny));
-
       // Proposed offsets in SVG units
-      var targetX = curve(nx) * eye.maxX;
-      var targetY = curve(ny) * eye.maxY;
+      var targetX = fx * eye.maxX;
+      var targetY = fy * eye.maxY;
 
       // Constrain by center so the center never leaves the zone box
       targetX = Math.max(-eye.maxX, Math.min(eye.maxX, targetX));
