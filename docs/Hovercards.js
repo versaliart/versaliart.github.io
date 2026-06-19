@@ -125,10 +125,10 @@
         --edge-fade-width: 7.5rem; /* Distance from section edges over which drip sparkles fade out. */
         --card-spawn-lift-max-ratio: 0.0; /* Maximum portion of card height a drip sparkle can spawn above the lower edge. */
         --hover-star-count: 2; /* Number of hover sparkles created per burst. */
-        --hover-star-burst-interval-ms: 320; /* Delay between hover sparkle bursts while hovering. */
-        --hover-star-spin-ms: 450; /* Lifetime and spin duration for each hover sparkle. */
-        --hover-star-fade-in-ms: 120; /* Time a hover sparkle takes to fade in. */
-        --hover-star-fade-out-ms: 220; /* Time a hover sparkle takes to fade out before removal. */
+        --hover-star-burst-interval-ms: 420; /* Delay between hover sparkle bursts while hovering. */
+        --hover-star-spin-ms: 550; /* Lifetime and spin duration for each hover sparkle. */
+        --hover-star-fade-in-ms: 170; /* Time a hover sparkle takes to fade in. */
+        --hover-star-fade-out-ms: 270; /* Time a hover sparkle takes to fade out before removal. */
         --hover-star-grow-from: 0.25; /* Starting scale for a hover sparkle. */
         --hover-star-grow-to: 1.20; /* Ending scale for a hover sparkle. */
         --hover-star-edge-jitter: 0rem; /* Random offset from the card edge for hover sparkle placement. */
