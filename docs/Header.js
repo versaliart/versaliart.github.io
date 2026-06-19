@@ -118,7 +118,7 @@
 
       function computeThreshold(){
         if (!isHome()){
-          revealAt = window.scrollY + r2.top - STICKY - 32;
+          revealAt = window.scrollY + r2.top - STICKY;
           return;
         }
 
@@ -129,7 +129,7 @@
         }
 
         const r2 = sections[1].getBoundingClientRect();
-        revealAt = window.scrollY + r2.top - STICKY;
+        revealAt = window.scrollY + r2.top - STICKY - 32;;
         if (revealAt < 0) revealAt = 0;
       }
 
