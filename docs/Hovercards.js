@@ -253,8 +253,32 @@
     return clamp01(insideMin / edgeFade);
   };
 
+  const getUnionRect = (elements) => {
+    const rects = elements
+      .filter(Boolean)
+      .map((element) => element.getBoundingClientRect())
+      .filter((rect) => rect.width > 0 && rect.height > 0);
+
+    if (rects.length === 0) return null;
+
+    const left = Math.min(...rects.map((rect) => rect.left));
+    const right = Math.max(...rects.map((rect) => rect.right));
+    const top = Math.min(...rects.map((rect) => rect.top));
+    const bottom = Math.max(...rects.map((rect) => rect.bottom));
+
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      width: right - left,
+      height: bottom - top
+    };
+  };
+
   const createDripEngine = (group) => {
     const host = group.target || group.fallbackElements[0];
+    const emitterElements = group.fallbackElements.length > 0 ? group.fallbackElements : [host];
     const section = host ? findSection(host) : null;
     if (!host || !section) return null;
 
@@ -265,7 +289,7 @@
     let spawnCarry = 0;
 
     const getRects = () => ({
-      hostRect: host.getBoundingClientRect(),
+      hostRect: getUnionRect(emitterElements) || host.getBoundingClientRect(),
       sectionRect: section.getBoundingClientRect()
     });
 
