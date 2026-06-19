@@ -81,7 +81,7 @@
         --star-randomize: 0.15;
         --spawn-spread-min: 0.10rem;
         --spawn-spread-max: 1.50rem;
-        --spawn-fade-in-ms: 450;
+        --spawn-fade-in-ms: 350;
         --twinkle-min: 1.0;
         --twinkle-max: 2.0;
         --opacity-min: 0.75;
