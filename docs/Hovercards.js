@@ -26,6 +26,8 @@
   const rand = (min, max) => min + Math.random() * (max - min);
   const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
 
+  const CARD_IMG_SELECTORS = [CARD_1_SELECTORS[0], CARD_2_SELECTORS[0]];
+
   const getElements = (selectors) => selectors
     .map((selector) => document.querySelector(selector))
     .filter(Boolean);
@@ -291,7 +293,12 @@
 
     groups.forEach(({ target, fallbackElements }) => {
       const animatedElements = target ? [target] : fallbackElements;
+      const cardImgElements = fallbackElements.filter((element) => CARD_IMG_SELECTORS.some((selector) => element.matches(selector)));
+
       animatedElements.forEach((element) => {
+        element.style.willChange = 'transform';
+      });
+      cardImgElements.forEach((element) => {
         element.style.willChange = 'transform, box-shadow';
       });
     });
@@ -670,10 +677,12 @@
         const y = groupOffset.toFixed(2);
         const shadow = getCardShadow(movementProgress);
         const animatedElements = target ? [target] : fallbackElements;
+        const cardImgElements = fallbackElements.filter((element) => CARD_IMG_SELECTORS.some((selector) => element.matches(selector)));
+
         animatedElements.forEach((element) => {
           element.style.transform = `translate3d(0, ${y}px, 0)`;
         });
-        fallbackElements.forEach((element) => {
+        cardImgElements.forEach((element) => {
           element.style.boxShadow = shadow;
         });
       });
