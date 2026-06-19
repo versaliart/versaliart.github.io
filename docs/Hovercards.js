@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float + Hover Edge Sparkles — v1.5 */
+/* Squarespace Opposing Card Float + Hover Edge Sparkles — v1.6 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -43,18 +43,13 @@
     const phi = getNumVar(style, names.phi, 1.618);
     const sizeL = getNumVar(style, names.large, 1.5);
     const sizeM = getNumVar(style, names.medium, sizeL / phi);
-    const sizeS = getNumVar(style, names.small, sizeM / phi);
-    const r = Math.random();
-    if (r < 0.30) return sizeL;
-    if (r < 0.72) return sizeM;
-    return sizeS;
+    return Math.random() < 0.42 ? sizeL : sizeM;
   };
 
   const chooseHoverSize = (style) => chooseSizeFromVars(style, {
     phi: '--hover-star-phi',
     large: '--hover-star-size-large',
-    medium: '--hover-star-size-medium',
-    small: '--hover-star-size-small'
+    medium: '--hover-star-size-medium'
   });
 
   const findSection = (host) => (
@@ -107,10 +102,9 @@
         --hover-star-opacity-min: 0.75; /* Lowest random opacity assigned to hover sparkles. */
         --hover-star-opacity-max: 1.00; /* Highest random opacity assigned to hover sparkles. */
         --hover-star-url: url("https://versaliart.github.io/MMsparkle.svg"); /* SVG mask image used for hover sparkle shapes. */
-        --hover-star-phi: 1.618; /* Golden-ratio divisor used to derive medium and small hover sparkle sizes. */
+        --hover-star-phi: 1.618; /* Golden-ratio divisor used to derive the medium hover sparkle size. */
         --hover-star-size-large: 1.5rem; /* Largest possible hover sparkle size. */
-        --hover-star-size-medium: calc(var(--hover-star-size-large) / var(--hover-star-phi)); /* Medium hover sparkle size derived from the large size. */
-        --hover-star-size-small: calc(var(--hover-star-size-medium) / var(--hover-star-phi)); /* Smallest hover sparkle size derived from the medium size. */
+        --hover-star-size-medium: calc(var(--hover-star-size-large) / var(--hover-star-phi)); /* Smallest hover sparkle size emitted after removing the previous small size. */
       }
       .hovercard-edge-sparkles{
         position: absolute;
@@ -323,29 +317,48 @@
     const stars = [];
     let hoverActive = false;
     let burstTimer = 0;
+    let burstIndex = 0;
+    let previousBurstSide = null;
+    const sideCounts = { top: 0, right: 0, bottom: 0, left: 0 };
+    const sides = ['top', 'right', 'bottom', 'left'];
+    const GOLDEN_RATIO_CONJUGATE = 0.618033988749895;
 
     const getRects = () => ({
       hostRect: getUnionRect(emitterElements) || host.getBoundingClientRect(),
       sectionRect: section.getBoundingClientRect()
     });
 
-    const edgePoint = (hostRect, sectionRect, jitter, inset) => {
-      const side = Math.floor(rand(0, 4));
+    const chooseBurstSide = () => {
+      if (burstIndex === 0) return 'top';
+
+      const eligibleSides = sides.filter((side) => side !== previousBurstSide);
+      const lowestCount = Math.min(...eligibleSides.map((side) => sideCounts[side]));
+      const leastUsedSides = eligibleSides.filter((side) => sideCounts[side] === lowestCount);
+      return leastUsedSides[Math.floor(rand(0, leastUsedSides.length))];
+    };
+
+    const edgePoint = (hostRect, sectionRect, jitter, inset, side, index, count) => {
       const offset = rand(-jitter, jitter);
+      const spread = count > 1
+        ? (index + 0.5) / count
+        : ((burstIndex * GOLDEN_RATIO_CONJUGATE) % 1);
+      const position = burstIndex === 0 && index === 0
+        ? 0.92
+        : clamp(spread + rand(-0.16, 0.16), 0.06, 0.94);
       let x;
       let y;
-      if (side === 0) {
-        x = rand(hostRect.left, hostRect.right);
+      if (side === 'top') {
+        x = hostRect.left + (hostRect.width * position);
         y = hostRect.top + inset + offset;
-      } else if (side === 1) {
+      } else if (side === 'right') {
         x = hostRect.right - inset + offset;
-        y = rand(hostRect.top, hostRect.bottom);
-      } else if (side === 2) {
-        x = rand(hostRect.left, hostRect.right);
+        y = hostRect.top + (hostRect.height * position);
+      } else if (side === 'bottom') {
+        x = hostRect.left + (hostRect.width * (1 - position));
         y = hostRect.bottom - inset + offset;
       } else {
         x = hostRect.left + inset + offset;
-        y = rand(hostRect.top, hostRect.bottom);
+        y = hostRect.top + (hostRect.height * (1 - position));
       }
       return { x: x - sectionRect.left, y: y - sectionRect.top };
     };
@@ -369,12 +382,12 @@
       if (star.el && star.el.parentNode) star.el.parentNode.removeChild(star.el);
     };
 
-    const spawnHoverStar = (cfg) => {
+    const spawnHoverStar = (cfg, side, index, count) => {
       const { hostRect, sectionRect } = getRects();
       if (hostRect.width < 4 || hostRect.height < 4 || sectionRect.width < 4 || sectionRect.height < 4) return;
 
       const hoverSizeRem = chooseHoverSize(getComputedStyle(body));
-      const point = edgePoint(hostRect, sectionRect, cfg.edgeJitter, hoverSizeRem * remPx() * cfg.edgeInsetRatio);
+      const point = edgePoint(hostRect, sectionRect, cfg.edgeJitter, hoverSizeRem * remPx() * cfg.edgeInsetRatio, side, index, count);
       const el = document.createElement('span');
       el.className = 'hover-star';
       el.style.left = point.x.toFixed(2) + 'px';
@@ -408,13 +421,20 @@
     const burst = () => {
       if (!hoverActive) return;
       const cfg = getHoverSparkleConfig();
-      for (let i = 0; i < cfg.count; i++) spawnHoverStar(cfg);
+      const side = chooseBurstSide();
+      sideCounts[side] += 1;
+      previousBurstSide = side;
+      for (let i = 0; i < cfg.count; i++) spawnHoverStar(cfg, side, i, cfg.count);
+      burstIndex += 1;
       burstTimer = window.setTimeout(burst, cfg.burstIntervalMs);
     };
 
     const start = () => {
       if (hoverActive) return;
       hoverActive = true;
+      burstIndex = 0;
+      previousBurstSide = null;
+      sides.forEach((side) => { sideCounts[side] = 0; });
       burst();
     };
 
