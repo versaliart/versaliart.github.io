@@ -123,7 +123,7 @@
         --drift-min: 2.5rem; /* Minimum downward drift distance per second for drip sparkles. */
         --drift-max: 3.5rem; /* Maximum downward drift distance per second for drip sparkles. */
         --edge-fade-width: 7.5rem; /* Distance from section edges over which drip sparkles fade out. */
-        --card-spawn-lift-max-ratio: 0.15; /* Maximum portion of card height a drip sparkle can spawn above the lower edge. */
+        --card-spawn-lift-max-ratio: 0.0; /* Maximum portion of card height a drip sparkle can spawn above the lower edge. */
         --hover-star-count: 2; /* Number of hover sparkles created per burst. */
         --hover-star-burst-interval-ms: 320; /* Delay between hover sparkle bursts while hovering. */
         --hover-star-spin-ms: 450; /* Lifetime and spin duration for each hover sparkle. */
