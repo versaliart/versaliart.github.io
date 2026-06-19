@@ -118,22 +118,22 @@
         --star-url: url("https://versaliart.github.io/MMsparkle.svg"); /* SVG mask image used for drip sparkle shapes. */
         --jitter-fallback-mult: 2; /* Multiplier used when fallback jitter spacing needs to expand. */
         --jitter-fallback-steps: 3; /* Number of fallback attempts for finding a jittered drip sparkle point. */
-        --star-max-live: 20; /* Maximum number of drip sparkles visible at one time. */
-        --spawn-rate: 2; /* Number of drip sparkles emitted per second. */
+        --star-max-live: 12; /* Maximum number of drip sparkles visible at one time. */
+        --spawn-rate: 1; /* Number of drip sparkles emitted per second. */
         --drift-min: 2.5rem; /* Minimum downward drift distance per second for drip sparkles. */
         --drift-max: 3.5rem; /* Maximum downward drift distance per second for drip sparkles. */
         --edge-fade-width: 7.5rem; /* Distance from section edges over which drip sparkles fade out. */
         --card-spawn-lift-max-ratio: 0.15; /* Maximum portion of card height a drip sparkle can spawn above the lower edge. */
-        --hover-star-count: 1; /* Number of hover sparkles created per burst. */
+        --hover-star-count: 2; /* Number of hover sparkles created per burst. */
         --hover-star-burst-interval-ms: 320; /* Delay between hover sparkle bursts while hovering. */
         --hover-star-spin-ms: 450; /* Lifetime and spin duration for each hover sparkle. */
         --hover-star-fade-in-ms: 120; /* Time a hover sparkle takes to fade in. */
         --hover-star-fade-out-ms: 220; /* Time a hover sparkle takes to fade out before removal. */
         --hover-star-grow-from: 0.25; /* Starting scale for a hover sparkle. */
         --hover-star-grow-to: 1.20; /* Ending scale for a hover sparkle. */
-        --hover-star-edge-jitter: 0rem; /* Random offset from the card edge for hover sparkle placement. */
+        --hover-star-edge-jitter: -.55rem; /* Random offset from the card edge for hover sparkle placement. */
         --hover-star-color: #9989EC; /* Fill color for hover sparkle SVG masks. */
-        --hover-star-glow-color: rgba(153,137,236,0.90); /* Color of the soft glow behind hover sparkles. */
+        --hover-star-glow-color: rgba(153,137,236,0.80); /* Color of the soft glow behind hover sparkles. */
         --hover-star-glow-blur: 20px; /* Fallback blur radius for hover sparkle glows. */
         --hover-star-glow-spread: 1px; /* Extra inset/outset space used by hover sparkle glow halos. */
         --hover-star-blur-min: 0.18rem; /* Minimum glow blur assigned to hover sparkles. */
