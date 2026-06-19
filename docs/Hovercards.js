@@ -91,60 +91,60 @@
     style.id = 'hovercard-drip-sparkle-styles';
     style.textContent = `
       body.has-starfield{
-        --star-count: 40;
-        --star-min-gap: 2px;
-        --jitter-min: 0.10rem;
-        --jitter-max: 2.00rem;
-        --star-randomize: 0.15;
-        --spawn-spread-min: 0.10rem;
-        --spawn-spread-max: 1.50rem;
-        --spawn-fade-in-ms: 350;
-        --twinkle-min: 1.0;
-        --twinkle-max: 2.0;
-        --opacity-min: 0.75;
-        --opacity-max: 1.00;
-        --phi: 1.618;
-        --size-large: 1.5rem;
-        --size-medium: calc(var(--size-large) / var(--phi));
-        --size-small: calc(var(--size-medium) / var(--phi));
-        --avoid-vert-strength: 1;
-        --avoid-vert-width-deg: 25;
-        --min-blur: 0.18rem;
-        --max-blur: 0.5rem;
-        --star-color: #5D4E98;
-        --star-glow-color: rgba(60,51,97,0.9);
-        --star-glow-blur: 20px;
-        --star-glow-spread: 1px;
-        --star-url: url("https://versaliart.github.io/MMsparkle.svg");
-        --jitter-fallback-mult: 2;
-        --jitter-fallback-steps: 3;
-        --star-max-live: 20;
-        --spawn-rate: 2;
-        --drift-min: 2.5rem;
-        --drift-max: 3.5rem;
-        --edge-fade-width: 7.5rem;
-        --card-spawn-lift-max-ratio: 0.15;
-        --hover-star-count: 1;
-        --hover-star-burst-interval-ms: 320;
-        --hover-star-spin-ms: 450;
-        --hover-star-fade-in-ms: 120;
-        --hover-star-fade-out-ms: 220;
-        --hover-star-grow-from: 0.25;
-        --hover-star-grow-to: 1.20;
-        --hover-star-edge-jitter: 0rem;
-        --hover-star-color: #9989EC;
-        --hover-star-glow-color: rgba(153,137,236,0.90);
-        --hover-star-glow-blur: 20px;
-        --hover-star-glow-spread: 1px;
-        --hover-star-blur-min: 0.18rem;
-        --hover-star-blur-max: 0.5rem;
-        --hover-star-opacity-min: 0.75;
-        --hover-star-opacity-max: 1.00;
-        --hover-star-url: url("https://versaliart.github.io/MMsparkle.svg");
-        --hover-star-phi: 1.618;
-        --hover-star-size-large: 1.5rem;
-        --hover-star-size-medium: calc(var(--hover-star-size-large) / var(--hover-star-phi));
-        --hover-star-size-small: calc(var(--hover-star-size-medium) / var(--hover-star-phi));
+        --star-count: 40; /* Number of candidate edge points used when distributing drip sparkles. */
+        --star-min-gap: 2px; /* Minimum spacing kept between generated drip sparkle positions. */
+        --jitter-min: 0.10rem; /* Smallest random offset applied to drip sparkle spawn points. */
+        --jitter-max: 2.00rem; /* Largest random offset applied to drip sparkle spawn points. */
+        --star-randomize: 0.15; /* Amount of randomness blended into drip sparkle placement. */
+        --spawn-spread-min: 0.10rem; /* Minimum horizontal spread from the card edge when a drip sparkle starts. */
+        --spawn-spread-max: 1.50rem; /* Maximum horizontal spread from the card edge when a drip sparkle starts. */
+        --spawn-fade-in-ms: 350; /* Time a newly spawned drip sparkle takes to fade in. */
+        --twinkle-min: 1.0; /* Shortest twinkle cycle duration for drip sparkles, in seconds. */
+        --twinkle-max: 2.0; /* Longest twinkle cycle duration for drip sparkles, in seconds. */
+        --opacity-min: 0.75; /* Lowest random opacity assigned to drip sparkles. */
+        --opacity-max: 1.00; /* Highest random opacity assigned to drip sparkles. */
+        --phi: 1.618; /* Golden-ratio divisor used to derive medium and small drip sparkle sizes. */
+        --size-large: 1.5rem; /* Largest possible drip sparkle size. */
+        --size-medium: calc(var(--size-large) / var(--phi)); /* Medium drip sparkle size derived from the large size. */
+        --size-small: calc(var(--size-medium) / var(--phi)); /* Smallest drip sparkle size derived from the medium size. */
+        --avoid-vert-strength: 1; /* Strength of the vertical avoidance bias for drip sparkle placement. */
+        --avoid-vert-width-deg: 25; /* Angular width of the vertical avoidance zone for drip sparkles. */
+        --min-blur: 0.18rem; /* Minimum glow blur assigned to drip sparkles. */
+        --max-blur: 0.5rem; /* Maximum glow blur assigned to drip sparkles. */
+        --star-color: #5D4E98; /* Fill color for drip sparkle SVG masks. */
+        --star-glow-color: rgba(60,51,97,0.9); /* Color of the soft glow behind drip sparkles. */
+        --star-glow-blur: 20px; /* Fallback blur radius for drip sparkle glows. */
+        --star-glow-spread: 1px; /* Extra inset/outset space used by drip sparkle glow halos. */
+        --star-url: url("https://versaliart.github.io/MMsparkle.svg"); /* SVG mask image used for drip sparkle shapes. */
+        --jitter-fallback-mult: 2; /* Multiplier used when fallback jitter spacing needs to expand. */
+        --jitter-fallback-steps: 3; /* Number of fallback attempts for finding a jittered drip sparkle point. */
+        --star-max-live: 20; /* Maximum number of drip sparkles visible at one time. */
+        --spawn-rate: 2; /* Number of drip sparkles emitted per second. */
+        --drift-min: 2.5rem; /* Minimum downward drift distance per second for drip sparkles. */
+        --drift-max: 3.5rem; /* Maximum downward drift distance per second for drip sparkles. */
+        --edge-fade-width: 7.5rem; /* Distance from section edges over which drip sparkles fade out. */
+        --card-spawn-lift-max-ratio: 0.15; /* Maximum portion of card height a drip sparkle can spawn above the lower edge. */
+        --hover-star-count: 1; /* Number of hover sparkles created per burst. */
+        --hover-star-burst-interval-ms: 320; /* Delay between hover sparkle bursts while hovering. */
+        --hover-star-spin-ms: 450; /* Lifetime and spin duration for each hover sparkle. */
+        --hover-star-fade-in-ms: 120; /* Time a hover sparkle takes to fade in. */
+        --hover-star-fade-out-ms: 220; /* Time a hover sparkle takes to fade out before removal. */
+        --hover-star-grow-from: 0.25; /* Starting scale for a hover sparkle. */
+        --hover-star-grow-to: 1.20; /* Ending scale for a hover sparkle. */
+        --hover-star-edge-jitter: 0rem; /* Random offset from the card edge for hover sparkle placement. */
+        --hover-star-color: #9989EC; /* Fill color for hover sparkle SVG masks. */
+        --hover-star-glow-color: rgba(153,137,236,0.90); /* Color of the soft glow behind hover sparkles. */
+        --hover-star-glow-blur: 20px; /* Fallback blur radius for hover sparkle glows. */
+        --hover-star-glow-spread: 1px; /* Extra inset/outset space used by hover sparkle glow halos. */
+        --hover-star-blur-min: 0.18rem; /* Minimum glow blur assigned to hover sparkles. */
+        --hover-star-blur-max: 0.5rem; /* Maximum glow blur assigned to hover sparkles. */
+        --hover-star-opacity-min: 0.75; /* Lowest random opacity assigned to hover sparkles. */
+        --hover-star-opacity-max: 1.00; /* Highest random opacity assigned to hover sparkles. */
+        --hover-star-url: url("https://versaliart.github.io/MMsparkle.svg"); /* SVG mask image used for hover sparkle shapes. */
+        --hover-star-phi: 1.618; /* Golden-ratio divisor used to derive medium and small hover sparkle sizes. */
+        --hover-star-size-large: 1.5rem; /* Largest possible hover sparkle size. */
+        --hover-star-size-medium: calc(var(--hover-star-size-large) / var(--hover-star-phi)); /* Medium hover sparkle size derived from the large size. */
+        --hover-star-size-small: calc(var(--hover-star-size-medium) / var(--hover-star-phi)); /* Smallest hover sparkle size derived from the medium size. */
       }
       .shape-edge-sparkles,
       .hovercard-edge-sparkles{
@@ -233,12 +233,12 @@
       }
       @media screen and (max-width: 767px){
         body.has-starfield{
-          --edge-fade-width: 2rem;
-          --spawn-rate: 3;
-          --star-max-live: 20;
-          --size-large: 1rem;
-          --hover-star-count: 6;
-          --hover-star-size-large: 1rem;
+          --edge-fade-width: 2rem; /* Narrows the drip sparkle edge fade on mobile. */
+          --spawn-rate: 3; /* Increases drip sparkle emissions per second on mobile. */
+          --star-max-live: 20; /* Caps simultaneous drip sparkles on mobile. */
+          --size-large: 1rem; /* Reduces the largest drip sparkle size on mobile. */
+          --hover-star-count: 6; /* Emits more hover sparkles per burst on mobile/touch layouts. */
+          --hover-star-size-large: 1rem; /* Reduces the largest hover sparkle size on mobile. */
         }
       }
       @media (prefers-reduced-motion: reduce){
