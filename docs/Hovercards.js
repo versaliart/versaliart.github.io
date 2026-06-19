@@ -16,6 +16,7 @@
   const AMPLITUDE_PX = 15; // max upward movement
   const CYCLE_MS = 4600;  // full cycle: 0 -> up -> 0
   const SHADOW_FADE_START_DISTANCE_RATIO = 0.5; // shadow only fades in during the final half of card travel
+  const CARD_SHADOW_RADIUS = '8px'; // keep the glow aligned with the cards' rounded corners
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
@@ -217,6 +218,7 @@
       });
       cardImgElements.forEach((element) => {
         element.style.willChange = 'transform, box-shadow';
+        element.style.borderRadius = CARD_SHADOW_RADIUS;
       });
     });
 
