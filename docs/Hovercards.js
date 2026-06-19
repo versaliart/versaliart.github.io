@@ -132,6 +132,7 @@
         --hover-star-grow-from: 0.25; /* Starting scale for a hover sparkle. */
         --hover-star-grow-to: 1.20; /* Ending scale for a hover sparkle. */
         --hover-star-edge-jitter: 0rem; /* Random offset from the card edge for hover sparkle placement. */
+        --hover-star-edge-inset-ratio: 0.5; /* Pulls hover sparkle centers inward by this fraction of their size so they hug the card edge. */
         --hover-star-color: #9989EC; /* Fill color for hover sparkle SVG masks. */
         --hover-star-glow-color: rgba(153,137,236,0.80); /* Color of the soft glow behind hover sparkles. */
         --hover-star-glow-blur: 20px; /* Fallback blur radius for hover sparkle glows. */
@@ -369,6 +370,7 @@
       growFrom: Math.max(0, getNumVar(s, '--hover-star-grow-from', 0.25)),
       growTo: Math.max(0, getNumVar(s, '--hover-star-grow-to', 1.2)),
       edgeJitter: Math.max(0, getNumVar(s, '--hover-star-edge-jitter', 0.55) * remPx()),
+      edgeInsetRatio: Math.max(0, getNumVar(s, '--hover-star-edge-inset-ratio', 0.5)),
       starColor: s.getPropertyValue('--hover-star-color').trim() || '#9989EC',
       blurMin: Math.max(0, getNumVar(s, '--hover-star-blur-min', 0.18) * remPx()),
       blurMax: Math.max(0, getNumVar(s, '--hover-star-blur-max', 0.5) * remPx()),
@@ -393,22 +395,22 @@
       sectionRect: section.getBoundingClientRect()
     });
 
-    const edgePoint = (hostRect, sectionRect, jitter) => {
+    const edgePoint = (hostRect, sectionRect, jitter, inset) => {
       const side = Math.floor(rand(0, 4));
       const offset = rand(-jitter, jitter);
       let x;
       let y;
       if (side === 0) {
         x = rand(hostRect.left, hostRect.right);
-        y = hostRect.top + offset;
+        y = hostRect.top + inset + offset;
       } else if (side === 1) {
-        x = hostRect.right + offset;
+        x = hostRect.right - inset + offset;
         y = rand(hostRect.top, hostRect.bottom);
       } else if (side === 2) {
         x = rand(hostRect.left, hostRect.right);
-        y = hostRect.bottom + offset;
+        y = hostRect.bottom - inset + offset;
       } else {
-        x = hostRect.left + offset;
+        x = hostRect.left + inset + offset;
         y = rand(hostRect.top, hostRect.bottom);
       }
       return { x: x - sectionRect.left, y: y - sectionRect.top };
@@ -437,13 +439,14 @@
       const { hostRect, sectionRect } = getRects();
       if (hostRect.width < 4 || hostRect.height < 4 || sectionRect.width < 4 || sectionRect.height < 4) return;
 
-      const point = edgePoint(hostRect, sectionRect, cfg.edgeJitter);
+      const hoverSizeRem = chooseHoverSize(getComputedStyle(body));
+      const point = edgePoint(hostRect, sectionRect, cfg.edgeJitter, hoverSizeRem * remPx() * cfg.edgeInsetRatio);
       const el = document.createElement('span');
       el.className = 'hover-star';
       el.style.left = point.x.toFixed(2) + 'px';
       el.style.top = point.y.toFixed(2) + 'px';
       el.style.color = cfg.starColor;
-      el.style.setProperty('--hover-size', chooseHoverSize(getComputedStyle(body)) + 'rem');
+      el.style.setProperty('--hover-size', hoverSizeRem + 'rem');
       el.style.setProperty('--hover-blur', rand(cfg.blurMin, Math.max(cfg.blurMin, cfg.blurMax)).toFixed(2) + 'px');
       overlay.appendChild(el);
 
