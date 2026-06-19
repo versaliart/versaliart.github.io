@@ -292,7 +292,7 @@
     groups.forEach(({ target, fallbackElements }) => {
       const animatedElements = target ? [target] : fallbackElements;
       animatedElements.forEach((element) => {
-        element.style.willChange = 'transform';
+        element.style.willChange = 'transform, box-shadow';
       });
     });
 
@@ -326,6 +326,43 @@
       swayMax: Math.max(0, getNumVar(s, '--card-drip-sway', 0.55) * remPx()),
       spawnLiftMaxRatio: clamp01(getNumVar(s, '--card-spawn-lift-max-ratio', 0.10))
     };
+  };
+
+
+  const colorWithOpacity = (color, opacity) => {
+    const alphaMultiplier = clamp01(opacity);
+    const rgba = color.match(/^rgba?\(([^)]+)\)$/i);
+    if (rgba) {
+      const parts = rgba[1].split(',').map((part) => part.trim());
+      const [r, g, b] = parts;
+      const alpha = parts.length > 3 ? parseFloat(parts[3]) : 1;
+      const finalAlpha = (Number.isFinite(alpha) ? alpha : 1) * alphaMultiplier;
+      return `rgba(${r}, ${g}, ${b}, ${clamp01(finalAlpha).toFixed(3)})`;
+    }
+
+    const hex = color.match(/^#([\da-f]{3}|[\da-f]{6})$/i);
+    if (hex) {
+      const value = hex[1].length === 3
+        ? hex[1].split('').map((char) => char + char).join('')
+        : hex[1];
+      const r = parseInt(value.slice(0, 2), 16);
+      const g = parseInt(value.slice(2, 4), 16);
+      const b = parseInt(value.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alphaMultiplier.toFixed(3)})`;
+    }
+
+    return alphaMultiplier <= 0 ? 'transparent' : color;
+  };
+
+  const getCardShadow = (opacity) => {
+    const alpha = clamp01(opacity);
+    if (alpha <= 0) return 'none';
+
+    const s = getComputedStyle(body);
+    const color = s.getPropertyValue('--star-glow-color').trim() || 'rgba(60,51,97,0.9)';
+    const blur = s.getPropertyValue('--star-glow-blur').trim() || '20px';
+    const spread = s.getPropertyValue('--star-glow-spread').trim() || '1px';
+    return `0 0 ${blur} ${spread} ${colorWithOpacity(color, alpha)}`;
   };
 
   const totalFadeAlpha = (x, y, rect, edgeFade) => {
@@ -628,11 +665,16 @@
       const elapsed = now - startTime;
       const phase = (elapsed / CYCLE_MS) * Math.PI * 2;
       groups.forEach(({ target, fallbackElements, phaseShift }) => {
-        const groupOffset = -(((Math.sin(phase + phaseShift) + 1) / 2) * AMPLITUDE_PX);
+        const movementProgress = (Math.sin(phase + phaseShift) + 1) / 2;
+        const groupOffset = -(movementProgress * AMPLITUDE_PX);
         const y = groupOffset.toFixed(2);
+        const shadow = getCardShadow(movementProgress);
         const animatedElements = target ? [target] : fallbackElements;
         animatedElements.forEach((element) => {
           element.style.transform = `translate3d(0, ${y}px, 0)`;
+        });
+        fallbackElements.forEach((element) => {
+          element.style.boxShadow = shadow;
         });
       });
 
