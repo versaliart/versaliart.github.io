@@ -74,7 +74,7 @@
     style.id = 'hovercard-drip-sparkle-styles';
     style.textContent = `
       body.has-starfield{
-        --star-count: 120;
+        --star-count: 40;
         --star-min-gap: 2px;
         --jitter-min: 0.10rem;
         --jitter-max: 2.00rem;
@@ -101,8 +101,8 @@
         --star-url: url("https://versaliart.github.io/MMsparkle.svg");
         --jitter-fallback-mult: 2;
         --jitter-fallback-steps: 3;
-        --star-max-live: 60;
-        --spawn-rate: 4;
+        --star-max-live: 40;
+        --spawn-rate: 3;
         --drift-min: 2.5rem;
         --drift-max: 3.5rem;
         --edge-fade-width: 7rem;
