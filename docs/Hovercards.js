@@ -85,7 +85,7 @@
       body.has-starfield{
         --star-glow-color: rgba(93,78,152,0.9); /* Color of the soft glow used by the card box-shadow. */
         --star-glow-blur: 20px; /* Blur radius used by the card box-shadow. */
-        --star-glow-spread: 1px; /* Spread radius used by the card box-shadow. */
+        --star-glow-spread: 3px; /* Spread radius used by the card box-shadow. */
         --hover-star-count: 1; /* Number of hover sparkles created per burst. */
         --hover-star-burst-interval-ms: 320; /* Delay between hover sparkle bursts while hovering. */
         --hover-star-spin-ms: 550; /* Lifetime and spin duration for each hover sparkle. */
