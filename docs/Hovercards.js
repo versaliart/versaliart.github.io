@@ -1,4 +1,4 @@
-/* Squarespace Opposing Card Float + Dripping Card Sparkles — v1.3 */
+/* Squarespace Opposing Card Float + Dripping Card Sparkles + Hover Edge Sparkles — v1.4 */
 
 (() => {
   const CARD_1_SELECTORS = [
@@ -36,16 +36,30 @@
     return Number.isFinite(n) ? n : fallback;
   };
 
-  const chooseSize = (style) => {
-    const phi = getNumVar(style, '--phi', 1.618);
-    const sizeL = getNumVar(style, '--size-large', 1.5);
-    const sizeM = getNumVar(style, '--size-medium', sizeL / phi);
-    const sizeS = getNumVar(style, '--size-small', sizeM / phi);
+  const chooseSizeFromVars = (style, names) => {
+    const phi = getNumVar(style, names.phi, 1.618);
+    const sizeL = getNumVar(style, names.large, 1.5);
+    const sizeM = getNumVar(style, names.medium, sizeL / phi);
+    const sizeS = getNumVar(style, names.small, sizeM / phi);
     const r = Math.random();
     if (r < 0.30) return sizeL;
     if (r < 0.72) return sizeM;
     return sizeS;
   };
+
+  const chooseSize = (style) => chooseSizeFromVars(style, {
+    phi: '--phi',
+    large: '--size-large',
+    medium: '--size-medium',
+    small: '--size-small'
+  });
+
+  const chooseHoverSize = (style) => chooseSizeFromVars(style, {
+    phi: '--hover-star-phi',
+    large: '--hover-star-size-large',
+    medium: '--hover-star-size-medium',
+    small: '--hover-star-size-small'
+  });
 
   const findSection = (host) => (
     host.closest('[data-section-id]') ||
@@ -54,18 +68,21 @@
     host.parentElement
   );
 
-  const ensureOverlay = (section) => {
+  const ensureLayer = (section, className) => {
     const cs = getComputedStyle(section);
     if (cs.position === 'static') section.style.position = 'relative';
 
-    let layer = section.querySelector(':scope > .shape-edge-sparkles');
+    let layer = section.querySelector(`:scope > .${className}`);
     if (!layer) {
       layer = document.createElement('div');
-      layer.className = 'shape-edge-sparkles';
+      layer.className = className;
       section.appendChild(layer);
     }
     return layer;
   };
+
+  const ensureOverlay = (section) => ensureLayer(section, 'shape-edge-sparkles');
+  const ensureHoverOverlay = (section) => ensureLayer(section, 'hovercard-edge-sparkles');
 
 
   const ensureSparkleStyles = () => {
@@ -107,14 +124,39 @@
         --drift-max: 3.5rem;
         --edge-fade-width: 7rem;
         --card-spawn-lift-max-ratio: 0.10;
+        --hover-star-count: 9;
+        --hover-star-burst-interval-ms: 520;
+        --hover-star-spin-ms: 900;
+        --hover-star-fade-in-ms: 160;
+        --hover-star-fade-out-ms: 320;
+        --hover-star-grow-from: 0.25;
+        --hover-star-grow-to: 1.20;
+        --hover-star-edge-jitter: 0.55rem;
+        --hover-star-color: #9989EC;
+        --hover-star-glow-color: rgba(153,137,236,0.90);
+        --hover-star-glow-blur: 20px;
+        --hover-star-glow-spread: 1px;
+        --hover-star-blur-min: 0.18rem;
+        --hover-star-blur-max: 0.5rem;
+        --hover-star-opacity-min: 0.75;
+        --hover-star-opacity-max: 1.00;
+        --hover-star-url: url("https://versaliart.github.io/MMsparkle.svg");
+        --hover-star-phi: 1.618;
+        --hover-star-size-large: 1.5rem;
+        --hover-star-size-medium: calc(var(--hover-star-size-large) / var(--hover-star-phi));
+        --hover-star-size-small: calc(var(--hover-star-size-medium) / var(--hover-star-phi));
       }
-      .shape-edge-sparkles{
+      .shape-edge-sparkles,
+      .hovercard-edge-sparkles{
         position: absolute;
         inset: 0;
         pointer-events: none;
         z-index: 10;
         overflow: visible;
         contain: layout style paint;
+      }
+      .hovercard-edge-sparkles{
+        z-index: 11;
       }
       .shape-edge-sparkles .star{
         position: absolute;
@@ -152,12 +194,51 @@
         pointer-events: none;
         z-index: 1;
       }
+
+      .hovercard-edge-sparkles .hover-star{
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: var(--hover-size, 1rem);
+        height: var(--hover-size, 1rem);
+        transform: translate(-50%, -50%) scale(var(--hover-star-grow-from, 0.25)) rotate(0deg);
+        opacity: 0;
+        color: var(--hover-star-color);
+        mix-blend-mode: screen;
+        pointer-events: none;
+        z-index: 1;
+        isolation: isolate;
+        will-change: transform, opacity;
+      }
+      .hovercard-edge-sparkles .hover-star::before{
+        content: '';
+        position: absolute;
+        inset: calc(var(--hover-star-glow-spread) * -1);
+        border-radius: 50%;
+        background: radial-gradient(circle, var(--hover-star-glow-color) 0%, color-mix(in srgb, var(--hover-star-glow-color) 70%, transparent) 45%, transparent 100%);
+        filter: blur(var(--hover-blur, var(--hover-star-glow-blur)));
+        mix-blend-mode: screen;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .hovercard-edge-sparkles .hover-star::after{
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: currentColor;
+        -webkit-mask: var(--hover-star-url) center / contain no-repeat;
+                mask: var(--hover-star-url) center / contain no-repeat;
+        pointer-events: none;
+        z-index: 1;
+      }
       @media screen and (max-width: 767px){
         body.has-starfield{
           --edge-fade-width: 2rem;
           --spawn-rate: 3;
           --star-max-live: 20;
           --size-large: 1rem;
+          --hover-star-count: 6;
+          --hover-star-size-large: 1rem;
         }
       }
       @media (prefers-reduced-motion: reduce){
@@ -274,6 +355,144 @@
       width: right - left,
       height: bottom - top
     };
+  };
+
+  const getHoverSparkleConfig = () => {
+    const s = getComputedStyle(body);
+    const spinMs = Math.max(1, getNumVar(s, '--hover-star-spin-ms', 900));
+    return {
+      count: Math.max(1, Math.round(getNumVar(s, '--hover-star-count', 9))),
+      burstIntervalMs: Math.max(1, getNumVar(s, '--hover-star-burst-interval-ms', 520)),
+      spinMs,
+      fadeInMs: clamp(getNumVar(s, '--hover-star-fade-in-ms', 160), 0, spinMs),
+      fadeOutMs: clamp(getNumVar(s, '--hover-star-fade-out-ms', 320), 0, spinMs),
+      growFrom: Math.max(0, getNumVar(s, '--hover-star-grow-from', 0.25)),
+      growTo: Math.max(0, getNumVar(s, '--hover-star-grow-to', 1.2)),
+      edgeJitter: Math.max(0, getNumVar(s, '--hover-star-edge-jitter', 0.55) * remPx()),
+      starColor: s.getPropertyValue('--hover-star-color').trim() || '#9989EC',
+      blurMin: Math.max(0, getNumVar(s, '--hover-star-blur-min', 0.18) * remPx()),
+      blurMax: Math.max(0, getNumVar(s, '--hover-star-blur-max', 0.5) * remPx()),
+      opacityMin: clamp01(getNumVar(s, '--hover-star-opacity-min', 0.75)),
+      opacityMax: clamp01(getNumVar(s, '--hover-star-opacity-max', 1.0))
+    };
+  };
+
+  const createHoverSparkleEngine = (group) => {
+    const host = group.target || group.fallbackElements[0];
+    const emitterElements = group.fallbackElements.length > 0 ? group.fallbackElements : [host];
+    const section = host ? findSection(host) : null;
+    if (!host || !section) return null;
+
+    const overlay = ensureHoverOverlay(section);
+    const stars = [];
+    let hoverActive = false;
+    let burstTimer = 0;
+
+    const getRects = () => ({
+      hostRect: getUnionRect(emitterElements) || host.getBoundingClientRect(),
+      sectionRect: section.getBoundingClientRect()
+    });
+
+    const edgePoint = (hostRect, sectionRect, jitter) => {
+      const side = Math.floor(rand(0, 4));
+      const offset = rand(-jitter, jitter);
+      let x;
+      let y;
+      if (side === 0) {
+        x = rand(hostRect.left, hostRect.right);
+        y = hostRect.top + offset;
+      } else if (side === 1) {
+        x = hostRect.right + offset;
+        y = rand(hostRect.top, hostRect.bottom);
+      } else if (side === 2) {
+        x = rand(hostRect.left, hostRect.right);
+        y = hostRect.bottom + offset;
+      } else {
+        x = hostRect.left + offset;
+        y = rand(hostRect.top, hostRect.bottom);
+      }
+      return { x: x - sectionRect.left, y: y - sectionRect.top };
+    };
+
+    const renderHoverStar = (star, cfg, ts) => {
+      const progress = clamp01((ts - star.bornAt) / cfg.spinMs);
+      const fadeOutStart = cfg.fadeOutMs >= cfg.spinMs ? 0 : 1 - (cfg.fadeOutMs / cfg.spinMs);
+      const fadeIn = cfg.fadeInMs > 0 ? clamp01((ts - star.bornAt) / cfg.fadeInMs) : 1;
+      const fadeOut = cfg.fadeOutMs > 0 && progress > fadeOutStart ? clamp01((1 - progress) / (cfg.fadeOutMs / cfg.spinMs)) : 1;
+      const opacity = star.baseOpacity * Math.min(fadeIn, fadeOut);
+      const scale = cfg.growFrom + ((cfg.growTo - cfg.growFrom) * progress);
+      const rotation = star.rotationStart + (360 * progress * star.direction);
+
+      star.el.style.opacity = opacity.toFixed(3);
+      star.el.style.transform = `translate(-50%, -50%) scale(${scale.toFixed(3)}) rotate(${rotation.toFixed(2)}deg)`;
+    };
+
+    const removeHoverStar = (star) => {
+      const index = stars.indexOf(star);
+      if (index >= 0) stars.splice(index, 1);
+      if (star.el && star.el.parentNode) star.el.parentNode.removeChild(star.el);
+    };
+
+    const spawnHoverStar = (cfg) => {
+      const { hostRect, sectionRect } = getRects();
+      if (hostRect.width < 4 || hostRect.height < 4 || sectionRect.width < 4 || sectionRect.height < 4) return;
+
+      const point = edgePoint(hostRect, sectionRect, cfg.edgeJitter);
+      const el = document.createElement('span');
+      el.className = 'hover-star';
+      el.style.left = point.x.toFixed(2) + 'px';
+      el.style.top = point.y.toFixed(2) + 'px';
+      el.style.color = cfg.starColor;
+      el.style.setProperty('--hover-size', chooseHoverSize(getComputedStyle(body)) + 'rem');
+      el.style.setProperty('--hover-blur', rand(cfg.blurMin, Math.max(cfg.blurMin, cfg.blurMax)).toFixed(2) + 'px');
+      overlay.appendChild(el);
+
+      const star = {
+        el,
+        bornAt: performance.now(),
+        baseOpacity: rand(cfg.opacityMin, cfg.opacityMax),
+        rotationStart: rand(0, 360),
+        direction: Math.random() < 0.5 ? -1 : 1
+      };
+      stars.push(star);
+
+      const tick = (ts) => {
+        if (!stars.includes(star)) return;
+        renderHoverStar(star, cfg, ts);
+        if (ts - star.bornAt >= cfg.spinMs) {
+          removeHoverStar(star);
+          return;
+        }
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const burst = () => {
+      if (!hoverActive) return;
+      const cfg = getHoverSparkleConfig();
+      for (let i = 0; i < cfg.count; i++) spawnHoverStar(cfg);
+      burstTimer = window.setTimeout(burst, cfg.burstIntervalMs);
+    };
+
+    const start = () => {
+      if (hoverActive) return;
+      hoverActive = true;
+      burst();
+    };
+
+    const stop = () => {
+      hoverActive = false;
+      if (burstTimer) window.clearTimeout(burstTimer);
+      burstTimer = 0;
+    };
+
+    host.addEventListener('pointerenter', start);
+    host.addEventListener('pointerleave', stop);
+    host.addEventListener('focusin', start);
+    host.addEventListener('focusout', stop);
+
+    return { start: () => {} };
   };
 
   const createDripEngine = (group) => {
@@ -397,6 +616,7 @@
     body.classList.add('has-starfield');
     ensureSparkleStyles();
     groups.map(createDripEngine).filter(Boolean).forEach((engine) => engine.start());
+    groups.map(createHoverSparkleEngine).filter(Boolean);
 
     const tick = (now) => {
       const elapsed = now - startTime;
