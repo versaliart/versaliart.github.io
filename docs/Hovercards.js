@@ -28,6 +28,8 @@
   const remPx = () => parseFloat(getComputedStyle(root).fontSize) || 16;
 
   const CARD_IMG_SELECTORS = [CARD_1_SELECTORS[0], CARD_2_SELECTORS[0]];
+  const CARD_1_ROTATION_DEG = -5;
+  const CARD_2_ROTATION_DEG = 5;
 
   const getElements = (selectors) => selectors
     .map((selector) => document.querySelector(selector))
@@ -199,8 +201,8 @@
     const group2Wrapper = wrapGroup(group2, 'hovercard-group hovercard-group-2');
 
     const groups = [
-      { target: group1Wrapper, fallbackElements: group1, phaseShift: 0 },
-      { target: group2Wrapper, fallbackElements: group2, phaseShift: Math.PI },
+      { target: group1Wrapper, fallbackElements: group1, phaseShift: 0, rotationDeg: CARD_1_ROTATION_DEG },
+      { target: group2Wrapper, fallbackElements: group2, phaseShift: Math.PI, rotationDeg: CARD_2_ROTATION_DEG },
     ].filter((group) => group.target || group.fallbackElements.length > 0);
 
     groups.forEach(({ target, fallbackElements }) => {
@@ -337,6 +339,35 @@
       return leastUsedSides[Math.floor(rand(0, leastUsedSides.length))];
     };
 
+    const getRenderedCardMetrics = (hostRect) => {
+      const angleRad = ((group.rotationDeg || 0) * Math.PI) / 180;
+      const cos = Math.abs(Math.cos(angleRad));
+      const sin = Math.abs(Math.sin(angleRad));
+      const denominator = (cos * cos) - (sin * sin);
+      let width = hostRect.width;
+      let height = hostRect.height;
+
+      // getBoundingClientRect() returns the axis-aligned bounds of the rotated card.
+      // Solve back to the pre-rotation rectangle so sparkle points follow the
+      // visible tilted edges instead of the larger vertical bounding box.
+      if (Math.abs(angleRad) > 0.0001 && Math.abs(denominator) > 0.0001) {
+        const unrotatedWidth = ((hostRect.width * cos) - (hostRect.height * sin)) / denominator;
+        const unrotatedHeight = ((hostRect.height * cos) - (hostRect.width * sin)) / denominator;
+        if (unrotatedWidth > 0 && unrotatedHeight > 0) {
+          width = unrotatedWidth;
+          height = unrotatedHeight;
+        }
+      }
+
+      return {
+        angleRad,
+        centerX: hostRect.left + (hostRect.width / 2),
+        centerY: hostRect.top + (hostRect.height / 2),
+        width,
+        height
+      };
+    };
+
     const edgePoint = (hostRect, sectionRect, jitter, inset, side, index, count) => {
       const offset = rand(-jitter, jitter);
       const spread = count > 1
@@ -345,21 +376,30 @@
       const position = burstIndex === 0 && index === 0
         ? 0.92
         : clamp(spread + rand(-0.16, 0.16), 0.06, 0.94);
-      let x;
-      let y;
+      const { angleRad, centerX, centerY, width, height } = getRenderedCardMetrics(hostRect);
+      const halfWidth = width / 2;
+      const halfHeight = height / 2;
+      let localX;
+      let localY;
+
       if (side === 'top') {
-        x = hostRect.left + (hostRect.width * position);
-        y = hostRect.top + inset + offset;
+        localX = -halfWidth + (width * position);
+        localY = -halfHeight + inset + offset;
       } else if (side === 'right') {
-        x = hostRect.right - inset + offset;
-        y = hostRect.top + (hostRect.height * position);
+        localX = halfWidth - inset + offset;
+        localY = -halfHeight + (height * position);
       } else if (side === 'bottom') {
-        x = hostRect.left + (hostRect.width * (1 - position));
-        y = hostRect.bottom - inset + offset;
+        localX = -halfWidth + (width * (1 - position));
+        localY = halfHeight - inset + offset;
       } else {
-        x = hostRect.left + inset + offset;
-        y = hostRect.top + (hostRect.height * (1 - position));
+        localX = -halfWidth + inset + offset;
+        localY = -halfHeight + (height * (1 - position));
       }
+
+      const cos = Math.cos(angleRad);
+      const sin = Math.sin(angleRad);
+      const x = centerX + (localX * cos) - (localY * sin);
+      const y = centerY + (localX * sin) + (localY * cos);
       return { x: x - sectionRect.left, y: y - sectionRect.top };
     };
 
