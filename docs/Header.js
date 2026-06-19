@@ -118,7 +118,7 @@
 
       function computeThreshold(){
         if (!isHome()){
-          revealAt = 0;
+          revealAt = window.scrollY + r2.top - STICKY - 16;
           return;
         }
 
