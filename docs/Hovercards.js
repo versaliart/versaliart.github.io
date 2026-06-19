@@ -81,7 +81,7 @@
     style.id = 'hovercard-sparkle-styles';
     style.textContent = `
       body.has-starfield{
-        --star-glow-color: rgba(60,51,97,0.9); /* Color of the soft glow used by the card box-shadow. */
+        --star-glow-color: rgba(93,78,152,0.9); /* Color of the soft glow used by the card box-shadow. */
         --star-glow-blur: 20px; /* Blur radius used by the card box-shadow. */
         --star-glow-spread: 1px; /* Spread radius used by the card box-shadow. */
         --hover-star-count: 1; /* Number of hover sparkles created per burst. */
