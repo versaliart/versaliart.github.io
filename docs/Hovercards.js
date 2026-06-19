@@ -106,12 +106,13 @@
         --drift-min: 2.5rem;
         --drift-max: 3.5rem;
         --edge-fade-width: 7rem;
+        --card-spawn-lift-max-ratio: 0.10;
       }
       .shape-edge-sparkles{
         position: absolute;
         inset: 0;
         pointer-events: none;
-        z-index: 1;
+        z-index: 10;
         overflow: visible;
         contain: layout style paint;
       }
@@ -137,6 +138,7 @@
         border-radius: 50%;
         background: radial-gradient(circle, var(--star-glow-color) 0%, color-mix(in srgb, var(--star-glow-color) 70%, transparent) 45%, transparent 100%);
         filter: blur(var(--blur, var(--star-glow-blur)));
+        mix-blend-mode: screen;
         pointer-events: none;
         z-index: 0;
       }
@@ -239,7 +241,8 @@
       twinkleMin: Math.max(0.01, getNumVar(s, '--twinkle-min', 1.0)),
       twinkleMax: Math.max(0.02, getNumVar(s, '--twinkle-max', 2.0)),
       fadeInMs: Math.max(0, getNumVar(s, '--spawn-fade-in-ms', 450)),
-      swayMax: Math.max(0, getNumVar(s, '--card-drip-sway', 0.55) * remPx())
+      swayMax: Math.max(0, getNumVar(s, '--card-drip-sway', 0.55) * remPx()),
+      spawnLiftMaxRatio: clamp01(getNumVar(s, '--card-spawn-lift-max-ratio', 0.10))
     };
   };
 
@@ -273,7 +276,8 @@
       if (hostRect.width < 4 || hostRect.height < 4 || sectionRect.width < 4 || sectionRect.height < 4) return;
 
       const x = rand(hostRect.left, hostRect.right) - sectionRect.left;
-      const y = hostRect.bottom - sectionRect.top + rand(0.1, 1.5) * remPx();
+      const spawnLift = rand(0, hostRect.height * cfg.spawnLiftMaxRatio);
+      const y = hostRect.bottom - sectionRect.top - spawnLift;
       const speed = rand(cfg.driftMin, cfg.driftMax);
       const angle = (90 + rand(-18, 18)) * DEG;
       const el = document.createElement('span');
