@@ -487,10 +487,13 @@
       burstTimer = 0;
     };
 
-    host.addEventListener('pointerenter', start);
-    host.addEventListener('pointerleave', stop);
-    host.addEventListener('focusin', start);
-    host.addEventListener('focusout', stop);
+    const eventTargets = group.target ? [group.target] : emitterElements;
+    eventTargets.forEach((target) => {
+      target.addEventListener('pointerenter', start);
+      target.addEventListener('pointerleave', stop);
+      target.addEventListener('focusin', start);
+      target.addEventListener('focusout', stop);
+    });
 
     return { start: () => {} };
   };
