@@ -120,8 +120,8 @@
         --jitter-fallback-steps: 3; /* Number of fallback attempts for finding a jittered drip sparkle point. */
         --star-max-live: 12; /* Maximum number of drip sparkles visible at one time. */
         --spawn-rate: 1; /* Number of drip sparkles emitted per second. */
-        --drift-min: 2.5rem; /* Minimum downward drift distance per second for drip sparkles. */
-        --drift-max: 3.5rem; /* Maximum downward drift distance per second for drip sparkles. */
+        --drift-min: 3.5rem; /* Minimum downward drift distance per second for drip sparkles. */
+        --drift-max: 4.5rem; /* Maximum downward drift distance per second for drip sparkles. */
         --edge-fade-width: 7.5rem; /* Distance from section edges over which drip sparkles fade out. */
         --card-spawn-lift-max-ratio: 0.0; /* Maximum portion of card height a drip sparkle can spawn above the lower edge. */
         --hover-star-count: 1; /* Number of hover sparkles created per burst. */
