@@ -29,7 +29,7 @@
 
     const style = document.createElement('style');
     style.id = GLOW_STYLE_ID;
-    style.textContent = `
+    style.textContent = 
       .hovercard-visual-block {
         position: relative;
         isolation: isolate;
@@ -92,7 +92,7 @@
         25%,
         75% { opacity: 1; }
       }
-    `;
+    ;
 
     document.head.appendChild(style);
   };
