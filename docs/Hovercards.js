@@ -15,6 +15,7 @@
 
   const AMPLITUDE_PX = 15; // max upward movement
   const CYCLE_MS = 4600;  // full cycle: 0 -> up -> 0
+  const SHADOW_FADE_START_DISTANCE_RATIO = 0.5; // shadow only fades in during the final half of card travel
   const DEG = Math.PI / 180;
 
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -675,7 +676,8 @@
         const movementProgress = (Math.sin(phase + phaseShift) + 1) / 2;
         const groupOffset = -(movementProgress * AMPLITUDE_PX);
         const y = groupOffset.toFixed(2);
-        const shadow = getCardShadow(movementProgress);
+        const shadowProgress = clamp01((movementProgress - SHADOW_FADE_START_DISTANCE_RATIO) / (1 - SHADOW_FADE_START_DISTANCE_RATIO));
+        const shadow = getCardShadow(shadowProgress);
         const animatedElements = target ? [target] : fallbackElements;
         const cardImgElements = fallbackElements.filter((element) => CARD_IMG_SELECTORS.some((selector) => element.matches(selector)));
 
