@@ -129,7 +129,7 @@
         }
 
         const r2 = sections[1].getBoundingClientRect();
-        revealAt = window.scrollY + r2.top - STICKY - 32;
+        revealAt = window.scrollY + r2.top - STICKY - 64;
         if (revealAt < 0) revealAt = 0;
       }
 
