@@ -132,7 +132,7 @@
         --hover-star-grow-from: 0.25; /* Starting scale for a hover sparkle. */
         --hover-star-grow-to: 1.20; /* Ending scale for a hover sparkle. */
         --hover-star-edge-jitter: 0rem; /* Random offset from the card edge for hover sparkle placement. */
-        --hover-star-edge-inset-ratio: 0.5; /* Pulls hover sparkle centers inward by this fraction of their size so they hug the card edge. */
+        --hover-star-edge-inset-ratio: 0.75; /* Pulls hover sparkle centers inward by this fraction of their size so they hug the card edge. */
         --hover-star-color: #9989EC; /* Fill color for hover sparkle SVG masks. */
         --hover-star-glow-color: rgba(153,137,236,0.80); /* Color of the soft glow behind hover sparkles. */
         --hover-star-glow-blur: 20px; /* Fallback blur radius for hover sparkle glows. */
