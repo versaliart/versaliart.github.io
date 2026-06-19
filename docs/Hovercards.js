@@ -124,14 +124,14 @@
         --drift-max: 3.5rem;
         --edge-fade-width: 7.5rem;
         --card-spawn-lift-max-ratio: 0.15;
-        --hover-star-count: 3;
-        --hover-star-burst-interval-ms: 520;
+        --hover-star-count: 1;
+        --hover-star-burst-interval-ms: 320;
         --hover-star-spin-ms: 450;
         --hover-star-fade-in-ms: 120;
         --hover-star-fade-out-ms: 220;
         --hover-star-grow-from: 0.25;
         --hover-star-grow-to: 1.20;
-        --hover-star-edge-jitter: 0.15rem;
+        --hover-star-edge-jitter: 0rem;
         --hover-star-color: #9989EC;
         --hover-star-glow-color: rgba(153,137,236,0.90);
         --hover-star-glow-blur: 20px;
