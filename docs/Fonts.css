@@ -591,6 +591,16 @@ button.sqs-button-element--secondary,
   border-radius: 10px !important;
 }
 
+/* Primary buttons use the brand purple and center their label vertically. */
+a.sqs-button-element--primary,
+button.sqs-button-element--primary,
+.sqs-button-element--primary {
+  background-color: #5d4e98 !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 
 /* Ensure component-layer paint also inherits the bite silhouette */
 a.sqs-button-element--primary::before,
